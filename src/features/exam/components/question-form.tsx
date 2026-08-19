@@ -99,8 +99,8 @@ export function QuestionForm({
   const [visibility, setVisibility] = useState<QuestionVisibility>("private");
   const [isArchived, setIsArchived] = useState(false);
   // Kategori soal tidak lagi diedit di Exam Studio (hanya di Detail Exam);
-  // nilai lama tetap dipertahankan agar Question Bank/import-export tidak berubah.
-  const [category] = useState<string>("umum");
+  // nilai existing dipertahankan agar Question Bank/import-export tidak berubah.
+  const category = question?.category ?? "umum";
   const [difficulty, setDifficulty] = useState<ExamDifficulty>("sedang");
   const [lessonId, setLessonId] = useState<string>(NO_LESSON);
   const [explanation, setExplanation] = useState("");

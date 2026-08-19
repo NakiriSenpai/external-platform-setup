@@ -60,8 +60,11 @@ export const publishContent = createServerFn({ method: "POST" })
     // Re-publish / edit konten yang sudah published: tanpa notifikasi.
     if (wasPublished) return { published: true, notified: false, notifications: 0 };
 
-    const tenantId = caller.tenantId;
+    const tenantId = contentTenantId ?? caller.tenantId;
+    // Tanpa tenant context, notifikasi dilewati (publish tetap berhasil).
+    if (!tenantId) return { published: true, notified: false, notifications: 0 };
     const title = (row["title"] as string | null) ?? "";
+
 
     const payload =
       data.kind === "lesson"

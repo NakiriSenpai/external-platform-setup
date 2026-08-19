@@ -11,6 +11,7 @@ import {
   setColorTestQuestionActive,
   skipColorTest,
   startColorTest,
+  updateColorTestQuestion,
 } from "@/services/color-test";
 import type { ColorTestPayload } from "@/types/color-test";
 
@@ -101,5 +102,20 @@ export function useColorTestPoolMutations() {
       onSuccess: invalidate,
     }),
     archive: useMutation({ mutationFn: archiveColorTestQuestion, onSuccess: invalidate }),
+    update: useMutation({
+      mutationFn: ({
+        id,
+        patch,
+      }: {
+        id: string;
+        patch: {
+          image_url?: string;
+          image_public_id?: string | null;
+          correct_answer?: string;
+          active?: boolean;
+        };
+      }) => updateColorTestQuestion(id, patch),
+      onSuccess: invalidate,
+    }),
   };
 }

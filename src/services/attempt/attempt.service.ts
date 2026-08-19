@@ -434,3 +434,12 @@ export async function listMyResults(): Promise<AttemptResultRow[]> {
   if (error) return [];
   return (data as AttemptResultRow[] | null) ?? [];
 }
+
+/**
+ * Hapus satu riwayat attempt (Owner only).
+ * Otorisasi dijaga oleh RLS/RPC di server; klien hanya menyembunyikan tombol.
+ */
+export async function deleteAttempt(attemptId: string): Promise<void> {
+  const { error } = await supabase.rpc("delete_exam_attempt", { p_attempt_id: attemptId });
+  if (error) throw new Error("Gagal menghapus riwayat ujian.");
+}

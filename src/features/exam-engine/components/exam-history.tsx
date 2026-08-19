@@ -1,10 +1,23 @@
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2, Trash2, XCircle } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAvailableExams, useMyAttempts } from "@/hooks/attempt";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useAvailableExams, useDeleteAttempt, useMyAttempts } from "@/hooks/attempt";
+import { useAuth } from "@/hooks/auth";
 import { formatDurasi } from "@/types/attempt";
 
 const dateFormatter = new Intl.DateTimeFormat("id-ID", {
@@ -17,6 +30,10 @@ export function ExamHistory({ examId }: { examId: string }) {
   const navigate = useNavigate();
   const { data: attempts, isLoading } = useMyAttempts();
   const { data: exams } = useAvailableExams();
+  const { hasRole } = useAuth();
+  const isOwner = hasRole("owner");
+  const deleteAttemptMutation = useDeleteAttempt();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const exam = (exams ?? []).find((e) => e.id === examId);
   const rows = (attempts ?? [])
@@ -80,23 +97,70 @@ export function ExamHistory({ examId }: { examId: string }) {
                     · Durasi {formatDurasi(attempt.duration_seconds ?? 0)}
                   </p>
                 </div>
-                <Button
-                  size="sm"
-                  className="shrink-0"
-                  onClick={() =>
-                    void navigate({
-                      to: "/ujian/hasil/$attemptId",
-                      params: { attemptId: attempt.id },
-                    })
-                  }
-                >
-                  Detail
-                </Button>
+                <div className="flex shrink-0 items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      void navigate({
+                        to: "/ujian/hasil/$attemptId",
+                        params: { attemptId: attempt.id },
+                      })
+                    }
+                  >
+                    Detail
+                  </Button>
+                  {isOwner ? (
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      aria-label="Hapus riwayat ujian ini"
+                      onClick={() => setDeleteId(attempt.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  ) : null}
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      <AlertDialog
+        open={Boolean(deleteId)}
+        onOpenChange={(open) => {
+          if (!open) setDeleteId(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus riwayat ujian ini?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Satu percobaan beserta jawaban dan hasilnya akan dihapus permanen. Riwayat lain pada
+              ujian ini tidak terpengaruh.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteAttemptMutation.isPending}
+              onClick={async (event) => {
+                event.preventDefault();
+                if (!deleteId) return;
+                try {
+                  await deleteAttemptMutation.mutateAsync(deleteId);
+                  toast.success("Riwayat ujian dihapus.");
+                  setDeleteId(null);
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Gagal menghapus riwayat.");
+                }
+              }}
+            >
+              Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

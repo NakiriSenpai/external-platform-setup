@@ -3,6 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { MaintenanceGate } from "@/components/common/maintenance-gate";
 import { AppHeader } from "@/features/shell/components/app-header";
 import { BottomNav, NAV_BY_ROLE } from "@/features/shell/components/bottom-nav";
+import { useActivityHeartbeat } from "@/hooks/analytics/use-activity-heartbeat";
 import { useAuth } from "@/hooks/auth";
 import { useAppConfig } from "@/hooks/config";
 
@@ -26,6 +27,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const { role, isAuthenticated } = useAuth();
   const { config, isFeatureEnabled, version } = useAppConfig();
   const isFullscreen = useIsFullscreen();
+
+  // Catat kehadiran harian siswa untuk tab Attendance pada analitik.
+  useActivityHeartbeat(isAuthenticated && role === "siswa");
+
 
 
   const navItems = (role ? NAV_BY_ROLE[role] : NAV_BY_ROLE.siswa).filter(

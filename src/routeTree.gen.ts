@@ -39,6 +39,7 @@ import { Route as UjianAttemptIdRouteImport } from './routes/ujian.$attemptId'
 import { Route as MateriLessonLessonIdRouteImport } from './routes/materi.lesson.$lessonId'
 import { Route as OwnerExamStudioIndexRouteImport } from './routes/owner_.exam-studio.index'
 import { Route as OwnerLessonStudioIndexRouteImport } from './routes/owner_.lesson-studio.index'
+import { Route as UjianColorTestAttemptIdRouteImport } from './routes/ujian.color-test.$attemptId'
 import { Route as UjianHasilAttemptIdRouteImport } from './routes/ujian.hasil.$attemptId'
 import { Route as UjianReviewAttemptIdRouteImport } from './routes/ujian.review.$attemptId'
 import { Route as UjianRiwayatExamIdRouteImport } from './routes/ujian.riwayat.$examId'
@@ -197,6 +198,11 @@ const OwnerLessonStudioIndexRoute = OwnerLessonStudioIndexRouteImport.update({
   path: '/owner/lesson-studio/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UjianColorTestAttemptIdRoute = UjianColorTestAttemptIdRouteImport.update({
+  id: '/color-test/$attemptId',
+  path: '/color-test/$attemptId',
+  getParentRoute: () => UjianRoute,
+} as any)
 const UjianHasilAttemptIdRoute = UjianHasilAttemptIdRouteImport.update({
   id: '/hasil/$attemptId',
   path: '/hasil/$attemptId',
@@ -266,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/materi/': typeof MateriIndexRoute
   '/ujian/': typeof UjianIndexRoute
   '/materi/lesson/$lessonId': typeof MateriLessonLessonIdRoute
+  '/ujian/color-test/$attemptId': typeof UjianColorTestAttemptIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
   '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
   '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
@@ -303,6 +310,7 @@ export interface FileRoutesByTo {
   '/materi': typeof MateriIndexRoute
   '/ujian': typeof UjianIndexRoute
   '/materi/lesson/$lessonId': typeof MateriLessonLessonIdRoute
+  '/ujian/color-test/$attemptId': typeof UjianColorTestAttemptIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
   '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
   '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
@@ -343,6 +351,7 @@ export interface FileRoutesById {
   '/materi/': typeof MateriIndexRoute
   '/ujian/': typeof UjianIndexRoute
   '/materi/lesson/$lessonId': typeof MateriLessonLessonIdRoute
+  '/ujian/color-test/$attemptId': typeof UjianColorTestAttemptIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
   '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
   '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
@@ -384,6 +393,7 @@ export interface FileRouteTypes {
     | '/materi/'
     | '/ujian/'
     | '/materi/lesson/$lessonId'
+    | '/ujian/color-test/$attemptId'
     | '/ujian/hasil/$attemptId'
     | '/ujian/review/$attemptId'
     | '/ujian/riwayat/$examId'
@@ -421,6 +431,7 @@ export interface FileRouteTypes {
     | '/materi'
     | '/ujian'
     | '/materi/lesson/$lessonId'
+    | '/ujian/color-test/$attemptId'
     | '/ujian/hasil/$attemptId'
     | '/ujian/review/$attemptId'
     | '/ujian/riwayat/$examId'
@@ -460,6 +471,7 @@ export interface FileRouteTypes {
     | '/materi/'
     | '/ujian/'
     | '/materi/lesson/$lessonId'
+    | '/ujian/color-test/$attemptId'
     | '/ujian/hasil/$attemptId'
     | '/ujian/review/$attemptId'
     | '/ujian/riwayat/$examId'
@@ -715,6 +727,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerLessonStudioIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ujian/color-test/$attemptId': {
+      id: '/ujian/color-test/$attemptId'
+      path: '/color-test/$attemptId'
+      fullPath: '/ujian/color-test/$attemptId'
+      preLoaderRoute: typeof UjianColorTestAttemptIdRouteImport
+      parentRoute: typeof UjianRoute
+    }
     '/ujian/hasil/$attemptId': {
       id: '/ujian/hasil/$attemptId'
       path: '/hasil/$attemptId'
@@ -785,6 +804,7 @@ const MateriRouteWithChildren =
 interface UjianRouteChildren {
   UjianAttemptIdRoute: typeof UjianAttemptIdRoute
   UjianIndexRoute: typeof UjianIndexRoute
+  UjianColorTestAttemptIdRoute: typeof UjianColorTestAttemptIdRoute
   UjianHasilAttemptIdRoute: typeof UjianHasilAttemptIdRoute
   UjianReviewAttemptIdRoute: typeof UjianReviewAttemptIdRoute
   UjianRiwayatExamIdRoute: typeof UjianRiwayatExamIdRoute
@@ -793,6 +813,7 @@ interface UjianRouteChildren {
 const UjianRouteChildren: UjianRouteChildren = {
   UjianAttemptIdRoute: UjianAttemptIdRoute,
   UjianIndexRoute: UjianIndexRoute,
+  UjianColorTestAttemptIdRoute: UjianColorTestAttemptIdRoute,
   UjianHasilAttemptIdRoute: UjianHasilAttemptIdRoute,
   UjianReviewAttemptIdRoute: UjianReviewAttemptIdRoute,
   UjianRiwayatExamIdRoute: UjianRiwayatExamIdRoute,

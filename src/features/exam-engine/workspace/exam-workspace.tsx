@@ -63,7 +63,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
   useEffect(() => {
     if (!expiredAttempt) return;
     toast.info("Waktu ujian telah habis.");
-    void navigate({ to: "/ujian/hasil/$attemptId", params: { attemptId } });
+    void navigate({ to: "/ujian/color-test/$attemptId", params: { attemptId } });
   }, [expiredAttempt, attemptId, navigate]);
 
   const saveAnswer = useSaveAnswer();
@@ -109,7 +109,8 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
             ? "Waktu habis. Ujian dikumpulkan otomatis."
             : "Ujian berhasil dikumpulkan.",
         );
-        void navigate({ to: "/ujian/hasil/$attemptId", params: { attemptId } });
+        // Tahap wajib setelah submit: Tes Buta Warna (bukan langsung Hasil Ujian).
+        void navigate({ to: "/ujian/color-test/$attemptId", params: { attemptId } });
       } catch (submitError) {
         submittingRef.current = false;
         setSubmitting(false);

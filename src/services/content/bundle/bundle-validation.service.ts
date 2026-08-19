@@ -28,14 +28,10 @@ type QuestionLike = {
   text: string;
   image_url: string | null;
   audio_url: string | null;
-  question_type: string | null;
-  visibility: string | null;
   is_archived?: boolean | null;
   answers: { text: string | null; image_url: string | null; is_correct: boolean }[];
 };
 
-const VALID_TYPES = ["reading", "listening", "grammar", "vocabulary", "conversation", "mixed"];
-const VALID_VISIBILITY = ["private", "public"];
 
 function buildReport(checks: { label: string; ok: boolean }[], issues: ValidationIssue[]): ValidationReport {
   const errorCount = issues.filter((i) => i.severity === "error").length;
@@ -50,15 +46,6 @@ export function validateQuestion(question: QuestionLike, scope: string): Validat
   const hasMedia = Boolean(question.image_url || question.audio_url);
   if (!hasText && !hasMedia) {
     issues.push({ severity: "error", scope, message: "Soal tidak memiliki teks maupun media." });
-  }
-  if (question.question_type === "listening" && !question.audio_url) {
-    issues.push({ severity: "error", scope, message: "Soal listening wajib memiliki audio." });
-  }
-  if (!question.question_type || !VALID_TYPES.includes(question.question_type)) {
-    issues.push({ severity: "error", scope, message: "Jenis soal tidak valid." });
-  }
-  if (!question.visibility || !VALID_VISIBILITY.includes(question.visibility)) {
-    issues.push({ severity: "error", scope, message: "Visibility soal tidak valid." });
   }
   if (question.is_archived) {
     issues.push({ severity: "error", scope, message: "Soal sudah diarsipkan dan tidak boleh dipakai." });
@@ -118,7 +105,7 @@ export async function validateExam(examId: string): Promise<ValidationReport> {
     .from(EXAM_TABLES.questions)
     .select(
       `section_id, order_index,
-       question:questions(id, text, image_url, audio_url, question_type, visibility, is_archived, lesson_id,
+       question:questions(id, text, image_url, audio_url, is_archived, lesson_id,
          answers:question_answers(text, image_url, is_correct))`,
     )
     .eq("exam_id", examId)
@@ -240,7 +227,7 @@ export async function validateLesson(lessonId: string): Promise<ValidationReport
   const { data: questionRows } = await supabase
     .from(LESSON_TABLES.questions)
     .select(
-      `order_index, question:questions(id, text, image_url, audio_url, question_type, visibility, is_archived,
+      `order_index, question:questions(id, text, image_url, audio_url, is_archived,
         answers:question_answers(text, image_url, is_correct))`,
     )
     .eq("lesson_id", lessonId)

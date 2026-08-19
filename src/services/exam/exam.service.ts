@@ -13,12 +13,7 @@ import {
   markQuestionsUsed,
   updateBankQuestion,
 } from "@/services/question-bank";
-import type {
-  GrammarTagRow,
-  QuestionBankInput,
-  QuestionBankRow,
-  TagRow,
-} from "@/types/question-bank";
+import type { QuestionBankInput, QuestionBankRow } from "@/types/question-bank";
 
 export type ExamStatusFilter = "semua" | ExamStatus;
 export type ExamCategoryFilter = "semua" | string;

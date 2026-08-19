@@ -19,12 +19,11 @@ import {
 const EXPORT_PAGE_SIZE = 100;
 const MAX_EXPORT_ROWS = 2000;
 
-const QUESTION_SELECT = `id, external_key, text, image_url, audio_url, explanation, category,
-  difficulty, question_type, origin, visibility, version, is_archived, created_at, updated_at,
+const QUESTION_SELECT = `id, external_key, text, image_url, audio_url, explanation,
+  origin, version, is_archived, created_at, updated_at,
   lesson:lessons(slug),
   answers:question_answers(label, text, image_url, audio_url, is_correct),
-  tag_links:question_grammar_tags(tag:grammar_tags(slug,name)),
-  general_tag_links:question_tags(tag:tags(slug,name))`;
+  lesson:lessons(slug)`;
 
 type RawExportQuestion = {
   id: string;
@@ -86,18 +85,12 @@ function toQuestionBundle(row: RawExportQuestion): QuestionBundle {
     key: row.external_key ?? `q_${row.id.replace(/-/g, "")}`,
     source_id: row.id,
     text: row.text ?? "",
-    question_type: row.question_type ?? "reading",
-    difficulty: row.difficulty ?? "sedang",
-    category: row.category ?? "umum",
     origin: row.origin ?? "import",
-    visibility: row.visibility ?? "private",
     version: row.version ?? 1,
     explanation: row.explanation,
     image: mediaFromUrl(row.image_url),
     audio: mediaFromUrl(row.audio_url),
     lesson_slug: row.lesson?.slug ?? null,
-    grammar_tags: (row.tag_links ?? []).map((l) => l.tag).filter(Boolean) as { slug: string; name: string }[],
-    tags: (row.general_tag_links ?? []).map((l) => l.tag).filter(Boolean) as { slug: string; name: string }[],
     answers,
     created_at: row.created_at,
     updated_at: row.updated_at,

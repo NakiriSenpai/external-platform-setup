@@ -385,12 +385,6 @@ export function LessonEditor({ lessonId }: Props) {
                           <p className="text-sm font-medium">
                             {qIndex + 1}. {question.text}
                           </p>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {question.grammar_tags.length > 0
-                              ? `Tag: ${question.grammar_tags.map((t) => t.name).join(", ")} · `
-                              : ""}
-                            {EXAM_DIFFICULTY_LABELS[question.difficulty]}
-                          </p>
                           <div className="mt-2 flex flex-wrap gap-2">
                             <Button
                               size="sm"

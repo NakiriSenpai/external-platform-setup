@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { MediaPreview, UploadDropzone, UploadProgress } from "@/components/media";
@@ -43,6 +44,11 @@ export function MediaPicker({
   useEffect(() => {
     setSelected(value);
   }, [value]);
+
+  // Jangan pernah gagal diam-diam: error unggah selalu tampil sebagai toast.
+  useEffect(() => {
+    if (uploader.status === "error" && uploader.error) toast.error(uploader.error);
+  }, [uploader.status, uploader.error]);
 
   const clear = () => {
     uploader.reset();

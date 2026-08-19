@@ -1,4 +1,4 @@
-import { MEDIA_EXTENSIONS, MEDIA_MIME } from "./constants";
+import { GENERIC_MIME, MEDIA_EXTENSIONS, MEDIA_MIME } from "./constants";
 import type { MediaKind } from "@/types/media";
 
 /** Ekstensi file dalam huruf kecil, tanpa titik. */
@@ -7,8 +7,17 @@ export function getFileExtension(name: string): string {
   return parts.length > 1 ? (parts.pop() as string).toLowerCase() : "";
 }
 
-/** Menentukan jenis media dari File atau nama/MIME-nya. */
-export function getMediaType(input: File | string): MediaKind | null {
+/** True bila MIME dari picker tidak informatif (umum di Android). */
+export function isGenericMime(mime: string | undefined | null): boolean {
+  return GENERIC_MIME.includes((mime ?? "").toLowerCase().trim());
+}
+
+/**
+ * Menentukan jenis media dari File atau nama/MIME-nya.
+ * `expected` dipakai sebagai fallback bila picker mengirim MIME generik
+ * (mis. application/octet-stream) dan nama file tanpa ekstensi.
+ */
+export function getMediaType(input: File | string, expected?: MediaKind | null): MediaKind | null {
   const mime = typeof input === "string" ? input : input.type;
   const name = typeof input === "string" ? input : input.name;
   const lower = (mime || "").toLowerCase();
@@ -19,11 +28,15 @@ export function getMediaType(input: File | string): MediaKind | null {
   // Android/Documents Provider kadang mengirim MIME generik atau varian lain.
   if (lower.startsWith("image/")) return "image";
   if (lower.startsWith("audio/")) return "audio";
+  if (lower.startsWith("video/") && expected === "audio") return "audio";
 
   const ext = getFileExtension(name);
   for (const kind of ["image", "audio"] as MediaKind[]) {
     if (ext && MEDIA_EXTENSIONS[kind].includes(ext)) return kind;
   }
+
+  // MIME generik + ekstensi tak dikenal: percayai slot yang sedang dibuka user.
+  if (expected && isGenericMime(lower)) return expected;
   return null;
 }
 

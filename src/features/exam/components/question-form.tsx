@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { ExamMediaField } from "./media-field";
 import { RichTextEditor } from "@/components/common/rich-text-editor";
-import { isRichTextEmpty, richTextToPlain } from "@/lib/rich-text";
+import { isRichTextEmpty } from "@/lib/rich-text";
 import { Switch } from "@/components/ui/switch";
 import { useCreateQuestion, useUpdateQuestion } from "@/hooks/exam";
 import { useAutosave } from "@/hooks/use-autosave";
@@ -194,24 +194,22 @@ export function QuestionForm({
     setAnswerMedia((prev) => ({ ...prev, [label]: null }));
   };
 
-  /** Validasi form; mengembalikan pesan error atau null bila valid. */
-  const validate = (): string | null => {
-    if (isRichTextEmpty(instruction)) return "Perintah soal wajib diisi.";
-    if (richTextToPlain(text).length < 3) return "Teks soal minimal 3 karakter.";
-    if (isRichTextEmpty(explanation)) return "Pembahasan wajib diisi.";
-    const filled = answers.filter((a) => !isRichTextEmpty(a.text) || a.image_url || a.audio_url);
-    if (filled.length < 2) return "Minimal dua pilihan jawaban harus diisi.";
-    if (!filled.some((a) => a.label === correct))
-      return "Jawaban benar harus termasuk pilihan yang diisi.";
-    return null;
-  };
+  /**
+   * Semua field konten soal bersifat opsional (draft bebas): tidak ada
+   * validation blocker. Integritas struktural (label & kunci jawaban)
+   * tetap dijaga oleh payload builder dan skema database.
+   */
+  const validate = (): string | null => null;
+
+  /** Rich text kosong (mis. "<p><br></p>") disimpan sebagai kosong, bukan konten. */
+  const clean = (html: string): string => (isRichTextEmpty(html) ? "" : html.trim());
 
   const buildPayload = (): QuestionBankInput => ({
-    text: text.trim(),
-    instruction: instruction.trim() || null,
+    text: clean(text),
+    instruction: clean(instruction) || null,
     image_url: imageUrl,
     audio_url: audioUrl,
-    explanation: explanation.trim(),
+    explanation: clean(explanation),
     category,
     difficulty,
     lesson_id: lessonId === NO_LESSON ? null : lessonId,
@@ -224,7 +222,7 @@ export function QuestionForm({
     new_tags: newTags,
     answers: answers.map((a) => ({
       label: a.label,
-      text: a.text.trim(),
+      text: clean(a.text),
       image_url: a.image_url,
       audio_url: a.audio_url,
       is_correct: a.label === correct,

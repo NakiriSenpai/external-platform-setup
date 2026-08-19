@@ -545,8 +545,13 @@ export function QuestionForm({
       </div>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {!error && question && autosave.error ? (
+        <p className="text-sm text-destructive">{autosave.error}</p>
+      ) : null}
 
-      <div className="flex justify-end gap-2">
+      <div className="flex items-center justify-end gap-2">
+        {question ? <AutosaveIndicator status={autosave.status} className="mr-auto" /> : null}
+
         {onCancel ? (
           <Button type="button" size="sm" variant="outline" onClick={onCancel}>
             Batal

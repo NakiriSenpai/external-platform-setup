@@ -34,6 +34,7 @@ import type { ExamDifficulty } from "@/types/exam";
 import { ORIGIN_LABELS, type QuestionType, type QuestionVisibility } from "@/types/question-bank";
 import type { QuestionBankInput, QuestionSourceType } from "@/types/question-bank";
 import type { AnswerLabel, MediaSlot, QuestionFormValue } from "./question-types";
+import { audioDebug } from "@/lib/media/audio-debug";
 
 export type QuestionFormProps = {
   /** Exam pemilik soal (Exam Studio). Kosong bila dipakai dari Lesson Studio. */
@@ -115,6 +116,8 @@ export function QuestionForm({
   const updateQuestion = useUpdateQuestion();
   const pending = createQuestion.isPending || updateQuestion.isPending || submitting;
 
+  const questionId = question?.question_id ?? null;
+
   useEffect(() => {
     setError(null);
     if (question) {
@@ -169,7 +172,10 @@ export function QuestionForm({
       setAnswerMedia({});
       setCorrect("A");
     }
-  }, [question, defaultLessonId, resetKey]);
+    // Objek `question` dapat berganti referensi saat TanStack Query refetch on
+    // focus setelah Android Storage ditutup. Jangan reset/unmount file input
+    // untuk soal yang sama karena hasil native picker belum sempat dikirim.
+  }, [questionId, defaultLessonId, resetKey]);
 
   const setAnswer = (label: AnswerLabel, patch: Partial<AnswerState>) =>
     setAnswers((prev) => prev.map((a) => (a.label === label ? { ...a, ...patch } : a)));
@@ -235,20 +241,27 @@ export function QuestionForm({
   /** Simpan perubahan soal yang sudah ada (autosave, tanpa menutup form). */
   const persistExisting = async (value: typeof autosaveValue) => {
     if (!question) return;
-    console.info("[AUDIO DEBUG] autosave started", {
-      question_id: question.question_id,
-      has_question_audio: Boolean(value.payload.audio_url),
-      answer_audio_count: value.payload.answers.filter((answer) => Boolean(answer.audio_url)).length,
-    });
-    if (onSubmitQuestion) {
-      await onSubmitQuestion(value.payload, question.question_id);
-    } else {
-      await updateQuestion.mutateAsync({ id: question.question_id, input: value.payload });
+    audioDebug(
+      "18 AUTOSAVE_START",
+      `question_audio=${Boolean(value.payload.audio_url)}; answer_audio_count=${value.payload.answers.filter((answer) => Boolean(answer.audio_url)).length}`,
+    );
+    try {
+      if (onSubmitQuestion) {
+        await onSubmitQuestion(value.payload, question.question_id);
+      } else {
+        await updateQuestion.mutateAsync({ id: question.question_id, input: value.payload });
+      }
+      if (value.archived !== (question.is_archived ?? false)) {
+        await archiveQuestion.mutateAsync({ id: question.question_id, isArchived: value.archived });
+      }
+      audioDebug("19 AUTOSAVE_SUCCESS", "Audio tersimpan melalui autosave");
+    } catch (autosaveError) {
+      audioDebug(
+        "19 AUTOSAVE_FAIL",
+        autosaveError instanceof Error ? autosaveError.message : "Autosave gagal",
+      );
+      throw autosaveError;
     }
-    if (value.archived !== (question.is_archived ?? false)) {
-      await archiveQuestion.mutateAsync({ id: question.question_id, isArchived: value.archived });
-    }
-    console.info("[AUDIO DEBUG] autosave completed");
   };
 
   const autosave = useAutosave({
@@ -261,6 +274,10 @@ export function QuestionForm({
     question ? autosave.status : "idle",
     autosave.flush,
   );
+
+  useEffect(() => {
+    if (audioUrl) audioDebug("17 QUESTION_STATE_CHANGED", "QuestionForm dirender dengan URL audio");
+  }, [audioUrl]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -359,9 +376,8 @@ export function QuestionForm({
               url={audioUrl}
               uploadLabel="Unggah audio soal"
               onChange={(url) => {
-                console.info(`[AUDIO DEBUG] QuestionForm received audio URL=${Boolean(url)}`);
+                audioDebug("16 QUESTION_STATE_REQUEST", `has_url=${Boolean(url)}`);
                 setAudioUrl(url);
-                console.info("[AUDIO DEBUG] QuestionForm state update requested");
                 if (!url) setShowAudio(false);
               }}
             />
@@ -462,11 +478,11 @@ export function QuestionForm({
                       url={answer.audio_url}
                       uploadLabel="Unggah audio jawaban"
                       onChange={(url) => {
-                        console.info(
-                          `[AUDIO DEBUG] QuestionForm received answer audio label=${answer.label} has_url=${Boolean(url)}`,
+                        audioDebug(
+                          "16 ANSWER_STATE_REQUEST",
+                          `label=${answer.label}; has_url=${Boolean(url)}`,
                         );
                         setAnswer(answer.label, { audio_url: url });
-                        console.info("[AUDIO DEBUG] QuestionForm answer state update requested");
                       }}
                     />
                   </div>

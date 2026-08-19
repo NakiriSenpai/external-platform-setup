@@ -68,7 +68,20 @@ export function formatDuration(seconds: number): string {
  */
 export function acceptMime(kinds: MediaKind | MediaKind[]): string {
   const list = Array.isArray(kinds) ? kinds : [kinds];
-  return Array.from(new Set(list.map((kind) => `${kind}/*`))).join(",");
+  const values = list.flatMap((kind) => {
+    if (kind === "audio") {
+      // Sejumlah Android Documents Provider memberi audio MIME generik atau
+      // application/ogg. Ekstensi membuat file tetap muncul di native picker.
+      return [
+        "audio/*",
+        "application/ogg",
+        "application/octet-stream",
+        ...MEDIA_EXTENSIONS.audio.map((extension) => `.${extension}`),
+      ];
+    }
+    return ["image/*", ...MEDIA_EXTENSIONS.image.map((extension) => `.${extension}`)];
+  });
+  return Array.from(new Set(values)).join(",");
 }
 
 /** Nama file tanpa ekstensi, untuk keperluan tampilan. */

@@ -5,7 +5,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { RichText } from "@/components/common/rich-text";
 import { richTextToPlain } from "@/lib/rich-text";
 import { cn } from "@/lib/utils";

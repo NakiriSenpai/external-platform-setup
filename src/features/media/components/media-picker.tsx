@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { MediaPreview, UploadDropzone, UploadProgress } from "@/components/media";
+import { AudioDebugTrace } from "@/components/media/audio-debug-trace";
 import { useMediaUpload } from "@/hooks/media";
 import type { MediaAsset, MediaKind } from "@/types/media";
 import { audioDebug } from "@/lib/media/audio-debug";
@@ -32,6 +33,7 @@ export function MediaPicker({
 }: Props) {
   const [selected, setSelected] = useState<MediaAsset | null>(value);
   const kinds = useMemo(() => allowed, [allowed]);
+  const audioOnly = kinds.length === 1 && kinds[0] === "audio";
 
   const uploader = useMediaUpload({
     ...(folder ? { folder } : {}),
@@ -93,6 +95,7 @@ export function MediaPicker({
           onRetry={() => void uploader.retry()}
         />
       ) : null}
+      {audioOnly ? <AudioDebugTrace /> : null}
     </div>
   );
 }

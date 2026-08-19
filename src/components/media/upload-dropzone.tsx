@@ -6,11 +6,8 @@ import { acceptMime, formatFileSize } from "@/lib/media/utils";
 import { MEDIA_SIZE_LIMIT } from "@/lib/media/constants";
 import { getFileExtension } from "@/lib/media/utils";
 import {
-  AUDIO_DEBUG_EVENT,
   audioDebug,
   clearAudioDebug,
-  readAudioDebug,
-  type AudioDebugEntry,
 } from "@/lib/media/audio-debug";
 import type { MediaKind } from "@/types/media";
 
@@ -32,13 +29,10 @@ export function UploadDropzone({
   const lastFileRef = useRef("");
   const pickerOpenedRef = useRef(false);
   const [dragging, setDragging] = useState(false);
-  const [debugEntries, setDebugEntries] = useState<AudioDebugEntry[]>([]);
   const audioOnly = allowed.length === 1 && allowed[0] === "audio";
 
   useEffect(() => {
     if (!audioOnly) return;
-    setDebugEntries(readAudioDebug());
-    const refresh = () => setDebugEntries(readAudioDebug());
     const reportReturn = () => {
       if (!pickerOpenedRef.current) return;
       audioDebug("02 PICKER_RETURN", "Halaman aktif kembali; menunggu event input/change");
@@ -50,11 +44,9 @@ export function UploadDropzone({
         document.visibilityState === "hidden" ? "Storage dibuka" : "Halaman terlihat kembali",
       );
     };
-    window.addEventListener(AUDIO_DEBUG_EVENT, refresh);
     window.addEventListener("focus", reportReturn);
     document.addEventListener("visibilitychange", reportVisibility);
     return () => {
-      window.removeEventListener(AUDIO_DEBUG_EVENT, refresh);
       window.removeEventListener("focus", reportReturn);
       document.removeEventListener("visibilitychange", reportVisibility);
     };
@@ -144,20 +136,6 @@ export function UploadDropzone({
         onInput={handleFileInputEvent}
         onChange={handleFileInput}
       />
-      {audioOnly && debugEntries.length > 0 ? (
-        <details className="relative z-20 mt-2 w-full max-w-full text-left" open>
-          <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
-            Audio debug ({debugEntries.length})
-          </summary>
-          <ol className="mt-1 max-h-36 space-y-1 overflow-auto rounded-md border border-border bg-background p-2 text-[10px] text-muted-foreground">
-            {debugEntries.map((entry, index) => (
-              <li key={`${entry.at}-${index}`} className="break-words">
-                <strong className="text-foreground">[AUDIO DEBUG] {entry.stage}</strong> {entry.detail}
-              </li>
-            ))}
-          </ol>
-        </details>
-      ) : null}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import {
   Download,
   Image as ImageIcon,
   Music,
+  Trash2,
   Upload,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -22,23 +23,22 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  CATEGORY_LABELS,
-  EXAM_CATEGORIES,
-  EXAM_DIFFICULTY_LABELS,
-} from "@/features/exam/exam.constants";
-import {
   useArchiveBankQuestion,
   useBankQuestions,
-  useGrammarTags,
-  useTags,
+  useDeleteBankQuestion,
+  useQuestionReferences,
 } from "@/hooks/question-bank";
+import { ORIGIN_LABELS, SOURCE_LABELS, type QuestionBankFilters } from "@/types/question-bank";
 import {
-  ORIGIN_LABELS,
-  QUESTION_TYPE_LABELS,
-  SOURCE_LABELS,
-  VISIBILITY_LABELS,
-  type QuestionBankFilters,
-} from "@/types/question-bank";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { formatTanggal } from "@/utils/format";
 import { ImportBundleDialog } from "@/features/content-io/components/import-bundle-dialog";
 import { recordContentIoAudit } from "@/services/content/bundle/audit.service";
@@ -53,22 +53,17 @@ export function QuestionBankList() {
   const [filters, setFilters] = useState<QuestionBankFilters>({
     search: "",
     source: "semua",
-    grammar: "semua",
-    category: "semua",
-    difficulty: "semua",
     media: "semua",
-    questionType: "semua",
-    visibility: "semua",
-    tag: "semua",
     archived: "aktif",
     page: 1,
     pageSize: PAGE_SIZE,
   });
 
-  const grammarQuery = useGrammarTags();
-  const tagQuery = useTags();
   const bankQuery = useBankQuestions(filters);
   const archiveQuestion = useArchiveBankQuestion();
+  const deleteQuestion = useDeleteBankQuestion();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; text: string } | null>(null);
+  const referencesQuery = useQuestionReferences(deleteTarget?.id ?? null);
   const [importOpen, setImportOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
 
@@ -132,11 +127,11 @@ export function QuestionBankList() {
             id="qb-search"
             value={filters.search ?? ""}
             onChange={(e) => patch({ search: e.target.value })}
-            placeholder="Cari soal, grammar, tag, kategori, atau lesson"
+            placeholder="Cari soal, pembahasan, atau lesson"
           />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-1">
             <Label>Source</Label>
             <Select
@@ -151,65 +146,6 @@ export function QuestionBankList() {
               <SelectContent>
                 <SelectItem value="semua">Semua source</SelectItem>
                 {Object.entries(SOURCE_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1">
-            <Label>Grammar</Label>
-            <Select value={filters.grammar ?? "semua"} onValueChange={(v) => patch({ grammar: v })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="semua">Semua grammar</SelectItem>
-                {(grammarQuery.data ?? []).map((tag) => (
-                  <SelectItem key={tag.id} value={tag.slug}>
-                    {tag.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1">
-            <Label>Kategori</Label>
-            <Select
-              value={filters.category ?? "semua"}
-              onValueChange={(v) => patch({ category: v })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="semua">Semua kategori</SelectItem>
-                {EXAM_CATEGORIES.map((item) => (
-                  <SelectItem key={item} value={item}>
-                    {CATEGORY_LABELS[item] ?? item}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1">
-            <Label>Difficulty</Label>
-            <Select
-              value={filters.difficulty ?? "semua"}
-              onValueChange={(v) =>
-                patch({ difficulty: v as NonNullable<QuestionBankFilters["difficulty"]> })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="semua">Semua kesulitan</SelectItem>
-                {Object.entries(EXAM_DIFFICULTY_LABELS).map(([value, label]) => (
                   <SelectItem key={value} value={value}>
                     {label}
                   </SelectItem>
@@ -234,67 +170,6 @@ export function QuestionBankList() {
                 <SelectItem value="image">Image</SelectItem>
                 <SelectItem value="audio">Audio</SelectItem>
                 <SelectItem value="none">Tanpa media</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1">
-            <Label>Jenis Soal</Label>
-            <Select
-              value={filters.questionType ?? "semua"}
-              onValueChange={(v) =>
-                patch({ questionType: v as NonNullable<QuestionBankFilters["questionType"]> })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="semua">Semua jenis</SelectItem>
-                {Object.entries(QUESTION_TYPE_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1">
-            <Label>Visibility</Label>
-            <Select
-              value={filters.visibility ?? "semua"}
-              onValueChange={(v) =>
-                patch({ visibility: v as NonNullable<QuestionBankFilters["visibility"]> })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="semua">Semua visibility</SelectItem>
-                {Object.entries(VISIBILITY_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1">
-            <Label>Tag</Label>
-            <Select value={filters.tag ?? "semua"} onValueChange={(v) => patch({ tag: v })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="semua">Semua tag</SelectItem>
-                {(tagQuery.data ?? []).map((tag) => (
-                  <SelectItem key={tag.id} value={tag.slug}>
-                    {tag.name}
-                  </SelectItem>
-                ))}
               </SelectContent>
             </Select>
           </div>
@@ -343,23 +218,7 @@ export function QuestionBankList() {
                 <Badge variant="secondary">{SOURCE_LABELS[question.source_type]}</Badge>
                 <Badge variant="secondary">v{question.version}</Badge>
                 <Badge variant="outline">Origin: {ORIGIN_LABELS[question.origin]}</Badge>
-                <Badge variant="outline">{QUESTION_TYPE_LABELS[question.question_type]}</Badge>
-                <Badge variant="outline">{VISIBILITY_LABELS[question.visibility]}</Badge>
                 {question.is_archived ? <Badge variant="destructive">Arsip</Badge> : null}
-                <Badge variant="outline">
-                  {CATEGORY_LABELS[question.category] ?? question.category}
-                </Badge>
-                <Badge variant="outline">{EXAM_DIFFICULTY_LABELS[question.difficulty]}</Badge>
-                {question.grammar_tags.map((tag) => (
-                  <Badge key={tag.id} variant="outline">
-                    {tag.name}
-                  </Badge>
-                ))}
-                {(question.tags ?? []).map((tag) => (
-                  <Badge key={tag.id} variant="secondary">
-                    #{tag.name}
-                  </Badge>
-                ))}
                 {question.image_url ? (
                   <Badge variant="outline">
                     <ImageIcon className="mr-1 size-3" /> Image
@@ -373,7 +232,6 @@ export function QuestionBankList() {
               </div>
 
               <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
-                <p>Jenis: {QUESTION_TYPE_LABELS[question.question_type]}</p>
                 <p>Lesson: {question.lesson?.title ?? "-"}</p>
                 <p>Dibuat: {formatTanggal(question.created_at)}</p>
                 <p>
@@ -383,6 +241,7 @@ export function QuestionBankList() {
                 <p>Jumlah dipakai: {question.used_count}</p>
               </div>
 
+              <div className="flex flex-wrap gap-2">
               <Button
                 size="sm"
                 variant="outline"
@@ -410,6 +269,14 @@ export function QuestionBankList() {
                   </>
                 )}
               </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => setDeleteTarget({ id: question.id, text: question.text })}
+              >
+                <Trash2 className="mr-1 size-4" /> Hapus
+              </Button>
+              </div>
             </li>
           ))}
         </ul>
@@ -438,6 +305,47 @@ export function QuestionBankList() {
           </Button>
         </div>
       </div>
+
+      <AlertDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus soal dari Question Bank?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {referencesQuery.data && referencesQuery.data.exams + referencesQuery.data.lessons > 0
+                ? `Soal ini dipakai oleh ${referencesQuery.data.exams} exam dan ${referencesQuery.data.lessons} lesson. Soal akan dihapus dari Question Bank, namun tetap utuh di exam/lesson dan riwayat pengerjaan yang sudah ada.`
+                : "Soal ini belum dipakai exam atau lesson mana pun, sehingga akan dihapus permanen."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteQuestion.isPending}
+              onClick={async (event) => {
+                event.preventDefault();
+                if (!deleteTarget) return;
+                try {
+                  const mode = await deleteQuestion.mutateAsync(deleteTarget.id);
+                  toast.success(
+                    mode === "hard"
+                      ? "Soal dihapus permanen."
+                      : "Soal dihapus dari Question Bank. Exam yang sudah ada tetap utuh.",
+                  );
+                  setDeleteTarget(null);
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Gagal menghapus soal.");
+                }
+              }}
+            >
+              Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <ImportBundleDialog
         open={importOpen}

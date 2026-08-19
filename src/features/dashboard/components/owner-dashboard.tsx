@@ -20,6 +20,7 @@ import {
   StatGridSkeleton,
   type ShortcutItem,
 } from "@/features/dashboard/components/dashboard-primitives";
+import { Palette } from "lucide-react";
 import { usePlatformStats } from "@/hooks/platform";
 
 const MANAGEMENT: ShortcutItem[] = [
@@ -49,6 +50,12 @@ const CONTENT: ShortcutItem[] = [
     label: "Lesson Studio",
     description: "CMS materi pembelajaran.",
     icon: BookOpen,
+  },
+  {
+    to: "/owner/color-test",
+    label: "Bank Soal Tes Buta Warna",
+    description: "Pool soal tes buta warna setelah ujian.",
+    icon: Palette,
   },
   {
     to: "/owner/question-bank",

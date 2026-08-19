@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { AppLayout } from "@/layouts/app-layout";
+import { RequireOwner } from "@/middleware";
 import { ColorTestPoolManager } from "@/features/color-test/components/color-test-pool-manager";
 
 export const Route = createFileRoute("/owner_/color-test")({
@@ -24,5 +26,11 @@ export const Route = createFileRoute("/owner_/color-test")({
 });
 
 function ColorTestPoolPage() {
-  return <ColorTestPoolManager />;
+  return (
+    <AppLayout>
+      <RequireOwner>
+        <ColorTestPoolManager />
+      </RequireOwner>
+    </AppLayout>
+  );
 }

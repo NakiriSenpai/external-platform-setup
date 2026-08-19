@@ -8,9 +8,8 @@ import {
   Clock,
   Delete,
   FileText,
-  Flag,
-  Info,
   Loader2,
+  ShieldAlert,
   SkipForward,
   XCircle,
 } from "lucide-react";
@@ -31,12 +30,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/auth";
 import {
   useAnswerColorTest,
+  useCancelAttemptFromColorTest,
   useColorTestSession,
   useFinishColorTest,
   useSkipColorTest,
 } from "@/hooks/color-test";
 import { useExamTimer } from "@/features/exam-engine/hooks/use-exam-timer";
 import { WorkspaceShell } from "@/features/exam-engine/workspace/workspace-shell";
+import { useColorTestForeground } from "../hooks/use-color-test-foreground";
 import { cn } from "@/lib/utils";
 import type { ColorTestPayload } from "@/types/color-test";
 
@@ -57,17 +58,21 @@ export function ColorTestWorkspace({ attemptId }: { attemptId: string }) {
   const answerMutation = useAnswerColorTest(attemptId);
   const skipMutation = useSkipColorTest(attemptId);
   const finishMutation = useFinishColorTest(attemptId);
+  const cancelMutation = useCancelAttemptFromColorTest();
 
   const [index, setIndex] = useState(0);
   const [input, setInput] = useState("");
-  const [confirmFinish, setConfirmFinish] = useState(false);
   const [confirmExit, setConfirmExit] = useState(false);
   const finishedRef = useRef(false);
+  const leavingRef = useRef(false);
 
   const session = data?.session;
   const questions = useMemo(() => data?.questions ?? [], [data]);
   const running = session?.status === "in_progress";
   const done = Boolean(session) && !running;
+
+  // Proteksi foreground (blur + overlay) khusus halaman ini.
+  const { paused, resume } = useColorTestForeground(Boolean(running));
 
   const current = questions[index];
   const answeredCount = questions.filter((q) => q.answered).length;
@@ -93,7 +98,7 @@ export function ColorTestWorkspace({ attemptId }: { attemptId: string }) {
   }, [index]);
 
   const finalize = useCallback(
-    async (reason: "manual" | "exit" | "time_up") => {
+    async (reason: "manual" | "time_up") => {
       if (!session || finishedRef.current) return;
       finishedRef.current = true;
       try {
@@ -106,6 +111,25 @@ export function ColorTestWorkspace({ attemptId }: { attemptId: string }) {
     [finishMutation, session],
   );
 
+  /**
+   * Keluar paksa: Color Test dibatalkan DAN attempt ujian induk dibatalkan
+   * di server (transactional). Attempt tidak pernah dianggap selesai.
+   */
+  const cancelAttempt = useCallback(async () => {
+    if (leavingRef.current) return;
+    leavingRef.current = true;
+    finishedRef.current = true;
+    try {
+      await cancelMutation.mutateAsync(attemptId);
+      toast.info("Ujian dibatalkan karena Anda keluar dari tes buta warna.");
+      void navigate({ to: "/ujian" });
+    } catch (err) {
+      leavingRef.current = false;
+      finishedRef.current = false;
+      toast.error(err instanceof Error ? err.message : "Gagal membatalkan ujian.");
+    }
+  }, [attemptId, cancelMutation, navigate]);
+
   // Waktu habis: soal yang belum dijawab dinilai SALAH oleh server.
   useEffect(() => {
     if (running && isReady && remaining <= 0) void finalize("time_up");
@@ -115,10 +139,10 @@ export function ColorTestWorkspace({ attemptId }: { attemptId: string }) {
     if (done) finishedRef.current = true;
   }, [done]);
 
-  // Back Android/browser: konfirmasi dulu, keluar = GAGAL (dipersist di server).
+  // Back Android/browser: konfirmasi dulu; keluar = attempt DIBATALKAN.
   useBlocker({
     shouldBlockFn: () => {
-      if (!running) return false;
+      if (!running || leavingRef.current) return false;
       setConfirmExit(true);
       return true;
     },
@@ -140,11 +164,7 @@ export function ColorTestWorkspace({ attemptId }: { attemptId: string }) {
           <p className="font-medium text-foreground">
             {error instanceof Error ? error.message : "Tes buta warna tidak dapat dimuat."}
           </p>
-          <Button
-            onClick={() => void navigate({ to: "/ujian/hasil/$attemptId", params: { attemptId } })}
-          >
-            Lanjut ke hasil ujian
-          </Button>
+          <Button onClick={() => void navigate({ to: "/ujian" })}>Kembali ke daftar ujian</Button>
         </CardContent>
       </Card>
     );
@@ -154,7 +174,11 @@ export function ColorTestWorkspace({ attemptId }: { attemptId: string }) {
     return <ColorTestFinished payload={data as ColorTestPayload} attemptId={attemptId} />;
   }
 
-  const busy = answerMutation.isPending || skipMutation.isPending || finishMutation.isPending;
+  const busy =
+    answerMutation.isPending ||
+    skipMutation.isPending ||
+    finishMutation.isPending ||
+    cancelMutation.isPending;
 
   const submitAnswer = () => {
     if (!current || !input || busy) return;
@@ -182,6 +206,27 @@ export function ColorTestWorkspace({ attemptId }: { attemptId: string }) {
   return (
     <>
       <WorkspaceShell
+        contentBlurred={paused}
+        overlay={
+          paused ? (
+            <div className="pointer-events-auto fixed inset-0 z-[9999] flex items-center justify-center bg-foreground/60 p-6 backdrop-blur-md">
+              <div className="w-full max-w-sm space-y-4 rounded-3xl border border-border bg-card p-6 text-center shadow-2xl">
+                <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-warning/15 text-warning">
+                  <ShieldAlert className="size-6" />
+                </span>
+                <div className="space-y-1.5">
+                  <h2 className="text-base font-bold text-foreground">Tes masih berlangsung</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Anda meninggalkan halaman tes. Kembali ke tes untuk melanjutkan.
+                  </p>
+                </div>
+                <Button className="h-11 w-full rounded-xl font-semibold" onClick={resume}>
+                  Lanjutkan Tes
+                </Button>
+              </div>
+            </div>
+          ) : null
+        }
         header={
           <>
             <Button
@@ -195,23 +240,15 @@ export function ColorTestWorkspace({ attemptId }: { attemptId: string }) {
               <ArrowLeft className="size-4.5" />
             </Button>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[15px] font-bold leading-tight text-foreground">
+              <p className="truncate text-[13px] font-bold leading-tight text-foreground">
                 Tes Buta Warna
               </p>
             </div>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-8 shrink-0 rounded-lg px-2 text-primary"
-              onClick={() => setConfirmFinish(true)}
-            >
-              <Flag className="mr-1.5 size-4" /> Selesai
-            </Button>
 
-            {/* Statistik ringkas + progress */}
-            <div className="w-full min-w-0 space-y-2 pt-1">
-              <div className="grid grid-cols-5 gap-1.5 rounded-2xl border border-border bg-card p-2">
-                <Stat icon={FileText} label="Soal" value={`${index + 1} / ${questions.length}`} />
+            {/* Statistik ringkas + progress (satu-satunya tempat aturan ditampilkan) */}
+            <div className="w-full min-w-0 space-y-1.5">
+              <div className="grid grid-cols-5 gap-1 rounded-xl border border-border bg-card px-1.5 py-1.5">
+                <Stat icon={FileText} label="Soal" value={`${index + 1}/${questions.length}`} />
                 <Stat
                   icon={Clock}
                   label="Waktu"
@@ -220,7 +257,7 @@ export function ColorTestWorkspace({ attemptId }: { attemptId: string }) {
                 />
                 <Stat
                   icon={CheckCircle2}
-                  label="Minimal Lulus"
+                  label="Min. Lulus"
                   value={`${session.min_correct} Benar`}
                   tone="text-success"
                 />
@@ -237,7 +274,7 @@ export function ColorTestWorkspace({ attemptId }: { attemptId: string }) {
                   tone="text-warning"
                 />
               </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-primary-muted">
+              <div className="h-1 w-full overflow-hidden rounded-full bg-primary-muted">
                 <div
                   className="h-full rounded-full bg-primary transition-all"
                   style={{
@@ -249,154 +286,106 @@ export function ColorTestWorkspace({ attemptId }: { attemptId: string }) {
           </>
         }
         footer={
-          <div className="col-span-3 grid grid-cols-2 gap-2.5">
+          <div className="col-span-3 grid grid-cols-2 gap-2">
             <Button
               type="button"
               variant="outline"
               disabled={busy || !current}
-              className="h-auto flex-col rounded-2xl py-2.5"
+              className="h-11 flex-col gap-0 rounded-xl py-1"
               onClick={skip}
             >
-              <span className="flex items-center gap-1.5 text-sm font-semibold">
+              <span className="flex items-center gap-1.5 text-[13px] font-semibold">
                 <SkipForward className="size-4" /> Lewati
               </span>
-              <span className="text-[11px] font-normal text-muted-foreground">
+              <span className="text-[10px] font-normal text-muted-foreground">
                 Sisa {skipLeft} kali
               </span>
             </Button>
             <Button
               type="button"
               disabled={busy || !current || input.length === 0}
-              className="h-auto rounded-2xl py-2.5 text-sm font-semibold"
+              className="h-11 rounded-xl text-[13px] font-semibold"
               onClick={submitAnswer}
             >
-              {busy ? (
-                <Loader2 className="mr-1.5 size-4 animate-spin" />
-              ) : null}
+              {busy ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : null}
               Soal Berikutnya <ChevronRight className="ml-1 size-4" />
             </Button>
           </div>
         }
       >
-        <div className="mx-auto w-full max-w-md space-y-2.5">
-          <div className="flex items-start gap-2 rounded-2xl bg-primary-muted p-3 text-[12px] leading-relaxed text-foreground">
-            <Info className="mt-0.5 size-4 shrink-0 text-primary" />
-            <p>
-              Jawab {session.total_questions} soal tes buta warna. Minimal {session.min_correct}{" "}
-              jawaban benar untuk lulus, maksimal {maxWrong} salah, dan {session.max_skip} kali
-              lewati. Jika waktu habis atau batas tercapai, tes dinyatakan gagal.
-            </p>
-          </div>
-
+        <div className="mx-auto w-full max-w-md">
           {current ? (
             <Card className="rounded-2xl">
-              <CardContent className="space-y-3 p-3.5">
-                <div className="space-y-1">
-                  <p className="text-[15px] font-bold text-foreground">Perhatikan gambar berikut!</p>
-                  <p className="text-sm text-foreground">Angka berapa yang Anda lihat?</p>
-                </div>
+              <CardContent className="space-y-2.5 p-3">
+                <p className="text-[13px] font-semibold text-foreground">
+                  Angka berapa yang Anda lihat?
+                </p>
 
                 <img
                   src={current.image_url}
                   alt={`Soal tes buta warna ${index + 1}`}
                   draggable={false}
-                  className="mx-auto aspect-square w-full max-w-[20rem] rounded-full object-contain"
+                  className="mx-auto aspect-square w-full max-w-[min(58vw,13rem)] rounded-full object-contain sm:max-w-[15rem]"
                 />
 
-                <div className="flex items-start gap-2 rounded-xl bg-muted p-2.5 text-[12px] leading-relaxed text-muted-foreground">
-                  <Info className="mt-0.5 size-4 shrink-0 text-primary" />
-                  <p>
-                    Jika tidak dapat melihat angka dengan jelas, pilih jawaban yang menurut Anda
-                    paling sesuai.
-                  </p>
+                <div className="flex h-12 items-center justify-center rounded-xl bg-primary-muted text-2xl font-bold tabular-nums text-foreground">
+                  {input || <span className="text-muted-foreground">—</span>}
                 </div>
 
-                <div className="space-y-2">
-                  <p className="text-[13px] font-medium text-foreground">Masukkan jawaban Anda</p>
-                  <div className="flex h-16 items-center justify-center rounded-xl bg-primary-muted text-3xl font-bold tabular-nums text-foreground">
-                    {input || <span className="text-muted-foreground">—</span>}
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2">
-                    {KEYS.map((key) => (
-                      <KeypadButton
-                        key={key}
-                        disabled={busy || input.length >= 2}
-                        onClick={() => setInput((prev) => (prev + key).slice(0, 2))}
-                      >
-                        {key}
-                      </KeypadButton>
-                    ))}
+                <div className="grid grid-cols-3 gap-1.5">
+                  {KEYS.map((key) => (
                     <KeypadButton
-                      className="col-span-2"
+                      key={key}
                       disabled={busy || input.length >= 2}
-                      onClick={() => setInput((prev) => (prev + "0").slice(0, 2))}
+                      onClick={() => setInput((prev) => (prev + key).slice(0, 2))}
                     >
-                      0
+                      {key}
                     </KeypadButton>
-                    <KeypadButton
-                      variant="muted"
-                      disabled={busy || input.length === 0}
-                      onClick={() => setInput((prev) => prev.slice(0, -1))}
-                      aria-label="Hapus satu digit"
-                    >
-                      <Delete className="mx-auto size-5 text-primary" />
-                    </KeypadButton>
-                  </div>
+                  ))}
+                  <KeypadButton
+                    className="col-span-2"
+                    disabled={busy || input.length >= 2}
+                    onClick={() => setInput((prev) => (prev + "0").slice(0, 2))}
+                  >
+                    0
+                  </KeypadButton>
+                  <KeypadButton
+                    variant="muted"
+                    disabled={busy || input.length === 0}
+                    onClick={() => setInput((prev) => prev.slice(0, -1))}
+                    aria-label="Hapus satu digit"
+                  >
+                    <Delete className="mx-auto size-5 text-primary" />
+                  </KeypadButton>
                 </div>
               </CardContent>
             </Card>
           ) : (
             <Card>
-              <CardContent className="p-6 text-center text-sm text-muted-foreground">
-                Semua soal sudah dijawab. Tekan “Selesai” untuk menilai tes.
+              <CardContent className="p-5 text-center text-sm text-muted-foreground">
+                Menilai jawaban Anda…
               </CardContent>
             </Card>
           )}
         </div>
       </WorkspaceShell>
 
-      <AlertDialog open={confirmFinish} onOpenChange={setConfirmFinish}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Selesaikan Tes Buta Warna?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Jawaban yang sudah diberikan akan dinilai.
-              {questions.length - answeredCount > 0
-                ? ` Masih ada ${questions.length - answeredCount} soal yang belum dijawab dan akan dihitung salah.`
-                : ""}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(event) => {
-                event.preventDefault();
-                setConfirmFinish(false);
-                void finalize("manual");
-              }}
-            >
-              Selesaikan
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       <AlertDialog open={confirmExit} onOpenChange={setConfirmExit}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Keluar dari Tes Buta Warna?</AlertDialogTitle>
             <AlertDialogDescription>
-              Jika Anda keluar sekarang, tes buta warna pada attempt ujian ini dinyatakan gagal.
+              Jika Anda keluar sekarang, ujian ini akan dibatalkan dan tidak dapat dilanjutkan.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Tetap Mengerjakan</AlertDialogCancel>
             <AlertDialogAction
+              disabled={cancelMutation.isPending}
               onClick={(event) => {
                 event.preventDefault();
                 setConfirmExit(false);
-                void finalize("exit");
+                void cancelAttempt();
               }}
             >
               Keluar
@@ -407,6 +396,7 @@ export function ColorTestWorkspace({ attemptId }: { attemptId: string }) {
     </>
   );
 }
+
 
 function Stat({
   icon: Icon,

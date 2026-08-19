@@ -25,6 +25,7 @@ import { ATTEMPT_STATUS_LABELS } from "@/types/attempt";
 import { SubmitExamDialog } from "../components/exam-dialogs";
 import { AudioButton, AudioManagerProvider, useAudioManager } from "./audio-manager";
 import { CATEGORY_LABELS } from "@/features/exam/exam.constants";
+import { RichText } from "@/components/common/rich-text";
 import { cn } from "@/lib/utils";
 import { QuestionListDialog, type PaletteGroup, type PaletteItem } from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
@@ -437,6 +438,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
               total={questions.length}
               sectionTitle={section?.title}
               sectionInstruction={section?.instruction}
+              instruction={current.instruction}
               text={current.text}
               imageUrl={current.image_url}
               audioUrl={current.audio_url}
@@ -466,7 +468,7 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
                     onClick={() => choose(answer.label)}
                   >
                     {answer.text ? (
-                      <span className="block text-sm text-foreground">{answer.text}</span>
+                      <RichText html={answer.text} as="span" className="block text-sm text-foreground" />
                     ) : null}
                     {answer.image_url ? (
                       <img

@@ -21,6 +21,7 @@ import { listLessonTitles } from "@/services/lesson";
 import type { AnswerLabel } from "@/types/exam";
 import { OpenLessonDialog } from "../components/open-lesson-dialog";
 import { AudioButton, AudioManagerProvider } from "./audio-manager";
+import { RichText } from "@/components/common/rich-text";
 import { CATEGORY_LABELS } from "@/features/exam/exam.constants";
 import { QuestionListDialog, type PaletteGroup, type PaletteItem } from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
@@ -212,6 +213,7 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
               total={questions.length}
               sectionTitle={section?.title}
               sectionInstruction={section?.instruction}
+              instruction={question.instruction}
               text={question.text}
               imageUrl={question.image_url}
               audioUrl={question.audio_url}
@@ -251,9 +253,11 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
                       tone={isCorrect ? "correct" : isChosen ? "wrong" : undefined}
                     >
                       {answer.text ? (
-                        <span className="block whitespace-pre-wrap text-sm text-foreground">
-                          {answer.text}
-                        </span>
+                        <RichText
+                          html={answer.text}
+                          as="span"
+                          className="block text-sm text-foreground"
+                        />
                       ) : null}
                       {answer.image_url ? (
                         <img
@@ -288,9 +292,11 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
                 Pembahasan
               </p>
               <div className="space-y-3 p-4 text-sm">
-                <p className="whitespace-pre-wrap text-foreground">
-                  {question.explanation?.trim() ? question.explanation : "Belum ada pembahasan."}
-                </p>
+                {question.explanation?.trim() ? (
+                  <RichText html={question.explanation} className="text-foreground" />
+                ) : (
+                  <p className="text-foreground">Belum ada pembahasan.</p>
+                )}
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">

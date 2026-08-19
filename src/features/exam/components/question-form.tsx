@@ -235,6 +235,11 @@ export function QuestionForm({
   /** Simpan perubahan soal yang sudah ada (autosave, tanpa menutup form). */
   const persistExisting = async (value: typeof autosaveValue) => {
     if (!question) return;
+    console.info("[AUDIO DEBUG] autosave started", {
+      question_id: question.question_id,
+      has_question_audio: Boolean(value.payload.audio_url),
+      answer_audio_count: value.payload.answers.filter((answer) => Boolean(answer.audio_url)).length,
+    });
     if (onSubmitQuestion) {
       await onSubmitQuestion(value.payload, question.question_id);
     } else {
@@ -243,6 +248,7 @@ export function QuestionForm({
     if (value.archived !== (question.is_archived ?? false)) {
       await archiveQuestion.mutateAsync({ id: question.question_id, isArchived: value.archived });
     }
+    console.info("[AUDIO DEBUG] autosave completed");
   };
 
   const autosave = useAutosave({
@@ -353,7 +359,9 @@ export function QuestionForm({
               url={audioUrl}
               uploadLabel="Unggah audio soal"
               onChange={(url) => {
+                console.info(`[AUDIO DEBUG] QuestionForm received audio URL=${Boolean(url)}`);
                 setAudioUrl(url);
+                console.info("[AUDIO DEBUG] QuestionForm state update requested");
                 if (!url) setShowAudio(false);
               }}
             />
@@ -453,7 +461,13 @@ export function QuestionForm({
                       kind="audio"
                       url={answer.audio_url}
                       uploadLabel="Unggah audio jawaban"
-                      onChange={(url) => setAnswer(answer.label, { audio_url: url })}
+                      onChange={(url) => {
+                        console.info(
+                          `[AUDIO DEBUG] QuestionForm received answer audio label=${answer.label} has_url=${Boolean(url)}`,
+                        );
+                        setAnswer(answer.label, { audio_url: url });
+                        console.info("[AUDIO DEBUG] QuestionForm answer state update requested");
+                      }}
                     />
                   </div>
                 ) : null}

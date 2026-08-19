@@ -28,7 +28,7 @@ export function useMediaUpload(options: Options = {}) {
       const expected: MediaKind | null = allowed.length === 1 ? (allowed[0] as MediaKind) : null;
       const validation = validateMediaFile(target, allowed);
       if (!validation.valid) {
-        console.error("[media] validasi gagal", {
+        console.error("[AUDIO DEBUG] validation=FAIL", {
           name: target.name,
           type: target.type,
           size: target.size,
@@ -38,6 +38,7 @@ export function useMediaUpload(options: Options = {}) {
         setError(validation.message);
         return null;
       }
+      console.info("[AUDIO DEBUG] validation=PASS");
 
       const controller = new AbortController();
       controllerRef.current = controller;
@@ -47,6 +48,8 @@ export function useMediaUpload(options: Options = {}) {
 
       try {
         const kind = (getMediaType(target, expected) ?? expected ?? "image") as MediaKind;
+        console.info(`[AUDIO DEBUG] media type detection=${kind}`);
+        console.info("[AUDIO DEBUG] upload function called");
         const result = await uploadMedia(target, {
           ...(folder ? { folder } : {}),
           kind,
@@ -55,7 +58,9 @@ export function useMediaUpload(options: Options = {}) {
         });
         setAsset(result);
         setStatus("success");
+        console.info(`[AUDIO DEBUG] secure_url=${result.url}`);
         onSuccess?.(result);
+        console.info("[AUDIO DEBUG] upload hook state updated");
         return result;
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") {
@@ -63,7 +68,7 @@ export function useMediaUpload(options: Options = {}) {
           setError("Unggahan dibatalkan.");
           return null;
         }
-        console.error("[media] upload gagal", err);
+        console.error("[AUDIO DEBUG] upload failed", err);
         setStatus("error");
         setError(err instanceof Error ? err.message : "Gagal mengunggah media.");
         return null;

@@ -19,16 +19,16 @@ import {
 const EXPORT_PAGE_SIZE = 100;
 const MAX_EXPORT_ROWS = 2000;
 
-const QUESTION_SELECT = `id, external_key, text, image_url, audio_url, explanation,
+const QUESTION_SELECT = `id, external_key, text, instruction, image_url, audio_url, explanation,
   origin, version, is_archived, created_at, updated_at,
   lesson:lessons(slug),
-  answers:question_answers(label, text, image_url, audio_url, is_correct),
-  lesson:lessons(slug)`;
+  answers:question_answers(label, text, image_url, audio_url, is_correct)`;
 
 type RawExportQuestion = {
   id: string;
   external_key: string | null;
   text: string;
+  instruction: string | null;
   image_url: string | null;
   audio_url: string | null;
   explanation: string | null;
@@ -79,6 +79,7 @@ function toQuestionBundle(row: RawExportQuestion): QuestionBundle {
     key: row.external_key ?? `q_${row.id.replace(/-/g, "")}`,
     source_id: row.id,
     text: row.text ?? "",
+    instruction: row.instruction ?? null,
     origin: row.origin ?? "import",
     version: row.version ?? 1,
     explanation: row.explanation,
@@ -100,7 +101,7 @@ async function fetchQuestionsByIds(ids: string[]): Promise<QuestionBundle[]> {
       .from(QUESTION_TABLES.questions)
       .select(QUESTION_SELECT)
       .in("id", chunk);
-    if (error) throw new Error("Gagal memuat soal untuk export.");
+    if (error) throw new Error(`Gagal memuat soal untuk export: ${error.message}`);
     result.push(...((data as unknown as RawExportQuestion[] | null) ?? []).map(toQuestionBundle));
   }
   return result;
@@ -145,7 +146,9 @@ export async function buildQuestionBundle(scope: QuestionExportScope) {
 export async function buildExamBundle(examId: string, includeQuestions: boolean) {
   const { data: examRow, error } = await supabase
     .from(EXAM_TABLES.exams)
-    .select("id, title, slug, category, description, difficulty, passing_score, duration_minutes, shuffle_questions, shuffle_answers")
+    .select(
+      "id, title, slug, category, description, icon_url, difficulty, passing_score, duration_minutes, shuffle_questions, shuffle_answers",
+    )
     .eq("id", examId)
     .maybeSingle();
   if (error || !examRow) throw new Error("Exam tidak ditemukan.");
@@ -155,6 +158,7 @@ export async function buildExamBundle(examId: string, includeQuestions: boolean)
     slug: string;
     category: string;
     description: string | null;
+    icon_url: string | null;
     difficulty: ExamBundle["difficulty"];
     passing_score: number;
     duration_minutes: number;
@@ -199,6 +203,7 @@ export async function buildExamBundle(examId: string, includeQuestions: boolean)
     title: exam.title,
     category: exam.category,
     description: exam.description,
+    icon: mediaFromUrl(exam.icon_url),
     difficulty: exam.difficulty,
     passing_score: exam.passing_score,
     duration_minutes: exam.duration_minutes,

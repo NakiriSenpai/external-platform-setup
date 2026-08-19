@@ -50,6 +50,7 @@ export const questionBundleSchema = z.object({
   /** UUID asal — informasi saja, tidak dipakai untuk resolusi. */
   source_id: z.string().nullish(),
   text: z.string().max(8000).default(""),
+  instruction: z.string().max(4000).nullable().default(null),
   origin: originEnum.default("import"),
   version: z.number().int().min(1).default(1),
   explanation: z.string().max(8000).nullable().default(null),
@@ -82,6 +83,7 @@ export const examBundleSchema = z.object({
   title: z.string().min(1).max(200),
   category: z.string().min(1).max(80).default("umum"),
   description: z.string().max(4000).nullable().default(null),
+  icon: mediaRefSchema.default(null),
   difficulty: difficulty.default("sedang"),
   passing_score: z.number().int().min(0).max(100).default(70),
   duration_minutes: z.number().int().min(1).max(600).default(60),

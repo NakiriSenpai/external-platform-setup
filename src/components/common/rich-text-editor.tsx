@@ -91,19 +91,29 @@ export function RichTextEditor({
       )}
     >
       <div className="flex flex-wrap items-center gap-1 border-b border-border px-1.5 py-1">
-        {COMMANDS.map(({ cmd, label, Icon }) => (
-          <button
-            key={cmd}
-            type="button"
-            aria-label={label}
-            title={label}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => exec(cmd)}
-            className="grid size-7 place-items-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <Icon className="size-3.5" />
-          </button>
-        ))}
+        {COMMANDS.map(({ cmd, label, Icon }) => {
+          const isActive = active[cmd] ?? false;
+          return (
+            <button
+              key={cmd}
+              type="button"
+              aria-label={label}
+              aria-pressed={isActive}
+              data-active={isActive ? "true" : undefined}
+              title={label}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => exec(cmd)}
+              className={cn(
+                "grid size-7 place-items-center rounded transition-colors hover:bg-muted hover:text-foreground",
+                isActive
+                  ? "bg-primary/15 text-primary ring-1 ring-primary/40 hover:bg-primary/20 hover:text-primary"
+                  : "text-muted-foreground",
+              )}
+            >
+              <Icon className="size-3.5" />
+            </button>
+          );
+        })}
       </div>
       <div
         id={id}
@@ -114,8 +124,17 @@ export function RichTextEditor({
         contentEditable
         suppressContentEditableWarning
         data-placeholder={placeholder ?? ""}
-        onInput={(e) => onChange(sanitizeRichText(e.currentTarget.innerHTML))}
-        onBlur={(e) => onChange(sanitizeRichText(e.currentTarget.innerHTML))}
+        onInput={(e) => {
+          onChange(sanitizeRichText(e.currentTarget.innerHTML));
+          syncActive();
+        }}
+        onKeyUp={syncActive}
+        onMouseUp={syncActive}
+        onFocus={syncActive}
+        onBlur={(e) => {
+          onChange(sanitizeRichText(e.currentTarget.innerHTML));
+          setActive({});
+        }}
         onPaste={(e) => {
           e.preventDefault();
           const text = e.clipboardData.getData("text/plain");

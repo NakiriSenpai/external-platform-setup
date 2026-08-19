@@ -23,9 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CATEGORY_LABELS, EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import { useAttachQuestions } from "@/hooks/exam";
-import { useBankQuestions, useGrammarTags } from "@/hooks/question-bank";
+import { useBankQuestions } from "@/hooks/question-bank";
 import { SOURCE_LABELS, type QuestionBankFilters } from "@/types/question-bank";
 
 type Props = {
@@ -55,13 +54,11 @@ export function QuestionPickerDialog({
   const [filters, setFilters] = useState<QuestionBankFilters>({
     search: "",
     source: "semua",
-    grammar: "semua",
     page: 1,
     pageSize: 10,
   });
   const [selected, setSelected] = useState<string[]>([]);
 
-  const grammarQuery = useGrammarTags();
   const bankQuery = useBankQuestions(filters);
   const attach = useAttachQuestions();
 
@@ -139,22 +136,6 @@ export function QuestionPickerDialog({
                 ))}
               </SelectContent>
             </Select>
-            <Select
-              value={filters.grammar ?? "semua"}
-              onValueChange={(v) => setFilters((p) => ({ ...p, grammar: v, page: 1 }))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="semua">Semua grammar</SelectItem>
-                {(grammarQuery.data ?? []).map((tag) => (
-                  <SelectItem key={tag.id} value={tag.slug}>
-                    {tag.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           {bankQuery.isLoading ? (
@@ -177,17 +158,6 @@ export function QuestionPickerDialog({
                       <p className="text-sm font-medium">{question.text}</p>
                       <div className="flex flex-wrap gap-1">
                         <Badge variant="secondary">{SOURCE_LABELS[question.source_type]}</Badge>
-                        <Badge variant="outline">
-                          {CATEGORY_LABELS[question.category] ?? question.category}
-                        </Badge>
-                        <Badge variant="outline">
-                          {EXAM_DIFFICULTY_LABELS[question.difficulty]}
-                        </Badge>
-                        {question.grammar_tags.map((tag) => (
-                          <Badge key={tag.id} variant="outline">
-                            {tag.name}
-                          </Badge>
-                        ))}
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Dipakai {question.used_count} kali

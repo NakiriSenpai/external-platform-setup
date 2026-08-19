@@ -13,7 +13,7 @@ import {
   setStudentAnalyticsExcluded,
   type StudentRowsParams,
 } from "@/services/analytics/analytics-v2.service";
-import type { AnalyticsFilterState } from "@/types/analytics/analytics-v2";
+import type { AnalyticsFilterState, QuestionScope } from "@/types/analytics/analytics-v2";
 
 const STALE = 60_000;
 

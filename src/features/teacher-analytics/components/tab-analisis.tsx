@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Lightbulb } from "lucide-react";
 
@@ -11,7 +11,11 @@ import {
 } from "@/components/ui/select";
 import { useQuestionStats } from "@/hooks/analytics";
 import { cn } from "@/lib/utils";
-import type { AnalyticsExamRow, AnalyticsFilterState } from "@/types/analytics/analytics-v2";
+import type {
+  AnalyticsExamRow,
+  AnalyticsFilterState,
+  QuestionScope,
+} from "@/types/analytics/analytics-v2";
 
 import { angka, buildInsights, persen } from "../analytics-utils";
 import {
@@ -36,7 +40,8 @@ export function TabAnalisis({
   onExamChange: (examId: string) => void;
 }) {
   const examId = filters.examId ?? exams[0]?.exam_id ?? null;
-  const query = useQuestionStats(examId, filters);
+  const [scope, setScope] = useState<QuestionScope>("first");
+  const query = useQuestionStats(examId, filters, scope);
   const stats = query.data;
   const exam = exams.find((e) => e.exam_id === examId);
 
@@ -63,7 +68,11 @@ export function TabAnalisis({
     <div className="space-y-3">
       <SectionCard
         title="Analisis Soal"
-        description="Pilih satu set ujian untuk melihat pola jawaban"
+        description={
+          scope === "first"
+            ? "Pola jawaban — dihitung dari ATTEMPT PERTAMA tiap siswa (konsisten dengan nilai & kelulusan)."
+            : "Pola jawaban — dihitung dari SEMUA attempt selesai (bukan dasar nilai & kelulusan)."
+        }
         bodyClassName="p-3"
       >
         <Select value={examId ?? ""} onValueChange={onExamChange}>
@@ -76,6 +85,15 @@ export function TabAnalisis({
                 {e.exam_title}
               </SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+        <Select value={scope} onValueChange={(v) => setScope(v as QuestionScope)}>
+          <SelectTrigger className="mt-2 h-9 text-xs" aria-label="Pilih dasar perhitungan">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="first">Attempt pertama (default)</SelectItem>
+            <SelectItem value="all">Semua attempt selesai</SelectItem>
           </SelectContent>
         </Select>
       </SectionCard>
@@ -91,7 +109,7 @@ export function TabAnalisis({
       ) : (
         <>
           <StatTileGrid>
-            <StatTile tone="primary" label="Attempt Dianalisis" value={angka(stats?.attempts ?? 0)} />
+            <StatTile tone="primary" label={scope === "first" ? "Attempt Pertama" : "Semua Attempt"} value={angka(stats?.attempts ?? 0)} />
             <StatTile label="Jumlah Soal" value={angka(stats?.questions.length ?? 0)} />
             <StatTile
               tone="danger"

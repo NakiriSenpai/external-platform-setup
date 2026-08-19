@@ -1,6 +1,7 @@
 import { cloudinaryConfig } from "@/lib/cloudinary/client";
 import { getMediaType } from "@/lib/media/utils";
 import { validateMediaFile } from "@/lib/media/validation";
+import { audioDebug } from "@/lib/media/audio-debug";
 import type { MediaAsset, MediaKind, MediaUploadOptions } from "@/types/media";
 
 /** Cloudinary menyimpan audio pada resource type `video`. */
@@ -52,7 +53,7 @@ export function uploadMedia(file: File, options: MediaUploadOptions = {}): Promi
     const xhr = new XMLHttpRequest();
     const uploadUrl = cloudinaryConfig.uploadUrl(resourceTypeFor(kind));
     xhr.open("POST", uploadUrl);
-    console.info(`[AUDIO DEBUG] Cloudinary request started resource_type=${resourceTypeFor(kind)}`);
+    audioDebug("08 CLOUDINARY_REQUEST", `XHR dimulai; resource_type=${resourceTypeFor(kind)}`);
 
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) {
@@ -64,12 +65,10 @@ export function uploadMedia(file: File, options: MediaUploadOptions = {}): Promi
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           const response = JSON.parse(xhr.responseText) as Record<string, unknown>;
-          console.info("[AUDIO DEBUG] upload response", {
-            status: xhr.status,
-            public_id: String(response["public_id"] ?? ""),
-            resource_type: String(response["resource_type"] ?? ""),
-            format: String(response["format"] ?? ""),
-          });
+          audioDebug(
+            "09 CLOUDINARY_RESPONSE",
+            `status=${xhr.status}; resource_type=${String(response["resource_type"] ?? "")}; format=${String(response["format"] ?? "")}`,
+          );
           options.onProgress?.(100);
           resolve(toAsset(response, kind));
         } catch (error) {
@@ -77,11 +76,14 @@ export function uploadMedia(file: File, options: MediaUploadOptions = {}): Promi
         }
         return;
       }
-      console.error(`[AUDIO DEBUG] Cloudinary response failed status=${xhr.status}`);
+      audioDebug("09 CLOUDINARY_FAIL", `HTTP status=${xhr.status}`);
       reject(new Error(`Gagal mengunggah media (kode ${xhr.status}). Silakan coba lagi.`));
     };
 
-    xhr.onerror = () => reject(new Error("Koneksi terputus saat mengunggah media."));
+    xhr.onerror = () => {
+      audioDebug("09 CLOUDINARY_FAIL", "XHR network error");
+      reject(new Error("Koneksi terputus saat mengunggah media."));
+    };
     xhr.onabort = () => reject(new DOMException("Unggahan dibatalkan.", "AbortError"));
 
     if (options.signal) {

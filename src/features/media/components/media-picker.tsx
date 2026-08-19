@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { MediaPreview, UploadDropzone, UploadProgress } from "@/components/media";
 import { useMediaUpload } from "@/hooks/media";
 import type { MediaAsset, MediaKind } from "@/types/media";
+import { audioDebug } from "@/lib/media/audio-debug";
 
 type Props = {
   /** Jenis media yang boleh diunggah. */
@@ -37,15 +38,19 @@ export function MediaPicker({
     allowed: kinds,
     onSuccess: (asset) => {
       setSelected(asset);
-      console.info("[AUDIO DEBUG] MediaPicker state updated");
+      if (asset.kind === "audio") audioDebug("11 PICKER_STATE", "MediaPicker menyimpan asset audio");
       onChange?.(asset);
-      console.info("[AUDIO DEBUG] MediaPicker onChange emitted");
+      if (asset.kind === "audio") audioDebug("12 PICKER_CHANGE", "MediaPicker meneruskan asset ke field");
     },
   });
 
   useEffect(() => {
     setSelected(value);
   }, [value]);
+
+  useEffect(() => {
+    if (selected?.kind === "audio") audioDebug("13 PLAYER_RENDER", "MediaPreview audio dirender");
+  }, [selected]);
 
   // Jangan pernah gagal diam-diam: error unggah selalu tampil sebagai toast.
   useEffect(() => {

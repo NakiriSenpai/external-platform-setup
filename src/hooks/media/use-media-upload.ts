@@ -3,6 +3,7 @@ import { useCallback, useRef, useState } from "react";
 import { uploadMedia } from "@/services/media";
 import { validateMediaFile } from "@/lib/media/validation";
 import { getMediaType } from "@/lib/media/utils";
+import { audioDebug } from "@/lib/media/audio-debug";
 import type { MediaAsset, MediaKind, UploadStatus } from "@/types/media";
 
 type Options = {
@@ -28,6 +29,7 @@ export function useMediaUpload(options: Options = {}) {
       const expected: MediaKind | null = allowed.length === 1 ? (allowed[0] as MediaKind) : null;
       const validation = validateMediaFile(target, allowed);
       if (!validation.valid) {
+        audioDebug("06 VALIDATION_FAIL", validation.message);
         console.error("[AUDIO DEBUG] validation=FAIL", {
           name: target.name,
           type: target.type,
@@ -38,7 +40,7 @@ export function useMediaUpload(options: Options = {}) {
         setError(validation.message);
         return null;
       }
-      console.info("[AUDIO DEBUG] validation=PASS");
+      audioDebug("06 VALIDATION_PASS", "File diterima validator");
 
       const controller = new AbortController();
       controllerRef.current = controller;
@@ -48,8 +50,8 @@ export function useMediaUpload(options: Options = {}) {
 
       try {
         const kind = (getMediaType(target, expected) ?? expected ?? "image") as MediaKind;
-        console.info(`[AUDIO DEBUG] media type detection=${kind}`);
-        console.info("[AUDIO DEBUG] upload function called");
+        audioDebug("05 MEDIA_DETECTION", `kind=${kind}; expected=${expected ?? "auto"}`);
+        audioDebug("07 UPLOAD_CALLED", "uploadMedia dipanggil");
         const result = await uploadMedia(target, {
           ...(folder ? { folder } : {}),
           kind,
@@ -58,9 +60,9 @@ export function useMediaUpload(options: Options = {}) {
         });
         setAsset(result);
         setStatus("success");
-        console.info(`[AUDIO DEBUG] secure_url=${result.url}`);
+        audioDebug("09 CLOUDINARY_SUCCESS", "Cloudinary mengembalikan secure URL");
         onSuccess?.(result);
-        console.info("[AUDIO DEBUG] upload hook state updated");
+        audioDebug("10 UPLOAD_STATE", "Hook upload berstatus success");
         return result;
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") {
@@ -68,7 +70,7 @@ export function useMediaUpload(options: Options = {}) {
           setError("Unggahan dibatalkan.");
           return null;
         }
-        console.error("[AUDIO DEBUG] upload failed", err);
+        audioDebug("09 UPLOAD_FAIL", err instanceof Error ? err.message : "Upload gagal");
         setStatus("error");
         setError(err instanceof Error ? err.message : "Gagal mengunggah media.");
         return null;

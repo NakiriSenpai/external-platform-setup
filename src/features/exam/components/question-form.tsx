@@ -34,6 +34,7 @@ import type { ExamDifficulty } from "@/types/exam";
 import { ORIGIN_LABELS, type QuestionType, type QuestionVisibility } from "@/types/question-bank";
 import type { QuestionBankInput, QuestionSourceType } from "@/types/question-bank";
 import type { AnswerLabel, MediaSlot, QuestionFormValue } from "./question-types";
+import { audioDebug } from "@/lib/media/audio-debug";
 
 export type QuestionFormProps = {
   /** Exam pemilik soal (Exam Studio). Kosong bila dipakai dari Lesson Studio. */
@@ -235,11 +236,10 @@ export function QuestionForm({
   /** Simpan perubahan soal yang sudah ada (autosave, tanpa menutup form). */
   const persistExisting = async (value: typeof autosaveValue) => {
     if (!question) return;
-    console.info("[AUDIO DEBUG] autosave started", {
-      question_id: question.question_id,
-      has_question_audio: Boolean(value.payload.audio_url),
-      answer_audio_count: value.payload.answers.filter((answer) => Boolean(answer.audio_url)).length,
-    });
+    audioDebug(
+      "18 AUTOSAVE_START",
+      `question_audio=${Boolean(value.payload.audio_url)}; answer_audio_count=${value.payload.answers.filter((answer) => Boolean(answer.audio_url)).length}`,
+    );
     if (onSubmitQuestion) {
       await onSubmitQuestion(value.payload, question.question_id);
     } else {
@@ -248,7 +248,7 @@ export function QuestionForm({
     if (value.archived !== (question.is_archived ?? false)) {
       await archiveQuestion.mutateAsync({ id: question.question_id, isArchived: value.archived });
     }
-    console.info("[AUDIO DEBUG] autosave completed");
+    audioDebug("19 AUTOSAVE_SUCCESS", "Audio tersimpan melalui autosave");
   };
 
   const autosave = useAutosave({
@@ -359,9 +359,8 @@ export function QuestionForm({
               url={audioUrl}
               uploadLabel="Unggah audio soal"
               onChange={(url) => {
-                console.info(`[AUDIO DEBUG] QuestionForm received audio URL=${Boolean(url)}`);
+                audioDebug("16 QUESTION_STATE_REQUEST", `has_url=${Boolean(url)}`);
                 setAudioUrl(url);
-                console.info("[AUDIO DEBUG] QuestionForm state update requested");
                 if (!url) setShowAudio(false);
               }}
             />
@@ -462,11 +461,11 @@ export function QuestionForm({
                       url={answer.audio_url}
                       uploadLabel="Unggah audio jawaban"
                       onChange={(url) => {
-                        console.info(
-                          `[AUDIO DEBUG] QuestionForm received answer audio label=${answer.label} has_url=${Boolean(url)}`,
+                        audioDebug(
+                          "16 ANSWER_STATE_REQUEST",
+                          `label=${answer.label}; has_url=${Boolean(url)}`,
                         );
                         setAnswer(answer.label, { audio_url: url });
-                        console.info("[AUDIO DEBUG] QuestionForm answer state update requested");
                       }}
                     />
                   </div>

@@ -12,20 +12,20 @@ const SECTIONS: { title: string; body: string[] }[] = [
   {
     title: "Perhitungan",
     body: [
-      "Total skor dihitung dari attempt terbaru yang selesai pada setiap ujian. Setiap ujian hanya dihitung satu kali.",
+      "Skor berasal dari attempt pertama yang selesai pada setiap ujian. Attempt berikutnya tidak mengubah skor leaderboard.",
     ],
   },
   {
     title: "Ujian Dikerjakan",
     body: [
-      "Jumlah ujian dihitung berdasarkan jumlah set ujian unik yang memiliki attempt yang sudah selesai.",
+      "Jumlah ujian menghitung seluruh attempt yang sudah selesai. Attempt in progress dan cancelled tidak dihitung.",
     ],
   },
   {
     title: "Mode Leaderboard",
     body: [
       "Semua — Total skor dari seluruh ujian.",
-      "Per Exam — Menampilkan skor attempt terbaru yang selesai dari ujian yang dipilih.",
+      "Per Exam — Menampilkan jumlah attempt selesai dan skor attempt selesai pertama dari ujian yang dipilih.",
     ],
   },
   {

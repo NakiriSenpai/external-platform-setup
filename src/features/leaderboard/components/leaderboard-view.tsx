@@ -65,18 +65,18 @@ function RankRow({ row }: { row: LeaderboardRow }) {
         </div>
       </div>
 
-      <span className={NUM_CELL} title={formatScore(row.exams_taken)}>
-        {formatScore(row.exams_taken)}
+      <span className={NUM_CELL} title={formatScore(row.attempt_count)}>
+        {formatScore(row.attempt_count)}
       </span>
-      <span className={NUM_CELL} title={formatScore(row.total_score)}>
-        {formatScore(row.total_score)}
+      <span className={NUM_CELL} title={formatScore(row.first_attempt_score)}>
+        {formatScore(row.first_attempt_score)}
       </span>
     </li>
   );
 }
 
 
-/** Papan peringkat siswa dalam satu tenant — skor attempt selesai terbaru per ujian. */
+/** Papan peringkat: seluruh attempt selesai + skor attempt selesai pertama per ujian. */
 export function LeaderboardView() {
   const router = useRouter();
   const [examId, setExamId] = useState<string | null>(null);
@@ -183,10 +183,10 @@ export function LeaderboardView() {
         <Users className="mt-0.5 size-5 shrink-0 text-primary" />
         <div className="min-w-0 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
           <p>
-            Peringkat berdasarkan jumlah ujian yang telah dikerjakan dan total skor dari attempt
-            terbaru yang sudah selesai pada setiap ujian.
+            Jumlah ujian menghitung seluruh attempt yang sudah selesai. Skor berasal dari attempt
+            pertama yang selesai pada setiap ujian.
           </p>
-          <p>Setiap ujian hanya dihitung satu kali berdasarkan attempt terakhir yang selesai.</p>
+          <p>Attempt berikutnya menambah jumlah ujian, tetapi tidak mengubah skor leaderboard.</p>
         </div>
       </div>
 

@@ -82,11 +82,15 @@ export function useScoreMatrix(filters: AnalyticsFilterState) {
   });
 }
 
-export function useQuestionStats(examId: string | null, filters: AnalyticsFilterState) {
+export function useQuestionStats(
+  examId: string | null,
+  filters: AnalyticsFilterState,
+  scope: QuestionScope = "first",
+) {
   const enabled = useStaffEnabled();
   return useQuery({
-    queryKey: ["av2-questions", examId, filters],
-    queryFn: () => fetchQuestionStats(examId as string, filters),
+    queryKey: ["av2-questions", examId, filters, scope],
+    queryFn: () => fetchQuestionStats(examId as string, filters, scope),
     enabled: enabled && Boolean(examId),
     staleTime: STALE,
   });

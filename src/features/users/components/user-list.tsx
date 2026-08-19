@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { KeyRound, Pencil, Plus, Power, Search } from "lucide-react";
+import { History, KeyRound, Pencil, Plus, Power, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ import type { UserRoleFilter, UserStatusFilter } from "@/services/users";
 import { ROLE_LABELS } from "@/types/auth";
 import type { ProfileRow } from "@/types/database";
 import { ResetPasswordDialog } from "./reset-password-dialog";
+import { UserAttemptsDialog } from "./user-attempts-dialog";
 import { UserFormDialog } from "./user-form-dialog";
 
 const PAGE_SIZE = 10;
@@ -47,6 +48,7 @@ export function UserList({ scope }: Props) {
   const [page, setPage] = useState(1);
   const [formOpen, setFormOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
+  const [attemptsOpen, setAttemptsOpen] = useState(false);
   const [selected, setSelected] = useState<ProfileRow | null>(null);
 
   const params = useMemo(
@@ -259,6 +261,18 @@ export function UserList({ scope }: Props) {
                       >
                         <KeyRound className="mr-1 size-3.5" /> Reset Password
                       </Button>
+                      {scope === "owner" ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelected(user);
+                            setAttemptsOpen(true);
+                          }}
+                        >
+                          <History className="mr-1 size-3.5" /> Riwayat Ujian
+                        </Button>
+                      ) : null}
                       <Button
                         size="sm"
                         variant={user.is_active ? "secondary" : "default"}
@@ -311,6 +325,7 @@ export function UserList({ scope }: Props) {
         user={selected}
       />
       <ResetPasswordDialog open={resetOpen} onOpenChange={setResetOpen} user={selected} />
+      <UserAttemptsDialog open={attemptsOpen} onOpenChange={setAttemptsOpen} user={selected} />
     </section>
   );
 }

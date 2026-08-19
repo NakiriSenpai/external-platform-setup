@@ -20,11 +20,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { MediaPicker } from "@/features/media";
 import { RichTextEditor } from "@/components/common/rich-text-editor";
 import { richTextToPlain } from "@/lib/rich-text";
 import { useAutosave } from "@/hooks/use-autosave";
 import { AutosaveIndicator, useReportAutosave } from "./exam-autosave";
+import { ExamCategoryField } from "./exam-category-field";
+import { ExamIconField } from "./exam-icon-field";
 import { useUpdateExam } from "@/hooks/exam";
 import { useCreateExamCategory, useExamCategories } from "@/hooks/exam/use-exam-category";
 import { EXAM_DIFFICULTY_LABELS, toSlug } from "@/features/exam/exam.constants";
@@ -177,32 +178,7 @@ export function ExamDetailCard({ exam }: Props) {
         <Input id="exam-slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
       </div>
 
-      <div className="space-y-1.5">
-        <Label className="text-xs font-medium">Kategori</Label>
-        <div className="flex items-center gap-2">
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="min-w-0 flex-1">
-              <SelectValue placeholder="Pilih kategori" />
-            </SelectTrigger>
-            <SelectContent>
-              {categoryOptions.map((item) => (
-                <SelectItem key={item.slug} value={item.slug}>
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            type="button"
-            size="icon"
-            variant="outline"
-            aria-label="Tambah kategori"
-            onClick={() => setCategoryOpen(true)}
-          >
-            <Plus className="size-4" />
-          </Button>
-        </div>
-      </div>
+      <ExamCategoryField value={category} onChange={setCategory} />
 
       <div className="space-y-1.5">
         <Label className="text-xs font-medium">Deskripsi</Label>
@@ -256,43 +232,7 @@ export function ExamDetailCard({ exam }: Props) {
         </Select>
       </div>
 
-      <div className="space-y-1.5">
-        <Label className="text-xs font-medium">Icon Exam</Label>
-        {iconUrl && !changeIcon ? (
-          <div className="flex items-center gap-3 rounded-xl border border-border p-2">
-            <img
-              src={iconUrl}
-              alt="Pratinjau icon exam"
-              className="size-12 rounded-lg object-cover"
-              loading="lazy"
-            />
-            <Button type="button" size="sm" variant="outline" onClick={() => setChangeIcon(true)}>
-              Ganti Icon
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setIconUrl("");
-                setChangeIcon(false);
-              }}
-            >
-              <X className="size-4" />
-            </Button>
-          </div>
-        ) : (
-          <MediaPicker
-            allowed={["image"]}
-            folder="exam/icons"
-            label="Unggah icon exam"
-            onChange={(asset) => {
-              setIconUrl(asset?.url ?? "");
-              setChangeIcon(false);
-            }}
-          />
-        )}
-      </div>
+      <ExamIconField value={iconUrl} onChange={setIconUrl} />
 
       <div className="space-y-2 rounded-xl border border-border p-3">
         <div className="flex items-center justify-between gap-3">
@@ -317,37 +257,6 @@ export function ExamDetailCard({ exam }: Props) {
       {invalid ? <p className="text-sm text-destructive">{invalid}</p> : null}
       {autosave.error ? <p className="text-sm text-destructive">{autosave.error}</p> : null}
 
-      <Dialog open={categoryOpen} onOpenChange={setCategoryOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Tambah Kategori</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-1.5">
-            <Label htmlFor="new-category" className="text-xs font-medium">
-              Nama Kategori
-            </Label>
-            <Input
-              id="new-category"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-              placeholder="mis. EPS-TOPIK Reading"
-            />
-          </div>
-          <DialogFooter className="gap-2">
-            <Button type="button" variant="outline" onClick={() => setCategoryOpen(false)}>
-              Batal
-            </Button>
-            <Button
-              type="button"
-              disabled={createCategory.isPending}
-              onClick={() => void addCategory()}
-            >
-              {createCategory.isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-              Simpan
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </section>
   );
 }

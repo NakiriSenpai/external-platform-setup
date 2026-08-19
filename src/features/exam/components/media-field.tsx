@@ -4,7 +4,6 @@ import { RefreshCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MediaPicker } from "@/features/media/components/media-picker";
 import type { MediaKind } from "@/types/media";
-import { audioDebug } from "@/lib/media/audio-debug";
 
 type Props = {
   /** Jenis media ditentukan oleh slot/metadata field, bukan menebak dari URL. */
@@ -31,9 +30,7 @@ export function ExamMediaField({ kind, url, onChange, uploadLabel, folder = "exa
           label={uploadLabel}
           onChange={(asset) => {
             if (!asset) return;
-            if (kind === "audio") audioDebug("AUDIO_FIELD_CHANGE", "ExamMediaField menerima URL audio");
             onChange(asset.url);
-            if (kind === "audio") audioDebug("AUDIO_FORM_CHANGE", "URL audio diteruskan ke QuestionForm");
             setReplacing(false);
           }}
         />

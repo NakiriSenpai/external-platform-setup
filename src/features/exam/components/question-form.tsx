@@ -33,7 +33,6 @@ import { cn } from "@/lib/utils";
 import { ORIGIN_LABELS } from "@/types/question-bank";
 import type { QuestionBankInput, QuestionSourceType } from "@/types/question-bank";
 import type { AnswerLabel, MediaSlot, QuestionFormValue } from "./question-types";
-import { audioDebug } from "@/lib/media/audio-debug";
 
 export type QuestionFormProps = {
   /** Exam pemilik soal (Exam Studio). Kosong bila dipakai dari Lesson Studio. */
@@ -212,26 +211,13 @@ export function QuestionForm({
   /** Simpan perubahan soal yang sudah ada (autosave, tanpa menutup form). */
   const persistExisting = async (value: typeof autosaveValue) => {
     if (!question) return;
-    audioDebug(
-      "18 AUDIO_AUTOSAVE_START",
-      `question_audio=${Boolean(value.payload.audio_url)}; answer_audio_count=${value.payload.answers.filter((answer) => Boolean(answer.audio_url)).length}`,
-    );
-    try {
-      if (onSubmitQuestion) {
-        await onSubmitQuestion(value.payload, question.question_id);
-      } else {
-        await updateQuestion.mutateAsync({ id: question.question_id, input: value.payload });
-      }
-      if (value.archived !== (question.is_archived ?? false)) {
-        await archiveQuestion.mutateAsync({ id: question.question_id, isArchived: value.archived });
-      }
-      audioDebug("19 AUDIO_AUTOSAVE_SUCCESS", "Audio tersimpan melalui autosave");
-    } catch (autosaveError) {
-      audioDebug(
-        "19 AUDIO_AUTOSAVE_FAIL",
-        autosaveError instanceof Error ? autosaveError.message : "Autosave gagal",
-      );
-      throw autosaveError;
+    if (onSubmitQuestion) {
+      await onSubmitQuestion(value.payload, question.question_id);
+    } else {
+      await updateQuestion.mutateAsync({ id: question.question_id, input: value.payload });
+    }
+    if (value.archived !== (question.is_archived ?? false)) {
+      await archiveQuestion.mutateAsync({ id: question.question_id, isArchived: value.archived });
     }
   };
 
@@ -245,10 +231,6 @@ export function QuestionForm({
     question ? autosave.status : "idle",
     autosave.flush,
   );
-
-  useEffect(() => {
-    if (audioUrl) audioDebug("AUDIO_QUESTION_STATE_CHANGED", "QuestionForm dirender dengan URL audio");
-  }, [audioUrl]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -347,7 +329,6 @@ export function QuestionForm({
               url={audioUrl}
               uploadLabel="Unggah audio soal"
               onChange={(url) => {
-                audioDebug("AUDIO_QUESTION_STATE_REQUEST", `has_url=${Boolean(url)}`);
                 setAudioUrl(url);
                 if (!url) setShowAudio(false);
               }}
@@ -449,10 +430,6 @@ export function QuestionForm({
                       url={answer.audio_url}
                       uploadLabel="Unggah audio jawaban"
                       onChange={(url) => {
-                        audioDebug(
-                          "16 ANSWER_STATE_REQUEST",
-                          `label=${answer.label}; has_url=${Boolean(url)}`,
-                        );
                         setAnswer(answer.label, { audio_url: url });
                       }}
                     />

@@ -25,8 +25,15 @@ export function useMediaUpload(options: Options = {}) {
 
   const run = useCallback(
     async (target: File) => {
+      const expected: MediaKind | null = allowed.length === 1 ? (allowed[0] as MediaKind) : null;
       const validation = validateMediaFile(target, allowed);
       if (!validation.valid) {
+        console.error("[media] validasi gagal", {
+          name: target.name,
+          type: target.type,
+          size: target.size,
+          message: validation.message,
+        });
         setStatus("error");
         setError(validation.message);
         return null;
@@ -39,7 +46,7 @@ export function useMediaUpload(options: Options = {}) {
       setError(null);
 
       try {
-        const kind = getMediaType(target) as MediaKind;
+        const kind = (getMediaType(target, expected) ?? expected ?? "image") as MediaKind;
         const result = await uploadMedia(target, {
           ...(folder ? { folder } : {}),
           kind,
@@ -56,6 +63,7 @@ export function useMediaUpload(options: Options = {}) {
           setError("Unggahan dibatalkan.");
           return null;
         }
+        console.error("[media] upload gagal", err);
         setStatus("error");
         setError(err instanceof Error ? err.message : "Gagal mengunggah media.");
         return null;
@@ -65,6 +73,7 @@ export function useMediaUpload(options: Options = {}) {
     },
     [allowed, folder, onSuccess],
   );
+
 
   const upload = useCallback(
     async (target: File) => {

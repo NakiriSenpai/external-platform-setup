@@ -77,9 +77,12 @@ export function ExamHistory({ examId }: { examId: string }) {
             <Card key={attempt.id}>
               <CardContent className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-4">
                 <div className="min-w-0 space-y-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    Attempt #{numberById.get(attempt.id)}
+                  </p>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-lg font-semibold tabular-nums text-foreground">
-                      {Number(attempt.score ?? 0).toFixed(0)}
+                      {Number(attempt.score ?? 0).toFixed(0)} / 100
                     </span>
                     <Badge variant={attempt.passed ? "default" : "destructive"} className="gap-1.5">
                       {attempt.passed ? (

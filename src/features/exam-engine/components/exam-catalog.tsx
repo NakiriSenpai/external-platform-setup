@@ -9,6 +9,7 @@ import {
   Clock,
   Headphones,
   HelpCircle,
+  History,
   Lightbulb,
   Loader2,
   Target,
@@ -409,13 +410,29 @@ export function ExamCatalog() {
                   </span>
                 </div>
 
-                <Button
-                  className="mt-3 h-11 w-full rounded-xl"
-                  disabled={start.isPending}
-                  onClick={() => (active ? setContinueTarget(active.id) : setStartTarget(exam))}
-                >
-                  {active ? "Lanjutkan Ujian" : "Mulai Ujian"}
-                </Button>
+                <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+                  <Button
+                    className="h-11 w-full rounded-xl"
+                    disabled={start.isPending}
+                    onClick={() => (active ? setContinueTarget(active.id) : setStartTarget(exam))}
+                  >
+                    {active ? "Lanjutkan Ujian" : "Mulai Ujian"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-11 shrink-0 rounded-xl border-primary/40 px-3 text-primary"
+                    aria-label={`Riwayat ujian ${exam.title}`}
+                    onClick={() =>
+                      void navigate({
+                        to: "/ujian/riwayat/$examId",
+                        params: { examId: exam.id },
+                      })
+                    }
+                  >
+                    <History className="size-4 sm:mr-1.5" />
+                    <span className="hidden sm:inline">Riwayat</span>
+                  </Button>
+                </div>
               </article>
             );
           })}

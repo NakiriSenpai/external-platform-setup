@@ -28,7 +28,7 @@ function normalize(row: Record<string, unknown>): LeaderboardRow {
 
 /**
  * Peringkat siswa dalam tenant pemanggil.
- * Skor = SUM skor ATTEMPT PERTAMA per exam distinct (agregasi di database).
+ * Skor = SUM skor ATTEMPT SELESAI TERBARU per exam distinct (agregasi di database).
  * Tenant selalu ditentukan server-side dari profil pemanggil.
  */
 export async function getLeaderboard({

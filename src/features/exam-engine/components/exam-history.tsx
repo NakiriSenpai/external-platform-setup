@@ -36,9 +36,12 @@ export function ExamHistory({ examId }: { examId: string }) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const exam = (exams ?? []).find((e) => e.id === examId);
-  const rows = (attempts ?? [])
-    .filter((a) => a.exam_id === examId && a.status !== "in_progress")
-    .sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+  // Attempt milik user yang login (RLS memastikannya), khusus exam ini.
+  const ascending = (attempts ?? [])
+    .filter((a) => a.exam_id === examId && a.status !== "in_progress" && a.status !== "cancelled")
+    .sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
+  const numberById = new Map(ascending.map((a, i) => [a.id, i + 1]));
+  const rows = [...ascending].reverse();
 
   if (isLoading) {
     return (
@@ -74,9 +77,12 @@ export function ExamHistory({ examId }: { examId: string }) {
             <Card key={attempt.id}>
               <CardContent className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-4">
                 <div className="min-w-0 space-y-1">
+                  <p className="text-sm font-semibold text-foreground">
+                    Attempt #{numberById.get(attempt.id)}
+                  </p>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-lg font-semibold tabular-nums text-foreground">
-                      {Number(attempt.score ?? 0).toFixed(0)}
+                      {Number(attempt.score ?? 0).toFixed(0)} / 100
                     </span>
                     <Badge variant={attempt.passed ? "default" : "destructive"} className="gap-1.5">
                       {attempt.passed ? (
@@ -91,8 +97,8 @@ export function ExamHistory({ examId }: { examId: string }) {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Benar {attempt.correct_count} · Salah {attempt.wrong_count} · Kosong{" "}
-                    {attempt.skipped_count}
+                    Benar {attempt.correct_count} · Salah {attempt.wrong_count} · Tidak dijawab{" "}
+                    {attempt.skipped_count} · {attempt.total_questions} soal
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {dateFormatter.format(
@@ -123,7 +129,7 @@ export function ExamHistory({ examId }: { examId: string }) {
                       })
                     }
                   >
-                    Review
+                    Review Jawaban
                   </Button>
                   {isOwner ? (
                     <Button

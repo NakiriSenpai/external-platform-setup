@@ -12,26 +12,26 @@ const SECTIONS: { title: string; body: string[] }[] = [
   {
     title: "Perhitungan",
     body: [
-      "Total skor dihitung dari attempt pertama setiap ujian. Setiap ujian hanya dihitung satu kali.",
+      "Total skor dihitung dari attempt terbaru yang selesai pada setiap ujian. Setiap ujian hanya dihitung satu kali.",
     ],
   },
   {
     title: "Ujian Dikerjakan",
     body: [
-      "Jumlah ujian dihitung berdasarkan jumlah set ujian unik yang memiliki attempt pertama.",
+      "Jumlah ujian dihitung berdasarkan jumlah set ujian unik yang memiliki attempt yang sudah selesai.",
     ],
   },
   {
     title: "Mode Leaderboard",
     body: [
       "Semua — Total skor dari seluruh ujian.",
-      "Per Exam — Menampilkan skor attempt pertama dari ujian yang dipilih.",
+      "Per Exam — Menampilkan skor attempt terbaru yang selesai dari ujian yang dipilih.",
     ],
   },
   {
     title: "Peringkat Real-time",
     body: [
-      "Peringkat diperbarui secara otomatis ketika siswa menyelesaikan attempt pertama pada suatu ujian.",
+      "Peringkat diperbarui secara otomatis ketika siswa menyelesaikan ujian.",
     ],
   },
   {

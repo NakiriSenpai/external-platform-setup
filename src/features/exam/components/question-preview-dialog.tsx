@@ -6,6 +6,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { RichText } from "@/components/common/rich-text";
+import { richTextToPlain } from "@/lib/rich-text";
 import { cn } from "@/lib/utils";
 import type { ExamQuestionWithAnswers } from "@/types/exam";
 
@@ -19,26 +21,33 @@ type Props = {
 export function QuestionPreviewDialog({ open, onOpenChange, question }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[85vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Pratinjau Soal</DialogTitle>
           <DialogDescription>Tampilan soal seperti yang dilihat siswa.</DialogDescription>
         </DialogHeader>
 
         {question ? (
-          <div className="space-y-4">
-            <p className="text-sm font-medium">{question.text}</p>
+          <div className="min-w-0 space-y-4">
+            {richTextToPlain(question.instruction) ? (
+              <RichText
+                html={question.instruction}
+                className="text-xs font-medium text-muted-foreground"
+              />
+            ) : null}
+
+            <RichText html={question.text} className="text-sm font-medium" />
 
             {question.image_url ? (
               <img
                 src={question.image_url}
                 alt="Gambar soal"
                 loading="lazy"
-                className="w-full rounded-xl border border-border object-contain"
+                className="w-full max-w-full rounded-xl border border-border object-contain"
               />
             ) : null}
             {question.audio_url ? (
-              <audio controls src={question.audio_url} className="w-full">
+              <audio controls src={question.audio_url} className="w-full max-w-full">
                 <track kind="captions" />
               </audio>
             ) : null}
@@ -48,22 +57,22 @@ export function QuestionPreviewDialog({ open, onOpenChange, question }: Props) {
                 <li
                   key={answer.id ?? answer.label}
                   className={cn(
-                    "rounded-xl border border-border p-2.5 text-sm",
+                    "min-w-0 rounded-xl border border-border p-2.5 text-sm",
                     answer.is_correct && "border-primary bg-primary/10",
                   )}
                 >
                   <span className="mr-2 font-semibold">{answer.label}.</span>
-                  {answer.text}
+                  <RichText html={answer.text} as="span" className="inline" />
                   {answer.image_url ? (
                     <img
                       src={answer.image_url}
                       alt={`Gambar jawaban ${answer.label}`}
                       loading="lazy"
-                      className="mt-2 w-full rounded-lg border border-border object-contain"
+                      className="mt-2 w-full max-w-full rounded-lg border border-border object-contain"
                     />
                   ) : null}
                   {answer.audio_url ? (
-                    <audio controls src={answer.audio_url} className="mt-2 w-full">
+                    <audio controls src={answer.audio_url} className="mt-2 w-full max-w-full">
                       <track kind="captions" />
                     </audio>
                   ) : null}
@@ -71,10 +80,10 @@ export function QuestionPreviewDialog({ open, onOpenChange, question }: Props) {
               ))}
             </ul>
 
-            {question.explanation ? (
-              <div className="rounded-xl border border-dashed border-border p-3 text-xs text-muted-foreground">
+            {richTextToPlain(question.explanation) ? (
+              <div className="min-w-0 rounded-xl border border-dashed border-border p-3 text-xs text-muted-foreground">
                 <span className="font-medium text-foreground">Pembahasan: </span>
-                {question.explanation}
+                <RichText html={question.explanation} className="mt-1" />
               </div>
             ) : null}
 

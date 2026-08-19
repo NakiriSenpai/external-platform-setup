@@ -123,7 +123,11 @@ export type QuestionStatRow = {
   distribution: Record<string, number>;
 };
 
+/** Scope analisis soal: "first" = attempt pertama (default), "all" = semua attempt. */
+export type QuestionScope = "first" | "all";
+
 export type QuestionStats = {
+  scope: QuestionScope;
   attempts: number;
   questions: QuestionStatRow[];
 };

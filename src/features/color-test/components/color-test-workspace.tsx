@@ -77,7 +77,7 @@ export function ColorTestWorkspace({ attemptId }: { attemptId: string }) {
   const current = questions[index];
   const answeredCount = questions.filter((q) => q.answered).length;
   const skipLeft = Math.max(0, (session?.max_skip ?? 3) - (session?.skipped_count ?? 0));
-  const maxWrong = Math.max(0, (session?.total_questions ?? 12) - (session?.min_correct ?? 7));
+  const maxWrong = session?.max_wrong ?? 5;
 
   const {
     label: timerLabel,
@@ -477,10 +477,15 @@ function ColorTestFinished({
             </p>
           </div>
           <div className="grid grid-cols-3 gap-2 text-sm">
-            <Box label="Benar" value={`${s.correct_count}/${s.total_questions}`} />
+            <Box label="Benar" value={`${s.correct_count}`} />
             <Box label="Salah" value={`${s.wrong_count}`} />
             <Box label="Skip" value={`${s.skipped_count}/${s.max_skip}`} />
           </div>
+          <p className="text-xs text-muted-foreground">
+            Soal dikerjakan{" "}
+            {s.answered_count ?? s.correct_count + s.wrong_count + s.skipped_count} /{" "}
+            {s.total_questions}
+          </p>
           <Button
             className="w-full"
             onClick={() => void navigate({ to: "/ujian/hasil/$attemptId", params: { attemptId } })}

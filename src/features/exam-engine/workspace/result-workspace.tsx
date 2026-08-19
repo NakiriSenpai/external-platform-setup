@@ -200,17 +200,20 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
                     </Badge>
                   </div>
                   <dl className="mt-3 space-y-3 text-sm">
-                    <Row
-                      label="Benar"
-                      value={`${colorSession.correct_count} / ${colorSession.total_questions}`}
-                    />
-                    <Row
-                      label="Salah"
-                      value={`${colorSession.wrong_count} / ${colorSession.total_questions}`}
-                    />
+                    <Row label="Benar" value={`${colorSession.correct_count}`} />
+                    <Row label="Salah" value={`${colorSession.wrong_count}`} />
                     <Row
                       label="Skip"
                       value={`${colorSession.skipped_count} / ${colorSession.max_skip}`}
+                    />
+                    <Row
+                      label="Soal dikerjakan"
+                      value={`${
+                        colorSession.answered_count ??
+                        colorSession.correct_count +
+                          colorSession.wrong_count +
+                          colorSession.skipped_count
+                      } / ${colorSession.total_questions}`}
                     />
                     <Row
                       label="Waktu"

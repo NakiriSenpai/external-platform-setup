@@ -69,8 +69,7 @@ export const QuestionStem = memo(function QuestionStem({
       ) : null}
 
       {audioUrl ? (
-        <AudioButton audioKey={`${questionId}:soal`} src={audioUrl} label="Dengarkan audio" />
-
+        <AudioButton audioKey={`${questionId}:soal`} src={audioUrl} label="Putar audio soal" />
       ) : null}
     </div>
   );

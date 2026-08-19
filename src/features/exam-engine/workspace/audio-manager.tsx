@@ -153,12 +153,14 @@ export function useAudioManager(): AudioContextValue {
 
 /**
  * Player audio premium (Sprint UI Final).
- * Pill compact: [ ▶  Dengarkan audio  ~~~~~ ]. Tanpa timeline, durasi, atau counter.
+ * Pill icon-only: [ ▶ ~~~~~ ]. Tanpa teks placeholder, timeline, durasi, atau counter.
+ * `label` hanya dipakai untuk aria-label/tooltip (aksesibilitas), tidak dirender
+ * sebagai teks. Caption yang ditulis author dirender terpisah oleh pemanggil.
  */
 export function AudioButton({
   audioKey,
   src,
-  label = "Dengarkan audio",
+  label = "Putar audio",
   size = "default",
 }: {
   audioKey: string;
@@ -180,8 +182,8 @@ export function AudioButton({
       disabled={disabled || isPlaying}
       onClick={() => play(audioKey, src)}
       className={cn(
-        "group inline-flex max-w-full items-center gap-2.5 rounded-full border transition-all duration-200",
-        compact ? "px-2.5 py-1.5" : "px-3 py-2",
+        "group inline-flex max-w-full items-center gap-2 rounded-full border transition-all duration-200",
+        compact ? "px-2 py-1.5" : "px-2.5 py-2",
         lockedState
           ? "border-border-subtle bg-surface text-muted-foreground"
           : isPlaying
@@ -203,9 +205,6 @@ export function AudioButton({
         ) : (
           <Play className={cn("fill-current", compact ? "size-3.5" : "size-4")} />
         )}
-      </span>
-      <span className={cn("truncate font-medium", compact ? "text-xs" : "text-sm")}>
-        {lockedState ? "Audio selesai" : label}
       </span>
       <AudioWave active={isPlaying} />
     </button>

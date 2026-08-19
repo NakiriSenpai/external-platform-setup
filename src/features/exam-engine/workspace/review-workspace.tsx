@@ -273,7 +273,7 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
                           size="sm"
                           audioKey={`review:${question.question_id}:${answer.label}`}
                           src={answer.audio_url}
-                          label={`Audio pilihan ${answerIndex + 1}`}
+                          label={`Putar audio pilihan ${answerIndex + 1}`}
                         />
                       ) : null}
                       <span className="flex flex-wrap gap-2 text-xs">

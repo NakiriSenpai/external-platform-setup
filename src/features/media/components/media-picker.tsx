@@ -44,6 +44,11 @@ export function MediaPicker({
     setSelected(value);
   }, [value]);
 
+  // Jangan pernah gagal diam-diam: error unggah selalu tampil sebagai toast.
+  useEffect(() => {
+    if (uploader.status === "error" && uploader.error) toast.error(uploader.error);
+  }, [uploader.status, uploader.error]);
+
   const clear = () => {
     uploader.reset();
     setSelected(null);
@@ -83,3 +88,4 @@ export function MediaPicker({
     </div>
   );
 }
+

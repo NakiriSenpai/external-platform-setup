@@ -91,13 +91,17 @@ export function ExamHistory({ examId }: { examId: string }) {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">
+                    Benar {attempt.correct_count} · Salah {attempt.wrong_count} · Kosong{" "}
+                    {attempt.skipped_count}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
                     {dateFormatter.format(
                       new Date(attempt.submitted_at ?? attempt.finished_at ?? attempt.created_at),
                     )}{" "}
                     · Durasi {formatDurasi(attempt.duration_seconds ?? 0)}
                   </p>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
                   <Button
                     size="sm"
                     onClick={() =>
@@ -108,6 +112,18 @@ export function ExamHistory({ examId }: { examId: string }) {
                     }
                   >
                     Detail
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      void navigate({
+                        to: "/ujian/review/$attemptId",
+                        params: { attemptId: attempt.id },
+                      })
+                    }
+                  >
+                    Review
                   </Button>
                   {isOwner ? (
                     <Button

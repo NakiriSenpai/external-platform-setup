@@ -9,6 +9,7 @@ import {
   Clock,
   Headphones,
   HelpCircle,
+  History,
   Lightbulb,
   Loader2,
   Target,

@@ -170,9 +170,9 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
                     "text-[11px] font-bold leading-tight tabular-nums [font-variant-numeric:tabular-nums] sm:text-sm",
                     s.text,
                   )}
-                  title={formatScore(row.exams_taken)}
+                  title={formatScore(row.attempt_count)}
                 >
-                  {formatScore(row.exams_taken)}
+                  {formatScore(row.attempt_count)}
                 </p>
               </div>
               <div className="min-w-0 px-0.5">
@@ -184,9 +184,9 @@ function PodiumSlot({ row, place }: { row: LeaderboardRow | undefined; place: Pl
                     "text-[11px] font-bold leading-tight tabular-nums [font-variant-numeric:tabular-nums] sm:text-sm",
                     s.text,
                   )}
-                  title={formatScore(row.total_score)}
+                  title={formatScore(row.first_attempt_score)}
                 >
-                  {formatScore(row.total_score)}
+                  {formatScore(row.first_attempt_score)}
                 </p>
               </div>
             </div>

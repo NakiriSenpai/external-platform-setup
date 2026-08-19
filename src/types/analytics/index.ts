@@ -10,10 +10,10 @@ export type LeaderboardRow = {
   username: string | null;
   avatar_url: string | null;
   role: string;
+  /** Jumlah seluruh attempt selesai pada scope filter aktif. */
+  attempt_count: number;
   /** Mode "all": SUM skor attempt pertama tiap exam. Mode "exam": skor attempt pertama. */
-  total_score: number;
-  /** Jumlah exam DISTINCT yang punya attempt pertama. */
-  exams_taken: number;
+  first_attempt_score: number;
   first_qualified_at: string | null;
   is_current_user: boolean;
   total_rows: number;

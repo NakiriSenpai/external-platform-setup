@@ -153,3 +153,14 @@ export async function updateColorTestQuestion(
     .eq("id", id);
   if (error) throw new Error(error.message);
 }
+
+/**
+ * Keluar paksa dari Color Test = attempt ujian induk DIBATALKAN.
+ * Transactional & server-side (lihat migration Sprint 26).
+ */
+export async function cancelAttemptFromColorTest(attemptId: string): Promise<void> {
+  const { error } = await supabase.rpc("cancel_exam_attempt_with_color_test", {
+    p_attempt_id: attemptId,
+  });
+  if (error) throw new Error(error.message);
+}

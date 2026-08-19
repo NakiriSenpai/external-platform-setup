@@ -403,6 +403,8 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
             onPrev={() => setActiveIndex((i) => Math.max(0, i - 1))}
             onNext={() => setActiveIndex((i) => Math.min(questions.length - 1, i + 1))}
             onOpenList={openQuestionList}
+            onSubmit={() => setConfirmSubmit(true)}
+            submitPending={submitting}
           />
         }
 

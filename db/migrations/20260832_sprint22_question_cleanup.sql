@@ -101,6 +101,8 @@ end;
 $$;
 
 drop index if exists public.questions_type_idx;
+drop index if exists public.questions_category_idx;
+drop index if exists public.questions_difficulty_idx;
 drop index if exists public.questions_visibility_idx;
 
 alter table public.questions

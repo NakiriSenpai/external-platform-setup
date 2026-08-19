@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type ChangeEvent, type DragEvent, type FormEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { UploadCloud } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { acceptMime, formatFileSize } from "@/lib/media/utils";
 import { MEDIA_SIZE_LIMIT } from "@/lib/media/constants";
@@ -37,66 +38,76 @@ export function UploadDropzone({
 
   useEffect(() => {
     if (!audioOnly) return;
+    audioDebug("AUDIO COMPONENT MOUNT", "UploadDropzone audio dipasang");
     const pending = readAudioPickerPending();
+    if (pending) pickerOpenedRef.current = true;
     if (pending && pending.documentId !== getAudioDocumentId()) {
       audioDebug(
-        "02 DOCUMENT_RELOADED",
+        "AUDIO DOCUMENT CHANGED",
         "Dokumen berubah saat native picker masih terbuka; File tidak dapat dikembalikan ke input lama",
       );
-      clearAudioPickerPending();
     }
-    const reportReturn = () => {
+    const reportReturn = (source: string) => {
       if (!pickerOpenedRef.current) return;
-      audioDebug("02 PICKER_RETURN", "Halaman aktif kembali; menunggu event input/change");
+      audioDebug(source, "Halaman aktif kembali dari Android Storage");
+      audioDebug("04 AUDIO_PICKER_RETURN", "Menunggu change event dari input yang sama");
     };
     const reportVisibility = () => {
       if (!pickerOpenedRef.current) return;
-      audioDebug(
-        "02 PICKER_VISIBILITY",
-        document.visibilityState === "hidden" ? "Storage dibuka" : "Halaman terlihat kembali",
-      );
+      if (document.visibilityState === "hidden") {
+        audioDebug("PAGE_HIDDEN", "Android Storage mengambil foreground");
+      } else {
+        reportReturn("PAGE_VISIBLE");
+      }
     };
-    window.addEventListener("focus", reportReturn);
+    const reportFocus = () => reportReturn("WINDOW_FOCUS");
+    const reportBlur = () => {
+      if (pickerOpenedRef.current) audioDebug("WINDOW_BLUR", "Window kehilangan focus");
+    };
+    const reportPageShow = () => reportReturn("PAGESHOW");
+    window.addEventListener("focus", reportFocus);
+    window.addEventListener("blur", reportBlur);
+    window.addEventListener("pageshow", reportPageShow);
     document.addEventListener("visibilitychange", reportVisibility);
     return () => {
-      window.removeEventListener("focus", reportReturn);
+      audioDebug("AUDIO COMPONENT UNMOUNT", "UploadDropzone audio dilepas");
+      window.removeEventListener("focus", reportFocus);
+      window.removeEventListener("blur", reportBlur);
+      window.removeEventListener("pageshow", reportPageShow);
       document.removeEventListener("visibilitychange", reportVisibility);
     };
   }, [audioOnly]);
 
-  const selectFile = (file: File | undefined, source: "input" | "drop") => {
-    audioDebug("03 FILE_EVENT", source === "input" ? "Native input/change terpanggil" : "File dropped");
+  const selectFile = (file: File | undefined, source: "change" | "drop") => {
     if (!file) {
-      audioDebug("03 FILE_MISSING", "Event terpanggil tetapi File tidak tersedia");
+      if (audioOnly) audioDebug("07 AUDIO_FILE_OBJECT", "FAIL — File object tidak tersedia");
       return;
+    }
+    if (audioOnly) {
+      audioDebug("07 AUDIO_FILE_OBJECT", "PASS — File object diterima");
+      audioDebug("08 AUDIO_FILE_NAME", file.name || "(tanpa nama)");
+      audioDebug("09 AUDIO_FILE_TYPE", file.type || "(kosong)");
+      audioDebug("10 AUDIO_FILE_SIZE", String(file.size));
+      audioDebug("11 AUDIO_EXTENSION", getFileExtension(file.name) || "(kosong)");
     }
     const fingerprint = `${file.name}:${file.size}:${file.lastModified}`;
     // Android/Chrome dapat mengirim input lalu change untuk pilihan yang sama.
     if (lastFileRef.current === fingerprint) {
-      audioDebug("03 FILE_DUPLICATE", "Event duplikat diabaikan");
+      if (audioOnly) audioDebug("AUDIO_FILE_DUPLICATE", "File yang sama diabaikan");
       return;
     }
     lastFileRef.current = fingerprint;
     pickerOpenedRef.current = false;
     clearAudioPickerPending();
-    audioDebug(
-      "04 FILE_RECEIVED",
-      `name=${file.name || "(tanpa nama)"}; type=${file.type || "(kosong)"}; size=${file.size}; ext=${getFileExtension(file.name) || "(kosong)"}`,
-    );
     onSelect(file);
   };
 
   const handleFileInput = (event: ChangeEvent<HTMLInputElement>) => {
-    selectFile(event.currentTarget.files?.[0], "input");
-    // Reset after reading so selecting the same file again still emits change.
-    event.currentTarget.value = "";
-    window.setTimeout(() => {
-      lastFileRef.current = "";
-    }, 1500);
-  };
-
-  const handleFileInputEvent = (event: FormEvent<HTMLInputElement>) => {
-    selectFile(event.currentTarget.files?.[0], "input");
+    if (audioOnly) {
+      audioDebug("05 AUDIO_CHANGE_EVENT", "change event terpanggil");
+      audioDebug("06 AUDIO_FILES_LENGTH", String(event.currentTarget.files?.length ?? 0));
+    }
+    selectFile(event.currentTarget.files?.[0], "change");
   };
 
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
@@ -114,6 +125,19 @@ export function UploadDropzone({
     )
     .join(" · ");
 
+  const openPicker = () => {
+    if (disabled) return;
+    if (audioOnly) {
+      clearAudioDebug();
+      audioDebug("00 AUDIO_UPLOADER_READY", "Sesi picker audio dimulai");
+      audioDebug("01 AUDIO_PICKER_BUTTON_CLICK", "Tombol picker ditekan oleh user");
+      markAudioPickerPending();
+      pickerOpenedRef.current = true;
+    }
+    inputRef.current?.click();
+    if (audioOnly) audioDebug("03 AUDIO_PICKER_OPEN", "input.click() selesai dipanggil sinkron");
+  };
+
   return (
     <div
       aria-disabled={disabled}
@@ -124,30 +148,26 @@ export function UploadDropzone({
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
       className={cn(
-        "relative flex min-h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border-2 border-dashed border-border bg-muted/30 px-4 py-6 text-center transition-colors",
+        "relative flex min-h-32 w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border-2 border-dashed border-border bg-muted/30 px-4 py-6 text-center transition-colors",
         dragging && "border-primary bg-primary/5",
         disabled && "pointer-events-none opacity-60",
       )}
     >
       <UploadCloud className="size-6 text-muted-foreground" aria-hidden />
-      <p className="text-sm font-medium text-foreground">{label}</p>
+      <Button type="button" variant="ghost" disabled={disabled} onClick={openPicker}>
+        {label}
+      </Button>
       <p className="text-xs text-muted-foreground">{hint}</p>
       <input
         ref={inputRef}
         type="file"
-        aria-label={label}
+        aria-label={`${label} file input`}
         disabled={disabled}
-        className="absolute inset-0 z-10 size-full cursor-pointer opacity-0 file:cursor-pointer"
+        className="sr-only"
         accept={acceptMime(allowed)}
         onClick={() => {
-          pickerOpenedRef.current = true;
-          if (audioOnly) {
-            clearAudioDebug();
-            markAudioPickerPending();
-            audioDebug("01 PICKER_OPEN", `Native picker dibuka; accept=${acceptMime(allowed)}`);
-          }
+          if (audioOnly) audioDebug("02 AUDIO_INPUT_CLICK", "click event diterima input ber-ref");
         }}
-        onInput={handleFileInputEvent}
         onChange={handleFileInput}
       />
     </div>

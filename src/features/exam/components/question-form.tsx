@@ -242,7 +242,7 @@ export function QuestionForm({
   const persistExisting = async (value: typeof autosaveValue) => {
     if (!question) return;
     audioDebug(
-      "18 AUTOSAVE_START",
+      "18 AUDIO_AUTOSAVE_START",
       `question_audio=${Boolean(value.payload.audio_url)}; answer_audio_count=${value.payload.answers.filter((answer) => Boolean(answer.audio_url)).length}`,
     );
     try {
@@ -254,10 +254,10 @@ export function QuestionForm({
       if (value.archived !== (question.is_archived ?? false)) {
         await archiveQuestion.mutateAsync({ id: question.question_id, isArchived: value.archived });
       }
-      audioDebug("19 AUTOSAVE_SUCCESS", "Audio tersimpan melalui autosave");
+      audioDebug("19 AUDIO_AUTOSAVE_SUCCESS", "Audio tersimpan melalui autosave");
     } catch (autosaveError) {
       audioDebug(
-        "19 AUTOSAVE_FAIL",
+        "19 AUDIO_AUTOSAVE_FAIL",
         autosaveError instanceof Error ? autosaveError.message : "Autosave gagal",
       );
       throw autosaveError;
@@ -276,7 +276,7 @@ export function QuestionForm({
   );
 
   useEffect(() => {
-    if (audioUrl) audioDebug("17 QUESTION_STATE_CHANGED", "QuestionForm dirender dengan URL audio");
+    if (audioUrl) audioDebug("AUDIO_QUESTION_STATE_CHANGED", "QuestionForm dirender dengan URL audio");
   }, [audioUrl]);
 
   const handleSubmit = async (event: FormEvent) => {
@@ -376,7 +376,7 @@ export function QuestionForm({
               url={audioUrl}
               uploadLabel="Unggah audio soal"
               onChange={(url) => {
-                audioDebug("16 QUESTION_STATE_REQUEST", `has_url=${Boolean(url)}`);
+                audioDebug("AUDIO_QUESTION_STATE_REQUEST", `has_url=${Boolean(url)}`);
                 setAudioUrl(url);
                 if (!url) setShowAudio(false);
               }}

@@ -40,9 +40,8 @@ export function MediaPicker({
     allowed: kinds,
     onSuccess: (asset) => {
       setSelected(asset);
-      if (asset.kind === "audio") audioDebug("11 PICKER_STATE", "MediaPicker menyimpan asset audio");
+      if (asset.kind === "audio") audioDebug("17 AUDIO_STATE_UPDATED", "MediaPicker menyimpan asset audio");
       onChange?.(asset);
-      if (asset.kind === "audio") audioDebug("12 PICKER_CHANGE", "MediaPicker meneruskan asset ke field");
     },
   });
 
@@ -51,7 +50,7 @@ export function MediaPicker({
   }, [value]);
 
   useEffect(() => {
-    if (selected?.kind === "audio") audioDebug("13 PLAYER_RENDER", "MediaPreview audio dirender");
+    if (selected?.kind === "audio") audioDebug("AUDIO_PLAYER_RENDER", "MediaPreview audio dirender");
   }, [selected]);
 
   useEffect(() => {

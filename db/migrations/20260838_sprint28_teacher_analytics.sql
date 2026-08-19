@@ -505,14 +505,18 @@ begin
 end;
 $$;
 
-grant execute on function public.analytics_score_matrix(date, date, uuid, uuid) to authenticated;
+grant execute on function public.analytics_score_matrix(date, date, uuid, uuid, uuid) to authenticated;
 
 -- 9. ANALISIS SOAL -----------------------------------------------------
 -- Membaca snapshot immutable (payload) hanya untuk kunci jawaban & teks soal.
+-- p_scope: 'first' (default, konsisten dengan analitik utama) atau 'all'.
+drop function if exists public.analytics_question_stats(uuid, date, date, uuid);
 create or replace function public.analytics_question_stats(
   p_exam_id uuid,
   p_from date default null,
   p_to date default null,
+  p_student_id uuid default null,
+  p_scope text default 'first',
   p_tenant_id uuid default null
 )
 returns jsonb
@@ -523,17 +527,23 @@ set search_path = public
 as $$
 declare
   v_tenant uuid := public.analytics_require_staff(p_tenant_id);
+  v_scope text := case when lower(coalesce(p_scope, 'first')) = 'all' then 'all' else 'first' end;
   v_result jsonb;
 begin
-  with scoped_attempts as (
-    select r.attempt_id
+  with base as (
+    select r.attempt_id, r.user_id, r.submitted_at,
+           row_number() over (partition by r.user_id order by r.submitted_at asc) as rn
     from public.exam_attempt_results r
     join public.profiles p on p.id = r.user_id
     where p.tenant_id is not distinct from v_tenant
       and p.role = 'siswa' and p.analytics_excluded = false
       and r.exam_id = p_exam_id
+      and (p_student_id is null or r.user_id = p_student_id)
       and (p_from is null or r.submitted_at >= p_from::timestamptz)
       and (p_to is null or r.submitted_at < (p_to + 1)::timestamptz)
+  ), scoped_attempts as (
+    select b.attempt_id from base b
+    where v_scope = 'all' or b.rn = 1
   ), keys as (
     select distinct on (q->>'question_id')
       (q->>'question_id')::uuid as question_id,
@@ -545,15 +555,15 @@ begin
     cross join lateral jsonb_array_elements(s.payload->'questions') q
     order by q->>'question_id', coalesce((q->>'index')::int, 0)
   ), answers as (
-    select a.question_id, a.selected_label
+    select a.attempt_id, a.question_id, a.selected_label
     from public.exam_attempt_answers a
     join scoped_attempts sa on sa.attempt_id = a.attempt_id
   ), stats as (
     select k.question_id, k.question_index, k.question_text, k.correct_label,
-           count(a.*)::int as attempts,
+           count(a.attempt_id)::int as attempts,
            count(*) filter (where a.selected_label is not null and a.selected_label = k.correct_label)::int as correct_count,
            count(*) filter (where a.selected_label is not null and a.selected_label <> k.correct_label)::int as wrong_count,
-           count(*) filter (where a.selected_label is null)::int as skipped_count,
+           count(*) filter (where a.attempt_id is not null and a.selected_label is null)::int as skipped_count,
            jsonb_build_object(
              'A', count(*) filter (where a.selected_label = 'A'),
              'B', count(*) filter (where a.selected_label = 'B'),

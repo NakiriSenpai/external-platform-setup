@@ -1,15 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Loader2, Plus, X } from "lucide-react";
-import { toast } from "sonner";
-
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -27,9 +16,7 @@ import { AutosaveIndicator, useReportAutosave } from "./exam-autosave";
 import { ExamCategoryField } from "./exam-category-field";
 import { ExamIconField } from "./exam-icon-field";
 import { useUpdateExam } from "@/hooks/exam";
-import { useCreateExamCategory, useExamCategories } from "@/hooks/exam/use-exam-category";
 import { EXAM_DIFFICULTY_LABELS, toSlug } from "@/features/exam/exam.constants";
-import type { ExamCategoryRow } from "@/services/exam/exam-category.service";
 import type { ExamDifficulty, ExamRow } from "@/types/exam";
 
 type Props = { exam: ExamRow };
@@ -37,10 +24,6 @@ type Props = { exam: ExamRow };
 /** Kartu "Detail Exam" — form inline dengan autosave (tanpa tombol simpan manual). */
 export function ExamDetailCard({ exam }: Props) {
   const updateExam = useUpdateExam();
-  const { data: categoryRows } = useExamCategories();
-  const createCategory = useCreateExamCategory();
-  const categoryOptions = useMemo(() => categoryRows ?? [], [categoryRows]);
-
   const [title, setTitle] = useState(exam.title);
   const [slug, setSlug] = useState(exam.slug);
   const [category, setCategory] = useState(exam.category);
@@ -49,12 +32,8 @@ export function ExamDetailCard({ exam }: Props) {
   const [passingScore, setPassingScore] = useState(String(exam.passing_score));
   const [difficulty, setDifficulty] = useState<ExamDifficulty>(exam.difficulty);
   const [iconUrl, setIconUrl] = useState(exam.icon_url ?? "");
-  const [changeIcon, setChangeIcon] = useState(false);
   const [shuffleQuestions, setShuffleQuestions] = useState(exam.shuffle_questions);
   const [shuffleAnswers, setShuffleAnswers] = useState(exam.shuffle_answers);
-
-  const [categoryOpen, setCategoryOpen] = useState(false);
-  const [newCategory, setNewCategory] = useState("");
 
   useEffect(() => {
     setTitle(exam.title);
@@ -65,7 +44,6 @@ export function ExamDetailCard({ exam }: Props) {
     setPassingScore(String(exam.passing_score));
     setDifficulty(exam.difficulty);
     setIconUrl(exam.icon_url ?? "");
-    setChangeIcon(false);
     setShuffleQuestions(exam.shuffle_questions);
     setShuffleAnswers(exam.shuffle_answers);
   }, [exam.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -142,20 +120,6 @@ export function ExamDetailCard({ exam }: Props) {
     enabled: !invalid,
   });
   useReportAutosave(`exam-detail:${exam.id}`, autosave.status, autosave.flush);
-
-  const addCategory = async () => {
-    try {
-      const created = (await createCategory.mutateAsync({
-        label: newCategory,
-      })) as ExamCategoryRow;
-      setCategory(created.slug);
-      setNewCategory("");
-      setCategoryOpen(false);
-      toast.success("Kategori ditambahkan.");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Gagal menambah kategori.");
-    }
-  };
 
   return (
     <section className="min-w-0 space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm">

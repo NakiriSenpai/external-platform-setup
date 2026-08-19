@@ -10,6 +10,10 @@
 -- Tidak mengubah snapshot, scoring, timer, leaderboard, maupun color test.
 -- =====================================================================
 
+-- 0. INDEX PENDUKUNG (aditif, tidak mengubah data) ---------------------
+create index if not exists exam_attempt_results_user_exam_idx
+  on public.exam_attempt_results (user_id, exam_id, submitted_at asc);
+
 -- 1. FLAG SISWA UNTUK PERHITUNGAN ANALITIK -----------------------------
 alter table public.profiles
   add column if not exists analytics_excluded boolean not null default false;

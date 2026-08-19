@@ -13,10 +13,7 @@ import {
   type PaletteGroup,
 } from "@/features/exam-engine/workspace/question-list-dialog";
 import { AnswerShell, QuestionStem } from "@/features/exam-engine/workspace/question-stem";
-import {
-  WorkspaceBody,
-  WorkspaceShell,
-} from "@/features/exam-engine/workspace/workspace-shell";
+import { WorkspaceBody, WorkspaceShell } from "@/features/exam-engine/workspace/workspace-shell";
 import { cn } from "@/lib/utils";
 
 type Props = { examId: string };
@@ -60,8 +57,7 @@ export function ExamPreview({ examId }: Props) {
     return groups;
   }, [questions, sections, picked, flags]);
 
-  const exitPreview = () =>
-    void navigate({ to: "/owner/exam-studio/$examId", params: { examId } });
+  const exitPreview = () => void navigate({ to: "/owner/exam-studio/$examId", params: { examId } });
 
   if (examQuery.isLoading || questionsQuery.isLoading) {
     return <Skeleton className="h-64 w-full rounded-2xl" />;
@@ -89,8 +85,7 @@ export function ExamPreview({ examId }: Props) {
     );
   }
 
-  const toggleFlag = () =>
-    setFlags((prev) => ({ ...prev, [current.id]: !prev[current.id] }));
+  const toggleFlag = () => setFlags((prev) => ({ ...prev, [current.id]: !prev[current.id] }));
 
   return (
     <AudioManagerProvider attemptId={`preview:${examId}`} lockAfterPlay={false}>
@@ -201,9 +196,7 @@ export function ExamPreview({ examId }: Props) {
                     key={answer.id ?? answer.label}
                     index={answerIndex}
                     selected={picked[current.id] === answer.label}
-                    onClick={() =>
-                      setPicked((prev) => ({ ...prev, [current.id]: answer.label }))
-                    }
+                    onClick={() => setPicked((prev) => ({ ...prev, [current.id]: answer.label }))}
                   >
                     {answer.text ? (
                       <RichText

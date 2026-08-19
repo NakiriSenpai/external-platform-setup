@@ -39,11 +39,9 @@ export const publishContent = createServerFn({ method: "POST" })
     if (!row) throw new Error("Konten tidak ditemukan.");
 
     const contentTenantId = (row["tenant_id"] as string | null) ?? null;
-    // Publish SELALU tenant-scoped: caller wajib punya tenant, termasuk Owner.
-    if (!caller.tenantId) {
-      throw new Error("Owner belum memiliki tenant. Hubungi administrator platform.");
-    }
-    if (contentTenantId !== caller.tenantId) {
+    // Konten global (tenant_id null) boleh dipublish staf mana pun — konsisten
+    // dengan RLS existing `tenant_id is null or tenant_id = current_tenant_id()`.
+    if (contentTenantId !== null && contentTenantId !== caller.tenantId) {
       throw new Error("Konten ini bukan milik tenant Anda.");
     }
 
@@ -61,7 +59,9 @@ export const publishContent = createServerFn({ method: "POST" })
     // Re-publish / edit konten yang sudah published: tanpa notifikasi.
     if (wasPublished) return { published: true, notified: false, notifications: 0 };
 
-    const tenantId = caller.tenantId;
+    const tenantId = contentTenantId ?? caller.tenantId;
+    // Tanpa tenant context, notifikasi dilewati (publish tetap berhasil).
+    if (!tenantId) return { published: true, notified: false, notifications: 0 };
     const title = (row["title"] as string | null) ?? "";
 
     const payload =

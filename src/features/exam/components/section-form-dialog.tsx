@@ -139,9 +139,7 @@ export function SectionFormDialog({ open, onOpenChange, examId, section = null }
           ) : null}
 
           <DialogFooter className="items-center gap-2">
-            {section ? (
-              <AutosaveIndicator status={autosave.status} className="mr-auto" />
-            ) : null}
+            {section ? <AutosaveIndicator status={autosave.status} className="mr-auto" /> : null}
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Batal
             </Button>

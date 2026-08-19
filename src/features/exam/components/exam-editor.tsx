@@ -16,7 +16,6 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PublishGateButton } from "@/features/content-io/components/publish-gate-button";
 import {
   useDeleteQuestion,
   useDeleteSection,
@@ -41,6 +40,7 @@ import {
   useExamAutosaveStatus,
 } from "./exam-autosave";
 import { ExamDetailCard } from "./exam-detail-card";
+import { ExamPublishToggle } from "./exam-publish-toggle";
 import { QuestionForm } from "./question-form";
 import { QuestionPreviewDialog } from "./question-preview-dialog";
 import { SectionFormDialog } from "./section-form-dialog";
@@ -163,11 +163,10 @@ function ExamEditorContent({
       <div className="space-y-3 rounded-2xl border border-border bg-card p-3 shadow-sm">
         <p className="text-sm font-semibold">Status &amp; Publikasi</p>
         <div className="grid gap-2 [&>button]:min-h-11 [&>button]:w-full sm:grid-cols-2">
-          <PublishGateButton
-            kind="exam"
-            entityId={exam.id}
+          <ExamPublishToggle
+            examId={exam.id}
             isPublished={exam.status === "published"}
-            label="Exam"
+            size="full"
           />
         </div>
         <p className="text-right text-xs text-muted-foreground">

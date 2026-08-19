@@ -28,7 +28,7 @@ import { useCreateQuestion, useUpdateQuestion } from "@/hooks/exam";
 import { useAutosave } from "@/hooks/use-autosave";
 import { AutosaveIndicator, useReportAutosave } from "./exam-autosave";
 import { useArchiveBankQuestion, useLessons } from "@/hooks/question-bank";
-import { ANSWER_LABELS, CATEGORY_LABELS, EXAM_CATEGORIES } from "@/features/exam/exam.constants";
+import { ANSWER_LABELS } from "@/features/exam/exam.constants";
 import { cn } from "@/lib/utils";
 import type { ExamDifficulty } from "@/types/exam";
 import { ORIGIN_LABELS, type QuestionType, type QuestionVisibility } from "@/types/question-bank";
@@ -98,7 +98,9 @@ export function QuestionForm({
   const [questionType, setQuestionType] = useState<QuestionType>("reading");
   const [visibility, setVisibility] = useState<QuestionVisibility>("private");
   const [isArchived, setIsArchived] = useState(false);
-  const [category, setCategory] = useState<string>("umum");
+  // Kategori soal tidak lagi diedit di Exam Studio (hanya di Detail Exam);
+  // nilai existing dipertahankan agar Question Bank/import-export tidak berubah.
+  const category = question?.category ?? "umum";
   const [difficulty, setDifficulty] = useState<ExamDifficulty>("sedang");
   const [lessonId, setLessonId] = useState<string>(NO_LESSON);
   const [explanation, setExplanation] = useState("");
@@ -128,7 +130,6 @@ export function QuestionForm({
       setVisibility(question.visibility ?? "private");
       setIsArchived(question.is_archived ?? false);
       setNewTags([]);
-      setCategory(question.category ?? "umum");
       setDifficulty(question.difficulty ?? "sedang");
       setLessonId(question.lesson_id ?? NO_LESSON);
       setExplanation(question.explanation ?? "");
@@ -161,7 +162,6 @@ export function QuestionForm({
       setQuestionType("reading");
       setVisibility("private");
       setIsArchived(false);
-      setCategory("umum");
       setDifficulty("sedang");
       setLessonId(defaultLessonId ?? NO_LESSON);
       setExplanation("");
@@ -173,7 +173,6 @@ export function QuestionForm({
 
   const setAnswer = (label: AnswerLabel, patch: Partial<AnswerState>) =>
     setAnswers((prev) => prev.map((a) => (a.label === label ? { ...a, ...patch } : a)));
-
 
   /** Tukar isi dua pilihan jawaban (urutan label A–D tetap sesuai skema). */
   const swapAnswers = (index: number, direction: -1 | 1) => {
@@ -208,28 +207,28 @@ export function QuestionForm({
   };
 
   const buildPayload = (): QuestionBankInput => ({
-      text: text.trim(),
-      instruction: instruction.trim() || null,
-      image_url: imageUrl,
-      audio_url: audioUrl,
-      explanation: explanation.trim(),
-      category,
-      difficulty,
-      lesson_id: lessonId === NO_LESSON ? null : lessonId,
-      question_type: questionType,
-      visibility,
-      source_type: sourceType,
-      created_from: createdFrom ?? examId ?? null,
-      grammar_tag_ids: tagIds,
-      tag_ids: generalTagIds,
-      new_tags: newTags,
-      answers: answers.map((a) => ({
-        label: a.label,
-        text: a.text.trim(),
-        image_url: a.image_url,
-        audio_url: a.audio_url,
-        is_correct: a.label === correct,
-      })),
+    text: text.trim(),
+    instruction: instruction.trim() || null,
+    image_url: imageUrl,
+    audio_url: audioUrl,
+    explanation: explanation.trim(),
+    category,
+    difficulty,
+    lesson_id: lessonId === NO_LESSON ? null : lessonId,
+    question_type: questionType,
+    visibility,
+    source_type: sourceType,
+    created_from: createdFrom ?? examId ?? null,
+    grammar_tag_ids: tagIds,
+    tag_ids: generalTagIds,
+    new_tags: newTags,
+    answers: answers.map((a) => ({
+      label: a.label,
+      text: a.text.trim(),
+      image_url: a.image_url,
+      audio_url: a.audio_url,
+      is_correct: a.label === correct,
+    })),
   });
 
   const invalid = validate();
@@ -393,27 +392,21 @@ export function QuestionForm({
                   <IconAction
                     label="Mode teks"
                     active={media === null}
-                    onClick={() =>
-                      setAnswerMedia((prev) => ({ ...prev, [answer.label]: null }))
-                    }
+                    onClick={() => setAnswerMedia((prev) => ({ ...prev, [answer.label]: null }))}
                   >
                     <TypeIcon className="size-3.5" />
                   </IconAction>
                   <IconAction
                     label="Mode gambar"
                     active={media === "image"}
-                    onClick={() =>
-                      setAnswerMedia((prev) => ({ ...prev, [answer.label]: "image" }))
-                    }
+                    onClick={() => setAnswerMedia((prev) => ({ ...prev, [answer.label]: "image" }))}
                   >
                     <ImageIcon className="size-3.5" />
                   </IconAction>
                   <IconAction
                     label="Mode audio"
                     active={media === "audio"}
-                    onClick={() =>
-                      setAnswerMedia((prev) => ({ ...prev, [answer.label]: "audio" }))
-                    }
+                    onClick={() => setAnswerMedia((prev) => ({ ...prev, [answer.label]: "audio" }))}
                   >
                     <Music className="size-3.5" />
                   </IconAction>
@@ -482,23 +475,6 @@ export function QuestionForm({
         </RadioGroup>
       </div>
 
-
-      <div className="space-y-1.5">
-        <Label className="text-xs font-medium">Kategori</Label>
-        <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="h-9 text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {EXAM_CATEGORIES.map((item) => (
-              <SelectItem key={item} value={item}>
-                {CATEGORY_LABELS[item] ?? item}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
       {question ? (
         <div className="space-y-2 rounded-lg border border-border p-2.5">
           <div className="flex items-center justify-between text-[11px] text-muted-foreground">
@@ -515,9 +491,7 @@ export function QuestionForm({
       ) : null}
 
       <div className="space-y-1.5">
-        <Label className="text-xs font-medium">
-          Pembahasan
-        </Label>
+        <Label className="text-xs font-medium">Pembahasan</Label>
         <RichTextEditor
           value={explanation}
           onChange={setExplanation}

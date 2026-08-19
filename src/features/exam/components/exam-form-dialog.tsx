@@ -21,10 +21,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { MediaPicker } from "@/features/media";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateExam, useUpdateExam } from "@/hooks/exam";
 import { useExamCategories } from "@/hooks/exam/use-exam-category";
+import { ExamCategoryField } from "./exam-category-field";
+import { ExamIconField } from "./exam-icon-field";
 import {
   EXAM_DIFFICULTY_LABELS,
   EXAM_STATUS_LABELS,
@@ -94,8 +95,6 @@ export function ExamFormDialog({ open, onOpenChange, exam = null }: Props) {
         : { ...prev, category: categoryOptions[0]!.slug },
     );
   }, [open, exam, categoryOptions]);
-
-
 
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -181,27 +180,11 @@ export function ExamFormDialog({ open, onOpenChange, exam = null }: Props) {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Kategori</Label>
-              <Select value={form.category} onValueChange={(v) => set("category", v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih kategori" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categoryOptions.map((category) => (
-                    <SelectItem key={category.slug} value={category.slug}>
-                      {category.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {categoryOptions.length === 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  Belum ada kategori. Tambahkan dari bagian “Kategori Ujian” di Exam Studio.
-                </p>
-              ) : null}
-
-            </div>
+            <ExamCategoryField
+              value={form.category}
+              onChange={(v) => set("category", v)}
+              labelClassName=""
+            />
 
             <div className="space-y-2">
               <Label>Tingkat Kesulitan</Label>
@@ -223,36 +206,7 @@ export function ExamFormDialog({ open, onOpenChange, exam = null }: Props) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Icon Exam</Label>
-            <p className="text-xs text-muted-foreground">
-              Icon tampil pada katalog ujian. Kosongkan untuk memakai icon bawaan kategori.
-            </p>
-            {form.iconUrl ? (
-              <div className="flex items-center gap-3 rounded-lg border p-2">
-                <img
-                  src={form.iconUrl}
-                  alt="Pratinjau icon exam"
-                  className="size-12 rounded-lg object-cover"
-                  loading="lazy"
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => set("iconUrl", "")}
-                >
-                  Ganti icon
-                </Button>
-              </div>
-            ) : (
-              <MediaPicker
-                allowed={["image"]}
-                folder="exam/icons"
-                onChange={(asset) => set("iconUrl", asset?.url ?? "")}
-              />
-            )}
-          </div>
+          <ExamIconField value={form.iconUrl} onChange={(url) => set("iconUrl", url)} />
 
           <div className="space-y-2">
             <Label htmlFor="exam-desc">Deskripsi</Label>

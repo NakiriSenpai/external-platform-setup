@@ -29,11 +29,11 @@ import { useExamCategories } from "@/hooks/exam/use-exam-category";
 import { EXAM_DIFFICULTY_LABELS, EXAM_STATUS_LABELS } from "@/features/exam/exam.constants";
 import type { ExamRow, ExamStatus } from "@/types/exam";
 import { ImportBundleDialog } from "@/features/content-io/components/import-bundle-dialog";
-import { PublishGateButton } from "@/features/content-io/components/publish-gate-button";
 import { recordContentIoAudit } from "@/services/content/bundle/audit.service";
 import { buildExamBundle, downloadBundle } from "@/services/content/bundle/bundle-export.service";
 import { duplicateExam } from "@/features/exam/exam-duplicate";
 import { ExamFormDialog } from "./exam-form-dialog";
+import { ExamPublishToggle } from "./exam-publish-toggle";
 import heroIllustration from "@/assets/exam-studio-hero.png";
 
 const PAGE_SIZE = 10;
@@ -260,24 +260,18 @@ export function ExamList() {
               </div>
 
               <div className="flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
-                <span className="rounded-md bg-muted px-2 py-1">{categoryLabel(exam.category)}</span>
+                <span className="rounded-md bg-muted px-2 py-1">
+                  {categoryLabel(exam.category)}
+                </span>
                 <span className="rounded-md bg-muted px-2 py-1">
                   {EXAM_DIFFICULTY_LABELS[exam.difficulty]}
                 </span>
                 <span className="rounded-md bg-muted px-2 py-1">{exam.duration_minutes} menit</span>
-                <span className="rounded-md bg-muted px-2 py-1">
-                  Lulus {exam.passing_score}
-                </span>
+                <span className="rounded-md bg-muted px-2 py-1">Lulus {exam.passing_score}</span>
               </div>
 
               <div className="flex flex-wrap items-center gap-1">
-                <PublishGateButton
-                  kind="exam"
-                  entityId={exam.id}
-                  isPublished={exam.status === "published"}
-                  label="Exam"
-                  variant="switch"
-                />
+                <ExamPublishToggle examId={exam.id} isPublished={exam.status === "published"} />
                 <div className="ml-auto flex items-center gap-0.5">
                   <Button size="icon" variant="ghost" aria-label="Kelola soal" asChild>
                     <Link to="/owner/exam-studio/$examId" params={{ examId: exam.id }}>

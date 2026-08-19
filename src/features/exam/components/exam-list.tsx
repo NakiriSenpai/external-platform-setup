@@ -260,14 +260,14 @@ export function ExamList() {
               </div>
 
               <div className="flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
-                <span className="rounded-md bg-muted px-2 py-1">{categoryLabel(exam.category)}</span>
+                <span className="rounded-md bg-muted px-2 py-1">
+                  {categoryLabel(exam.category)}
+                </span>
                 <span className="rounded-md bg-muted px-2 py-1">
                   {EXAM_DIFFICULTY_LABELS[exam.difficulty]}
                 </span>
                 <span className="rounded-md bg-muted px-2 py-1">{exam.duration_minutes} menit</span>
-                <span className="rounded-md bg-muted px-2 py-1">
-                  Lulus {exam.passing_score}
-                </span>
+                <span className="rounded-md bg-muted px-2 py-1">Lulus {exam.passing_score}</span>
               </div>
 
               <div className="flex flex-wrap items-center gap-1">

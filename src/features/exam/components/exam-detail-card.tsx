@@ -220,7 +220,6 @@ export function ExamDetailCard({ exam }: Props) {
 
       {invalid ? <p className="text-sm text-destructive">{invalid}</p> : null}
       {autosave.error ? <p className="text-sm text-destructive">{autosave.error}</p> : null}
-
     </section>
   );
 }

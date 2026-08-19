@@ -75,10 +75,21 @@ export function ExamIconField({ value, onChange }: Props) {
             className="size-12 shrink-0 rounded-lg object-cover"
             loading="lazy"
           />
-          <Button type="button" size="sm" variant="outline" onClick={() => inputRef.current?.click()}>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => inputRef.current?.click()}
+          >
             <Scissors className="mr-1 size-4" /> Ganti / Sesuaikan
           </Button>
-          <Button type="button" size="icon" variant="ghost" aria-label="Hapus icon" onClick={() => onChange("")}>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            aria-label="Hapus icon"
+            onClick={() => onChange("")}
+          >
             <X className="size-4" />
           </Button>
         </div>

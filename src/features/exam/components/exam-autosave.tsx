@@ -114,11 +114,7 @@ export function AutosaveIndicator({
     <span
       role="status"
       aria-live="polite"
-      className={cn(
-        "inline-flex items-center gap-1 text-[11px] font-medium",
-        item.tone,
-        className,
-      )}
+      className={cn("inline-flex items-center gap-1 text-[11px] font-medium", item.tone, className)}
     >
       <Icon className={cn("size-3.5", item.spin && "animate-spin")} />
       {item.text}

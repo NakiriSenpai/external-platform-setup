@@ -96,8 +96,6 @@ export function ExamFormDialog({ open, onOpenChange, exam = null }: Props) {
     );
   }, [open, exam, categoryOptions]);
 
-
-
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
@@ -182,7 +180,11 @@ export function ExamFormDialog({ open, onOpenChange, exam = null }: Props) {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <ExamCategoryField value={form.category} onChange={(v) => set("category", v)} labelClassName="" />
+            <ExamCategoryField
+              value={form.category}
+              onChange={(v) => set("category", v)}
+              labelClassName=""
+            />
 
             <div className="space-y-2">
               <Label>Tingkat Kesulitan</Label>

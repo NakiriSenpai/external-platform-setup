@@ -174,7 +174,6 @@ export function QuestionForm({
   const setAnswer = (label: AnswerLabel, patch: Partial<AnswerState>) =>
     setAnswers((prev) => prev.map((a) => (a.label === label ? { ...a, ...patch } : a)));
 
-
   /** Tukar isi dua pilihan jawaban (urutan label A–D tetap sesuai skema). */
   const swapAnswers = (index: number, direction: -1 | 1) => {
     const target = index + direction;
@@ -208,28 +207,28 @@ export function QuestionForm({
   };
 
   const buildPayload = (): QuestionBankInput => ({
-      text: text.trim(),
-      instruction: instruction.trim() || null,
-      image_url: imageUrl,
-      audio_url: audioUrl,
-      explanation: explanation.trim(),
-      category,
-      difficulty,
-      lesson_id: lessonId === NO_LESSON ? null : lessonId,
-      question_type: questionType,
-      visibility,
-      source_type: sourceType,
-      created_from: createdFrom ?? examId ?? null,
-      grammar_tag_ids: tagIds,
-      tag_ids: generalTagIds,
-      new_tags: newTags,
-      answers: answers.map((a) => ({
-        label: a.label,
-        text: a.text.trim(),
-        image_url: a.image_url,
-        audio_url: a.audio_url,
-        is_correct: a.label === correct,
-      })),
+    text: text.trim(),
+    instruction: instruction.trim() || null,
+    image_url: imageUrl,
+    audio_url: audioUrl,
+    explanation: explanation.trim(),
+    category,
+    difficulty,
+    lesson_id: lessonId === NO_LESSON ? null : lessonId,
+    question_type: questionType,
+    visibility,
+    source_type: sourceType,
+    created_from: createdFrom ?? examId ?? null,
+    grammar_tag_ids: tagIds,
+    tag_ids: generalTagIds,
+    new_tags: newTags,
+    answers: answers.map((a) => ({
+      label: a.label,
+      text: a.text.trim(),
+      image_url: a.image_url,
+      audio_url: a.audio_url,
+      is_correct: a.label === correct,
+    })),
   });
 
   const invalid = validate();
@@ -393,27 +392,21 @@ export function QuestionForm({
                   <IconAction
                     label="Mode teks"
                     active={media === null}
-                    onClick={() =>
-                      setAnswerMedia((prev) => ({ ...prev, [answer.label]: null }))
-                    }
+                    onClick={() => setAnswerMedia((prev) => ({ ...prev, [answer.label]: null }))}
                   >
                     <TypeIcon className="size-3.5" />
                   </IconAction>
                   <IconAction
                     label="Mode gambar"
                     active={media === "image"}
-                    onClick={() =>
-                      setAnswerMedia((prev) => ({ ...prev, [answer.label]: "image" }))
-                    }
+                    onClick={() => setAnswerMedia((prev) => ({ ...prev, [answer.label]: "image" }))}
                   >
                     <ImageIcon className="size-3.5" />
                   </IconAction>
                   <IconAction
                     label="Mode audio"
                     active={media === "audio"}
-                    onClick={() =>
-                      setAnswerMedia((prev) => ({ ...prev, [answer.label]: "audio" }))
-                    }
+                    onClick={() => setAnswerMedia((prev) => ({ ...prev, [answer.label]: "audio" }))}
                   >
                     <Music className="size-3.5" />
                   </IconAction>
@@ -482,7 +475,6 @@ export function QuestionForm({
         </RadioGroup>
       </div>
 
-
       {question ? (
         <div className="space-y-2 rounded-lg border border-border p-2.5">
           <div className="flex items-center justify-between text-[11px] text-muted-foreground">
@@ -499,9 +491,7 @@ export function QuestionForm({
       ) : null}
 
       <div className="space-y-1.5">
-        <Label className="text-xs font-medium">
-          Pembahasan
-        </Label>
+        <Label className="text-xs font-medium">Pembahasan</Label>
         <RichTextEditor
           value={explanation}
           onChange={setExplanation}

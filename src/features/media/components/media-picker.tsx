@@ -54,6 +54,14 @@ export function MediaPicker({
     if (selected?.kind === "audio") audioDebug("13 PLAYER_RENDER", "MediaPreview audio dirender");
   }, [selected]);
 
+  useEffect(() => {
+    if (!audioOnly) return;
+    audioDebug(
+      "00 AUDIO_UPLOADER_READY",
+      "Uploader audio aktif; bila trace berhenti setelah PICKER_OPEN/PICKER_RETURN maka input tidak menerima File",
+    );
+  }, [audioOnly]);
+
   // Jangan pernah gagal diam-diam: error unggah selalu tampil sebagai toast.
   useEffect(() => {
     if (uploader.status === "error" && uploader.error) toast.error(uploader.error);

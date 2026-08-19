@@ -10,6 +10,7 @@ import {
   type LessonBlockInput,
   type LessonBlockRow,
   type LessonDetailRow,
+  type GrammarTagRow,
   type LessonInput,
   type LessonListItem,
   type LessonListParams,

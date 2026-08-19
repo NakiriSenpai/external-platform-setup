@@ -10,6 +10,7 @@ import {
   getAttemptSession,
   listAvailableExams,
   listMyAttempts,
+  listUserAttempts,
   listMyResults,
   recordFullscreenViolation,
   saveAnswer,
@@ -34,9 +35,20 @@ export function useDeleteAttempt() {
     mutationFn: deleteAttempt,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["my-attempts"] });
+      void queryClient.invalidateQueries({ queryKey: ["user-attempts"] });
       void queryClient.invalidateQueries({ queryKey: ["my-results"] });
       void queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
     },
+  });
+}
+
+/** Riwayat attempt milik user lain (Owner only). */
+export function useUserAttempts(userId: string | null) {
+  return useQuery({
+    queryKey: ["user-attempts", userId],
+    queryFn: () => listUserAttempts(userId as string),
+    enabled: Boolean(userId),
+    staleTime: 10_000,
   });
 }
 

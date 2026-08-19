@@ -270,6 +270,7 @@ async function insertQuestion(
     .insert({
       external_key: externalKey,
       text: bundle.text,
+      instruction: bundle.instruction ?? null,
       image_url: bundle.image?.url ?? null,
       audio_url: bundle.audio?.url ?? null,
       explanation: bundle.explanation,
@@ -310,6 +311,7 @@ async function updateQuestionRow(
     .from(QUESTION_TABLES.questions)
     .update({
       text: bundle.text,
+      instruction: bundle.instruction ?? null,
       image_url: bundle.image?.url ?? null,
       audio_url: bundle.audio?.url ?? null,
       explanation: bundle.explanation,
@@ -502,6 +504,7 @@ export async function importExam(
       slug,
       category: exam.category,
       description: exam.description,
+      icon_url: exam.icon?.url ?? null,
       difficulty: exam.difficulty,
       passing_score: exam.passing_score,
       duration_minutes: exam.duration_minutes,

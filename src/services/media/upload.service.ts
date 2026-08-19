@@ -1,7 +1,6 @@
 import { cloudinaryConfig } from "@/lib/cloudinary/client";
 import { getMediaType } from "@/lib/media/utils";
 import { validateMediaFile } from "@/lib/media/validation";
-import { audioDebug } from "@/lib/media/audio-debug";
 import type { MediaAsset, MediaKind, MediaUploadOptions } from "@/types/media";
 
 /** Cloudinary menyimpan audio pada resource type `video`. */
@@ -53,7 +52,6 @@ export function uploadMedia(file: File, options: MediaUploadOptions = {}): Promi
     const xhr = new XMLHttpRequest();
     const uploadUrl = cloudinaryConfig.uploadUrl(resourceTypeFor(kind));
     xhr.open("POST", uploadUrl);
-    audioDebug("AUDIO_CLOUDINARY_REQUEST", `XHR dimulai; resource_type=${resourceTypeFor(kind)}`);
 
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) {
@@ -65,22 +63,18 @@ export function uploadMedia(file: File, options: MediaUploadOptions = {}): Promi
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           const response = JSON.parse(xhr.responseText) as Record<string, unknown>;
-          audioDebug("15 AUDIO_UPLOAD_RESPONSE", `PASS — HTTP ${xhr.status}`);
           options.onProgress?.(100);
           const asset = toAsset(response, kind);
-          audioDebug("16 AUDIO_SECURE_URL", asset.url);
           resolve(asset);
         } catch (error) {
           reject(error instanceof Error ? error : new Error("Respons Cloudinary tidak dapat dibaca."));
         }
         return;
       }
-      audioDebug("15 AUDIO_UPLOAD_RESPONSE", `FAIL — HTTP ${xhr.status}`);
       reject(new Error(`Gagal mengunggah media (kode ${xhr.status}). Silakan coba lagi.`));
     };
 
     xhr.onerror = () => {
-      audioDebug("15 AUDIO_UPLOAD_RESPONSE", "FAIL — XHR network error");
       reject(new Error("Koneksi terputus saat mengunggah media."));
     };
     xhr.onabort = () => reject(new DOMException("Unggahan dibatalkan.", "AbortError"));

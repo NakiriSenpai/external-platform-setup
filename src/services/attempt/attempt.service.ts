@@ -443,3 +443,23 @@ export async function deleteAttempt(attemptId: string): Promise<void> {
   const { error } = await supabase.rpc("delete_exam_attempt", { p_attempt_id: attemptId });
   if (error) throw new Error("Gagal menghapus riwayat ujian.");
 }
+
+/** Baris riwayat attempt milik user tertentu (Owner only, dijaga RLS). */
+export type UserAttemptRow = AttemptRow & { exam_title: string };
+
+/**
+ * Riwayat attempt satu user untuk kebutuhan User Management (Owner only).
+ * RLS `exam_attempts_owner_all` yang menentukan akses; klien hanya menampilkan.
+ */
+export async function listUserAttempts(userId: string): Promise<UserAttemptRow[]> {
+  const { data, error } = await supabase
+    .from(ATTEMPT_TABLES.attempts)
+    .select("*, exam:exams(title)")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) throw new Error("Gagal memuat riwayat ujian user.");
+  return ((data as (AttemptRow & { exam: { title: string } | null })[] | null) ?? []).map(
+    ({ exam, ...row }) => ({ ...row, exam_title: exam?.title ?? "Ujian" }),
+  );
+}

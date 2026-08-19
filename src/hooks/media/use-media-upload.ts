@@ -3,7 +3,6 @@ import { useCallback, useRef, useState } from "react";
 import { uploadMedia } from "@/services/media";
 import { validateMediaFile } from "@/lib/media/validation";
 import { getMediaType } from "@/lib/media/utils";
-import { audioDebug } from "@/lib/media/audio-debug";
 import type { MediaAsset, MediaKind, UploadStatus } from "@/types/media";
 
 type Options = {
@@ -28,24 +27,12 @@ export function useMediaUpload(options: Options = {}) {
     async (target: File) => {
       const expected: MediaKind | null = allowed.length === 1 ? (allowed[0] as MediaKind) : null;
       const detected = getMediaType(target, expected);
-      audioDebug(
-        "12 AUDIO_MEDIA_TYPE_DETECTED",
-        detected ? `PASS — kind=${detected}; expected=${expected ?? "auto"}` : "FAIL — kind=none",
-      );
       const validation = validateMediaFile(target, allowed);
       if (!validation.valid) {
-        audioDebug("13 AUDIO_VALIDATION", `FAIL — ${validation.message}`);
-        console.error("[AUDIO DEBUG] validation=FAIL", {
-          name: target.name,
-          type: target.type,
-          size: target.size,
-          message: validation.message,
-        });
         setStatus("error");
         setError(validation.message);
         return null;
       }
-      audioDebug("13 AUDIO_VALIDATION", "PASS — File diterima validator");
 
       const controller = new AbortController();
       controllerRef.current = controller;
@@ -55,7 +42,6 @@ export function useMediaUpload(options: Options = {}) {
 
       try {
         const kind = (detected ?? expected ?? "image") as MediaKind;
-        audioDebug("14 AUDIO_UPLOAD_START", "uploadMedia dipanggil");
         const result = await uploadMedia(target, {
           ...(folder ? { folder } : {}),
           kind,
@@ -72,7 +58,6 @@ export function useMediaUpload(options: Options = {}) {
           setError("Unggahan dibatalkan.");
           return null;
         }
-        audioDebug("15 AUDIO_UPLOAD_RESPONSE", `FAIL — ${err instanceof Error ? err.message : "Upload gagal"}`);
         setStatus("error");
         setError(err instanceof Error ? err.message : "Gagal mengunggah media.");
         return null;

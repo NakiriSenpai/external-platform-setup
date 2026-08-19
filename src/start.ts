@@ -24,6 +24,16 @@ const csrfMiddleware = createCsrfMiddleware({
   filter: (ctx) => ctx.handlerType === "serverFn",
 });
 
+// Menyertakan token sesi Supabase pada setiap pemanggilan server function,
+// sehingga server dapat memverifikasi identitas dan role pemanggil.
+const attachAuthMiddleware = createMiddleware({ type: "function" }).client(async ({ next }) => {
+  const { supabase } = await import("./lib/supabase/client");
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  return next(token ? { headers: { Authorization: `Bearer ${token}` } } : {});
+});
+
 export const startInstance = createStart(() => ({
   requestMiddleware: [errorMiddleware, csrfMiddleware],
+  functionMiddleware: [attachAuthMiddleware],
 }));

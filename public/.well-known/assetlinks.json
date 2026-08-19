@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.use_as_origin"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.ium.ium",
+      "sha256_cert_fingerprints": [
+        "56:53:EA:6F:97:F3:D6:85:11:EA:A3:5F:75:C5:4C:B5:F2:2C:4D:57:F0:32:59:4F:86:BC:B9:0F:8E:65:8E:F1"
+      ]
+    }
+  }
+]

@@ -11,6 +11,12 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { ThemeProvider, } from "@/contexts/theme-context";
+import { ErrorBoundary } from "@/components/common/error-boundary";
+import { registerServiceWorker } from "@/lib/pwa/register-sw";
+import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/contexts/auth/auth-context";
+import { AppConfigProvider } from "@/contexts/config/app-config-context";
 
 function NotFoundComponent() {
   return (
@@ -76,12 +82,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
+      },
+      { title: "I:UM 이음 — Platform Belajar Bahasa Korea" },
+      {
+        name: "description",
+        content: "Belajar bahasa Korea, hubungkan masa depan. Platform pembelajaran multi-tenant.",
+      },
+      { name: "theme-color", content: "#16162b" },
+      { name: "application-name", content: "I:UM" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "I:UM" },
+      { property: "og:title", content: "I:UM 이음 — Platform Belajar Bahasa Korea" },
+      {
+        property: "og:description",
+        content: "Belajar bahasa Korea, hubungkan masa depan. Platform pembelajaran multi-tenant.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
@@ -91,7 +110,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
   }),
   shellComponent: RootShell,
@@ -102,7 +123,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="id" className="dark" style={{ colorScheme: "dark" }}>
       <head>
         <HeadContent />
       </head>
@@ -114,13 +135,32 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Orientasi fisik dikunci PORTRAIT lewat manifest TWA + web app manifest.
+ * Tidak ada listener orientation global di web.
+ */
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    void registerServiceWorker();
+  }, []);
+
+
+
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <ThemeProvider>
+        <AuthProvider>
+          <AppConfigProvider>
+            <ErrorBoundary>
+              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+              <Outlet />
+            </ErrorBoundary>
+            <Toaster />
+          </AppConfigProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

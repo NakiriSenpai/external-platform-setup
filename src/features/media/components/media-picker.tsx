@@ -37,7 +37,9 @@ export function MediaPicker({
     allowed: kinds,
     onSuccess: (asset) => {
       setSelected(asset);
+      console.info("[AUDIO DEBUG] MediaPicker state updated");
       onChange?.(asset);
+      console.info("[AUDIO DEBUG] MediaPicker onChange emitted");
     },
   });
 

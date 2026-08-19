@@ -9,8 +9,10 @@ function resourceTypeFor(kind: MediaKind): "image" | "video" | "raw" {
 }
 
 function toAsset(data: Record<string, unknown>, kind: MediaKind): MediaAsset {
+  const url = String(data["secure_url"] ?? data["url"] ?? "");
+  if (!url) throw new Error("Cloudinary tidak mengembalikan URL media.");
   return {
-    url: String(data["secure_url"] ?? data["url"] ?? ""),
+    url,
     public_id: String(data["public_id"] ?? ""),
     ...(typeof data["width"] === "number" ? { width: data["width"] } : {}),
     ...(typeof data["height"] === "number" ? { height: data["height"] } : {}),
@@ -48,7 +50,9 @@ export function uploadMedia(file: File, options: MediaUploadOptions = {}): Promi
     if (options.folder) form.append("folder", options.folder);
 
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", cloudinaryConfig.uploadUrl(resourceTypeFor(kind)));
+    const uploadUrl = cloudinaryConfig.uploadUrl(resourceTypeFor(kind));
+    xhr.open("POST", uploadUrl);
+    console.info(`[AUDIO DEBUG] Cloudinary request started resource_type=${resourceTypeFor(kind)}`);
 
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) {
@@ -59,13 +63,21 @@ export function uploadMedia(file: File, options: MediaUploadOptions = {}): Promi
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
+          const response = JSON.parse(xhr.responseText) as Record<string, unknown>;
+          console.info("[AUDIO DEBUG] upload response", {
+            status: xhr.status,
+            public_id: String(response["public_id"] ?? ""),
+            resource_type: String(response["resource_type"] ?? ""),
+            format: String(response["format"] ?? ""),
+          });
           options.onProgress?.(100);
-          resolve(toAsset(JSON.parse(xhr.responseText) as Record<string, unknown>, kind));
-        } catch {
-          reject(new Error("Respons Cloudinary tidak dapat dibaca."));
+          resolve(toAsset(response, kind));
+        } catch (error) {
+          reject(error instanceof Error ? error : new Error("Respons Cloudinary tidak dapat dibaca."));
         }
         return;
       }
+      console.error(`[AUDIO DEBUG] Cloudinary response failed status=${xhr.status}`);
       reject(new Error(`Gagal mengunggah media (kode ${xhr.status}). Silakan coba lagi.`));
     };
 

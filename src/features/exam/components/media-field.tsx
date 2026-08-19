@@ -30,7 +30,9 @@ export function ExamMediaField({ kind, url, onChange, uploadLabel, folder = "exa
           label={uploadLabel}
           onChange={(asset) => {
             if (!asset) return;
+            console.info(`[AUDIO DEBUG] ExamMediaField received change kind=${kind}`);
             onChange(asset.url);
+            console.info("[AUDIO DEBUG] QuestionForm media change emitted");
             setReplacing(false);
           }}
         />

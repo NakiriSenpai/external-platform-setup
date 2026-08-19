@@ -15,6 +15,7 @@ import { useExamPerformance, useOverviewV2, useTrendV2 } from "@/hooks/analytics
 import type { AnalyticsFilterState } from "@/types/analytics/analytics-v2";
 
 import { angka, durasi, longDate, persen, shortDate } from "../analytics-utils";
+import { LessonAnalyticsSection } from "./lesson-analytics-section";
 import {
   AnalyticsEmpty,
   AnalyticsError,
@@ -215,6 +216,8 @@ export function TabRingkasan({ filters }: { filters: AnalyticsFilterState }) {
           </ul>
         )}
       </SectionCard>
+
+      <LessonAnalyticsSection range="all" />
     </div>
   );
 }

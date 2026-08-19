@@ -11,7 +11,10 @@ export type ColorTestSession = {
   correct_count: number;
   wrong_count: number;
   skipped_count: number;
+  /** Soal yang benar-benar dikerjakan (benar + salah + skip). */
+  answered_count?: number;
   min_correct: number;
+  max_wrong?: number;
   max_skip: number;
   time_limit_seconds: number;
   started_at: string;

@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateSection, useUpdateSection } from "@/hooks/exam";
+import { useAutosave } from "@/hooks/use-autosave";
+import { AutosaveIndicator } from "./exam-autosave";
 import { EXAM_SECTION_LABELS } from "@/features/exam/exam.constants";
 import type { ExamSectionRow, ExamSectionType } from "@/types/exam";
 
@@ -49,6 +51,15 @@ export function SectionFormDialog({ open, onOpenChange, examId, section = null }
     setInstruction(section?.instruction ?? "");
   }, [open, section]);
 
+  const autosave = useAutosave({
+    value: { type, title: title.trim(), instruction },
+    enabled: open && Boolean(section) && title.trim().length >= 3,
+    onSave: async (value) => {
+      if (!section) return;
+      await updateSection.mutateAsync({ id: section.id, input: value });
+    },
+  });
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     const trimmed = title.trim();
@@ -56,10 +67,12 @@ export function SectionFormDialog({ open, onOpenChange, examId, section = null }
 
     try {
       if (section) {
+        await autosave.flush();
         await updateSection.mutateAsync({
           id: section.id,
           input: { type, title: trimmed, instruction },
         });
+        autosave.markSaved({ type, title: trimmed, instruction });
         toast.success("Section diperbarui.");
       } else {
         await createSection.mutateAsync({ examId, input: { type, title: trimmed, instruction } });
@@ -121,7 +134,14 @@ export function SectionFormDialog({ open, onOpenChange, examId, section = null }
 
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
-          <DialogFooter className="gap-2">
+          {section && autosave.error ? (
+            <p className="text-sm text-destructive">{autosave.error}</p>
+          ) : null}
+
+          <DialogFooter className="items-center gap-2">
+            {section ? (
+              <AutosaveIndicator status={autosave.status} className="mr-auto" />
+            ) : null}
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Batal
             </Button>

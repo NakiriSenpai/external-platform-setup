@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
   ChevronDown,
@@ -33,6 +33,13 @@ import {
   pointsPerQuestion,
 } from "@/features/exam/exam.constants";
 import type { ExamQuestionWithAnswers, ExamSectionRow } from "@/types/exam";
+import { richTextToPlain } from "@/lib/rich-text";
+import {
+  AutosaveIndicator,
+  ExamAutosaveProvider,
+  useExamAutosaveContext,
+  useExamAutosaveStatus,
+} from "./exam-autosave";
 import { ExamDetailCard } from "./exam-detail-card";
 import { QuestionForm } from "./question-form";
 import { QuestionPreviewDialog } from "./question-preview-dialog";
@@ -45,6 +52,20 @@ type Composer = { sectionId: string; question: ExamQuestionWithAnswers | null } 
 
 /** Halaman Edit Exam — alur vertikal: header → detail → section → soal. */
 export function ExamEditor({ examId }: Props) {
+  const { status, setStatus } = useExamAutosaveStatus();
+  return (
+    <ExamAutosaveProvider onStatusChange={setStatus}>
+      <ExamEditorContent examId={examId} autosaveStatus={status} />
+    </ExamAutosaveProvider>
+  );
+}
+
+function ExamEditorContent({
+  examId,
+  autosaveStatus,
+}: Props & { autosaveStatus: Parameters<typeof AutosaveIndicator>[0]["status"] }) {
+  const navigate = useNavigate();
+  const autosaveCtx = useExamAutosaveContext();
   const examQuery = useExam(examId);
   const sectionsQuery = useExamSections(examId);
   const questionsQuery = useExamQuestions(examId);
@@ -117,14 +138,23 @@ export function ExamEditor({ examId }: Props) {
             <h1 className="truncate text-base font-semibold">Edit Exam</h1>
             <p className="truncate text-xs text-muted-foreground">{exam.title}</p>
           </div>
-          <Badge variant={exam.status === "published" ? "default" : "secondary"}>
-            {EXAM_STATUS_LABELS[exam.status]}
-          </Badge>
+          <div className="flex shrink-0 items-center gap-2">
+            <AutosaveIndicator status={autosaveStatus} />
+            <Badge variant={exam.status === "published" ? "default" : "secondary"}>
+              {EXAM_STATUS_LABELS[exam.status]}
+            </Badge>
+          </div>
         </div>
-        <Button asChild variant="outline" size="sm" className="w-full min-h-11">
-          <Link to="/owner/exam-studio/$examId/preview" params={{ examId }}>
-            <PlayCircle className="mr-1 size-4" /> Preview Ujian
-          </Link>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full min-h-11"
+          onClick={async () => {
+            await autosaveCtx?.flushAll();
+            void navigate({ to: "/owner/exam-studio/$examId/preview", params: { examId } });
+          }}
+        >
+          <PlayCircle className="mr-1 size-4" /> Preview Ujian
         </Button>
       </header>
 
@@ -182,7 +212,9 @@ export function ExamEditor({ examId }: Props) {
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {sectionQuestions.length} soal
-                      {section.instruction ? ` · ${section.instruction}` : ""}
+                      {richTextToPlain(section.instruction)
+                        ? ` · ${richTextToPlain(section.instruction)}`
+                        : ""}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
@@ -285,7 +317,7 @@ export function ExamEditor({ examId }: Props) {
                                     )
                                   }
                                 >
-                                  {question.text}
+                                  {richTextToPlain(question.text) || "(tanpa teks)"}
                                 </button>
                                 <div className="flex shrink-0 items-center gap-0.5">
                                   <Button

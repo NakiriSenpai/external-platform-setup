@@ -1,15 +1,18 @@
 import { memo, type ReactNode } from "react";
 
+import { RichText } from "@/components/common/rich-text";
+import { richTextToPlain } from "@/lib/rich-text";
 import { cn } from "@/lib/utils";
 import { AudioButton } from "./audio-manager";
 
-/** Batang soal (teks, gambar, audio) — dipakai Exam dan Review. */
+/** Batang soal (perintah, teks, gambar, audio) — dipakai Exam, Review, dan Preview. */
 export const QuestionStem = memo(function QuestionStem({
   questionId,
   number,
   total,
   sectionTitle,
   sectionInstruction,
+  instruction,
   text,
   imageUrl,
   audioUrl,
@@ -20,13 +23,16 @@ export const QuestionStem = memo(function QuestionStem({
   total: number;
   sectionTitle?: string | undefined;
   sectionInstruction?: string | null | undefined;
+  /** Perintah soal (rich text). */
+  instruction?: string | null | undefined;
   text: string;
   imageUrl: string | null;
   audioUrl: string | null;
   right?: ReactNode;
 }) {
+  const hasSectionInstruction = Boolean(richTextToPlain(sectionInstruction));
   return (
-    <div className="space-y-3 rounded-2xl border border-border bg-card p-3.5 shadow-sm sm:p-4">
+    <div className="min-w-0 space-y-3 rounded-2xl border border-border bg-card p-3.5 shadow-sm sm:p-4">
       <div className="flex items-center justify-between gap-2">
         <span className="shrink-0 rounded-lg bg-primary-muted px-2.5 py-1 text-[13px] font-semibold text-primary">
           Soal {number}
@@ -34,18 +40,24 @@ export const QuestionStem = memo(function QuestionStem({
         {right}
       </div>
       {sectionTitle ? (
-        <p className="text-xs leading-relaxed text-muted-foreground">
+        <div className="min-w-0 text-xs leading-relaxed text-muted-foreground">
           <span className="font-semibold text-foreground/80">{sectionTitle}</span>
-          {sectionInstruction ? ` — ${sectionInstruction}` : ""}
+          {hasSectionInstruction ? (
+            <RichText html={sectionInstruction} className="mt-0.5 text-xs" />
+          ) : null}
           <span className="sr-only">
             {" "}
             Soal {number} dari {total}
           </span>
-        </p>
+        </div>
       ) : null}
-      <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
-        {text}
-      </p>
+      {richTextToPlain(instruction) ? (
+        <RichText
+          html={instruction}
+          className="min-w-0 text-[13px] font-medium leading-relaxed text-muted-foreground"
+        />
+      ) : null}
+      <RichText html={text} className="min-w-0 text-[15px] leading-relaxed text-foreground" />
       {imageUrl ? (
         <img
           src={imageUrl}
@@ -58,6 +70,7 @@ export const QuestionStem = memo(function QuestionStem({
 
       {audioUrl ? (
         <AudioButton audioKey={`${questionId}:soal`} src={audioUrl} label="Dengarkan audio" />
+
       ) : null}
     </div>
   );

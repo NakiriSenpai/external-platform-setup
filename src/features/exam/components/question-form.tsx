@@ -25,6 +25,8 @@ import { RichTextEditor } from "@/components/common/rich-text-editor";
 import { isRichTextEmpty, richTextToPlain } from "@/lib/rich-text";
 import { Switch } from "@/components/ui/switch";
 import { useCreateQuestion, useUpdateQuestion } from "@/hooks/exam";
+import { useAutosave } from "@/hooks/use-autosave";
+import { AutosaveIndicator, useReportAutosave } from "./exam-autosave";
 import { useArchiveBankQuestion, useLessons } from "@/hooks/question-bank";
 import { ANSWER_LABELS, CATEGORY_LABELS, EXAM_CATEGORIES } from "@/features/exam/exam.constants";
 import { cn } from "@/lib/utils";
@@ -193,20 +195,19 @@ export function QuestionForm({
     setAnswerMedia((prev) => ({ ...prev, [label]: null }));
   };
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    setError(null);
-
-    if (isRichTextEmpty(instruction)) return setError("Perintah soal wajib diisi.");
-    if (richTextToPlain(text).length < 3) return setError("Teks soal minimal 3 karakter.");
-    if (isRichTextEmpty(explanation)) return setError("Pembahasan wajib diisi.");
-
+  /** Validasi form; mengembalikan pesan error atau null bila valid. */
+  const validate = (): string | null => {
+    if (isRichTextEmpty(instruction)) return "Perintah soal wajib diisi.";
+    if (richTextToPlain(text).length < 3) return "Teks soal minimal 3 karakter.";
+    if (isRichTextEmpty(explanation)) return "Pembahasan wajib diisi.";
     const filled = answers.filter((a) => !isRichTextEmpty(a.text) || a.image_url || a.audio_url);
-    if (filled.length < 2) return setError("Minimal dua pilihan jawaban harus diisi.");
-    const correctFilled = filled.some((a) => a.label === correct);
-    if (!correctFilled) return setError("Jawaban benar harus termasuk pilihan yang diisi.");
+    if (filled.length < 2) return "Minimal dua pilihan jawaban harus diisi.";
+    if (!filled.some((a) => a.label === correct))
+      return "Jawaban benar harus termasuk pilihan yang diisi.";
+    return null;
+  };
 
-    const payload: QuestionBankInput = {
+  const buildPayload = (): QuestionBankInput => ({
       text: text.trim(),
       instruction: instruction.trim() || null,
       image_url: imageUrl,
@@ -229,7 +230,43 @@ export function QuestionForm({
         audio_url: a.audio_url,
         is_correct: a.label === correct,
       })),
-    };
+  });
+
+  const invalid = validate();
+  const autosaveValue = { payload: buildPayload(), archived: isArchived };
+
+  /** Simpan perubahan soal yang sudah ada (autosave, tanpa menutup form). */
+  const persistExisting = async (value: typeof autosaveValue) => {
+    if (!question) return;
+    if (onSubmitQuestion) {
+      await onSubmitQuestion(value.payload, question.question_id);
+    } else {
+      await updateQuestion.mutateAsync({ id: question.question_id, input: value.payload });
+    }
+    if (value.archived !== (question.is_archived ?? false)) {
+      await archiveQuestion.mutateAsync({ id: question.question_id, isArchived: value.archived });
+    }
+  };
+
+  const autosave = useAutosave({
+    value: autosaveValue,
+    enabled: Boolean(question) && !invalid,
+    onSave: persistExisting,
+  });
+  useReportAutosave(
+    `question:${question?.question_id ?? sectionId}`,
+    question ? autosave.status : "idle",
+    autosave.flush,
+  );
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    setError(null);
+
+    const message = validate();
+    if (message) return setError(message);
+
+    const payload = buildPayload();
 
     try {
       if (onSubmitQuestion) {
@@ -251,6 +288,7 @@ export function QuestionForm({
         throw new Error("Target penyimpanan soal tidak tersedia.");
       }
 
+      autosave.markSaved(autosaveValue);
       onDone();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
@@ -507,8 +545,13 @@ export function QuestionForm({
       </div>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {!error && question && autosave.error ? (
+        <p className="text-sm text-destructive">{autosave.error}</p>
+      ) : null}
 
-      <div className="flex justify-end gap-2">
+      <div className="flex items-center justify-end gap-2">
+        {question ? <AutosaveIndicator status={autosave.status} className="mr-auto" /> : null}
+
         {onCancel ? (
           <Button type="button" size="sm" variant="outline" onClick={onCancel}>
             Batal

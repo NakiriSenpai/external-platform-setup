@@ -36,9 +36,12 @@ export function ExamHistory({ examId }: { examId: string }) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const exam = (exams ?? []).find((e) => e.id === examId);
-  const rows = (attempts ?? [])
-    .filter((a) => a.exam_id === examId && a.status !== "in_progress")
-    .sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+  // Attempt milik user yang login (RLS memastikannya), khusus exam ini.
+  const ascending = (attempts ?? [])
+    .filter((a) => a.exam_id === examId && a.status !== "in_progress" && a.status !== "cancelled")
+    .sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
+  const numberById = new Map(ascending.map((a, i) => [a.id, i + 1]));
+  const rows = [...ascending].reverse();
 
   if (isLoading) {
     return (

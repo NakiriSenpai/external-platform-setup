@@ -11,7 +11,10 @@ export type ColorTestSession = {
   correct_count: number;
   wrong_count: number;
   skipped_count: number;
+  /** Soal yang benar-benar dikerjakan (benar + salah + skip). */
+  answered_count?: number;
   min_correct: number;
+  max_wrong?: number;
   max_skip: number;
   time_limit_seconds: number;
   started_at: string;
@@ -49,7 +52,9 @@ export type ColorTestSummary = {
   correct_count: number;
   wrong_count: number;
   skipped_count: number;
+  answered_count?: number;
   total_questions: number;
+  max_wrong?: number;
   max_skip: number;
   duration_seconds: number | null;
   completed_at: string | null;
@@ -72,5 +77,6 @@ export type ColorTestPoolQuestion = {
 
 export const COLOR_TEST_TOTAL = 12;
 export const COLOR_TEST_MIN_CORRECT = 7;
+export const COLOR_TEST_MAX_WRONG = 5;
 export const COLOR_TEST_MAX_SKIP = 3;
 export const COLOR_TEST_SECONDS = 150;

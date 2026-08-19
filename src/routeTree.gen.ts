@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AudioDebugRouteImport } from './routes/audio-debug'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as DownloadRouteImport } from './routes/download'
 import { Route as ExamStudioRouteImport } from './routes/exam-studio'
@@ -55,6 +56,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AudioDebugRoute = AudioDebugRouteImport.update({
+  id: '/audio-debug',
+  path: '/audio-debug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -240,6 +246,7 @@ const OwnerLessonStudioLessonIdPreviewRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/audio-debug': typeof AudioDebugRoute
   '/dashboard': typeof DashboardRoute
   '/download': typeof DownloadRoute
   '/exam-studio': typeof ExamStudioRoute
@@ -279,6 +286,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/audio-debug': typeof AudioDebugRoute
   '/dashboard': typeof DashboardRoute
   '/download': typeof DownloadRoute
   '/exam-studio': typeof ExamStudioRoute
@@ -317,6 +325,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/audio-debug': typeof AudioDebugRoute
   '/dashboard': typeof DashboardRoute
   '/download': typeof DownloadRoute
   '/exam-studio': typeof ExamStudioRoute
@@ -358,6 +367,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/audio-debug'
     | '/dashboard'
     | '/download'
     | '/exam-studio'
@@ -397,6 +407,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/audio-debug'
     | '/dashboard'
     | '/download'
     | '/exam-studio'
@@ -434,6 +445,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/audio-debug'
     | '/dashboard'
     | '/download'
     | '/exam-studio'
@@ -474,6 +486,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AudioDebugRoute: typeof AudioDebugRoute
   DashboardRoute: typeof DashboardRoute
   DownloadRoute: typeof DownloadRoute
   ExamStudioRoute: typeof ExamStudioRoute
@@ -517,6 +530,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/audio-debug': {
+      id: '/audio-debug'
+      path: '/audio-debug'
+      fullPath: '/audio-debug'
+      preLoaderRoute: typeof AudioDebugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -803,6 +823,7 @@ const UjianRouteWithChildren = UjianRoute._addFileChildren(UjianRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AudioDebugRoute: AudioDebugRoute,
   DashboardRoute: DashboardRoute,
   DownloadRoute: DownloadRoute,
   ExamStudioRoute: ExamStudioRoute,

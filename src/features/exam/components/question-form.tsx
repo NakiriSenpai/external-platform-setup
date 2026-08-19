@@ -28,7 +28,7 @@ import { useCreateQuestion, useUpdateQuestion } from "@/hooks/exam";
 import { useAutosave } from "@/hooks/use-autosave";
 import { AutosaveIndicator, useReportAutosave } from "./exam-autosave";
 import { useArchiveBankQuestion, useLessons } from "@/hooks/question-bank";
-import { ANSWER_LABELS, CATEGORY_LABELS, EXAM_CATEGORIES } from "@/features/exam/exam.constants";
+import { ANSWER_LABELS } from "@/features/exam/exam.constants";
 import { cn } from "@/lib/utils";
 import type { ExamDifficulty } from "@/types/exam";
 import { ORIGIN_LABELS, type QuestionType, type QuestionVisibility } from "@/types/question-bank";
@@ -98,7 +98,9 @@ export function QuestionForm({
   const [questionType, setQuestionType] = useState<QuestionType>("reading");
   const [visibility, setVisibility] = useState<QuestionVisibility>("private");
   const [isArchived, setIsArchived] = useState(false);
-  const [category, setCategory] = useState<string>("umum");
+  // Kategori soal tidak lagi diedit di Exam Studio (hanya di Detail Exam);
+  // nilai lama tetap dipertahankan agar Question Bank/import-export tidak berubah.
+  const [category] = useState<string>("umum");
   const [difficulty, setDifficulty] = useState<ExamDifficulty>("sedang");
   const [lessonId, setLessonId] = useState<string>(NO_LESSON);
   const [explanation, setExplanation] = useState("");
@@ -128,7 +130,6 @@ export function QuestionForm({
       setVisibility(question.visibility ?? "private");
       setIsArchived(question.is_archived ?? false);
       setNewTags([]);
-      setCategory(question.category ?? "umum");
       setDifficulty(question.difficulty ?? "sedang");
       setLessonId(question.lesson_id ?? NO_LESSON);
       setExplanation(question.explanation ?? "");
@@ -161,7 +162,6 @@ export function QuestionForm({
       setQuestionType("reading");
       setVisibility("private");
       setIsArchived(false);
-      setCategory("umum");
       setDifficulty("sedang");
       setLessonId(defaultLessonId ?? NO_LESSON);
       setExplanation("");
@@ -482,22 +482,6 @@ export function QuestionForm({
         </RadioGroup>
       </div>
 
-
-      <div className="space-y-1.5">
-        <Label className="text-xs font-medium">Kategori</Label>
-        <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="h-9 text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {EXAM_CATEGORIES.map((item) => (
-              <SelectItem key={item} value={item}>
-                {CATEGORY_LABELS[item] ?? item}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
 
       {question ? (
         <div className="space-y-2 rounded-lg border border-border p-2.5">

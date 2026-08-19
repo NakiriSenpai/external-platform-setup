@@ -194,17 +194,13 @@ export function QuestionForm({
     setAnswerMedia((prev) => ({ ...prev, [label]: null }));
   };
 
-  /** Validasi form; mengembalikan pesan error atau null bila valid. */
-  const validate = (): string | null => {
-    if (isRichTextEmpty(instruction)) return "Perintah soal wajib diisi.";
-    if (richTextToPlain(text).length < 3) return "Teks soal minimal 3 karakter.";
-    if (isRichTextEmpty(explanation)) return "Pembahasan wajib diisi.";
-    const filled = answers.filter((a) => !isRichTextEmpty(a.text) || a.image_url || a.audio_url);
-    if (filled.length < 2) return "Minimal dua pilihan jawaban harus diisi.";
-    if (!filled.some((a) => a.label === correct))
-      return "Jawaban benar harus termasuk pilihan yang diisi.";
-    return null;
-  };
+  /**
+   * Semua field konten soal bersifat opsional (draft bebas): tidak ada
+   * validation blocker. Integritas struktural (label & kunci jawaban)
+   * tetap dijaga oleh payload builder dan skema database.
+   */
+  const validate = (): string | null => null;
+
 
   const buildPayload = (): QuestionBankInput => ({
     text: text.trim(),

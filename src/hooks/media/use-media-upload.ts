@@ -74,7 +74,6 @@ export function useMediaUpload(options: Options = {}) {
     [allowed, folder, onSuccess],
   );
 
-
   const upload = useCallback(
     async (target: File) => {
       setFile(target);

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-
 import { Button } from "@/components/ui/button";
 import { MediaPreview, UploadDropzone, UploadProgress } from "@/components/media";
 import { useMediaUpload } from "@/hooks/media";
@@ -90,4 +89,3 @@ export function MediaPicker({
     </div>
   );
 }
-

@@ -229,7 +229,6 @@ export function QuestionForm({
     })),
   });
 
-
   const invalid = validate();
   const autosaveValue = { payload: buildPayload(), archived: isArchived };
 

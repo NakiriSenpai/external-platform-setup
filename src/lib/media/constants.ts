@@ -75,7 +75,6 @@ export const GENERIC_MIME = [
   "*/*",
 ];
 
-
 /** Label ramah pengguna untuk pesan error Bahasa Indonesia. */
 export const MEDIA_LABEL: Record<MediaKind, string> = {
   image: "Gambar",

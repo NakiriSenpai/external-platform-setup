@@ -40,7 +40,6 @@ export function getMediaType(input: File | string, expected?: MediaKind | null):
   return null;
 }
 
-
 /** Format ukuran file menjadi teks ringkas (contoh: 1,2 MB). */
 export function formatFileSize(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";

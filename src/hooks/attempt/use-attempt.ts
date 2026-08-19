@@ -120,6 +120,12 @@ export function useSubmitAttempt() {
       void queryClient.invalidateQueries({ queryKey: ["my-attempts"] });
       void queryClient.invalidateQueries({ queryKey: ["attempt-session"] });
       void queryClient.invalidateQueries({ queryKey: ["attempt-result"] });
+      void queryClient.invalidateQueries({ queryKey: ["my-results"] });
+      // Skor leaderboard memakai attempt selesai terbaru — segarkan semua turunannya.
+      void queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
+      void queryClient.invalidateQueries({ queryKey: ["leaderboard-podium"] });
+      void queryClient.invalidateQueries({ queryKey: ["leaderboard-my-rank"] });
+      void queryClient.invalidateQueries({ queryKey: ["leaderboard-exams"] });
     },
   });
 }

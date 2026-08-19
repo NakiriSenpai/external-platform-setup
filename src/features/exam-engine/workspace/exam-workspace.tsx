@@ -33,6 +33,7 @@ import { useExamTimer } from "../hooks/use-exam-timer";
 import { useAntiCopy } from "./use-anti-copy";
 import { useExamSecurity } from "./use-exam-security";
 import { useExamSensorLayout } from "./use-orientation";
+import { WorkspacePagination } from "./workspace-pagination";
 import { WorkspaceBody, WorkspaceShell } from "./workspace-shell";
 
 type LocalAnswer = { label: AnswerLabel | null; flagged: boolean };
@@ -394,38 +395,14 @@ function ExamWorkspaceInner({ attemptId }: { attemptId: string }) {
           </>
         }
         footer={
-          <>
-            <div className="flex min-w-0 justify-start">
-              <Button
-                type="button"
-                variant="outline"
-                className="h-10 rounded-xl px-3 text-xs sm:text-sm"
-                disabled={locked || activeIndex === 0}
-                onClick={() => setActiveIndex((i) => Math.max(0, i - 1))}
-              >
-                <ChevronLeft className="mr-1 size-4" /> Sebelumnya
-              </Button>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={locked}
-              onClick={openQuestionList}
-              className="h-10 rounded-xl px-3 text-xs sm:text-sm"
-            >
-              <List className="mr-1.5 size-4" /> Daftar Soal
-            </Button>
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                className="h-10 rounded-xl px-3 text-xs sm:text-sm"
-                disabled={locked || activeIndex >= questions.length - 1}
-                onClick={() => setActiveIndex((i) => Math.min(questions.length - 1, i + 1))}
-              >
-                Selanjutnya <ChevronRight className="ml-1 size-4" />
-              </Button>
-            </div>
-          </>
+          <WorkspacePagination
+            activeIndex={activeIndex}
+            total={questions.length}
+            disabled={locked}
+            onPrev={() => setActiveIndex((i) => Math.max(0, i - 1))}
+            onNext={() => setActiveIndex((i) => Math.min(questions.length - 1, i + 1))}
+            onOpenList={openQuestionList}
+          />
         }
 
       >

@@ -26,6 +26,7 @@ import { CATEGORY_LABELS } from "@/features/exam/exam.constants";
 import { QuestionListDialog, type PaletteGroup, type PaletteItem } from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
 import { useAntiCopy } from "./use-anti-copy";
+import { WorkspacePagination } from "./workspace-pagination";
 import { WorkspaceBody, WorkspaceShell } from "./workspace-shell";
 
 /** Review memakai Workspace yang sama dengan Exam, ditambah pembahasan. */

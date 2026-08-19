@@ -442,10 +442,12 @@ $$;
 grant execute on function public.analytics_student_attempts(uuid, date, date, uuid, uuid) to authenticated;
 
 -- 8. TABEL NILAI (MATRIKS SISWA x SET UJIAN) ---------------------------
+drop function if exists public.analytics_score_matrix(date, date, uuid, uuid);
 create or replace function public.analytics_score_matrix(
   p_from date default null,
   p_to date default null,
   p_exam_id uuid default null,
+  p_student_id uuid default null,
   p_tenant_id uuid default null
 )
 returns jsonb
@@ -464,6 +466,7 @@ begin
     from public.profiles p
     where p.tenant_id is not distinct from v_tenant
       and p.role = 'siswa' and p.analytics_excluded = false
+      and (p_student_id is null or p.id = p_student_id)
   ), scoped as (
     select r.*
     from public.exam_attempt_results r

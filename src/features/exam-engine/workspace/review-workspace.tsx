@@ -168,41 +168,13 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
         }
 
         footer={
-          <>
-            <div className="flex min-w-0 items-center">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="rounded-xl"
-                disabled={activeIndex === 0}
-                onClick={() => setActiveIndex((i) => Math.max(0, i - 1))}
-              >
-                <ChevronLeft className="mr-1 size-4" /> Sebelumnya
-              </Button>
-            </div>
-            <Button
-              type="button"
-              size="sm"
-              className="rounded-xl px-5"
-              onClick={() => {
-                setListOpen(true);
-              }}
-            >
-              <List className="mr-1.5 size-4" /> Daftar Soal ({questions.length})
-            </Button>
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                size="sm"
-                className="rounded-xl"
-                disabled={activeIndex >= questions.length - 1}
-                onClick={() => setActiveIndex((i) => Math.min(questions.length - 1, i + 1))}
-              >
-                Berikutnya <ChevronRight className="ml-1 size-4" />
-              </Button>
-            </div>
-          </>
+          <WorkspacePagination
+            activeIndex={activeIndex}
+            total={questions.length}
+            onPrev={() => setActiveIndex((i) => Math.max(0, i - 1))}
+            onNext={() => setActiveIndex((i) => Math.min(questions.length - 1, i + 1))}
+            onOpenList={() => setListOpen(true)}
+          />
         }
       >
         <WorkspaceBody

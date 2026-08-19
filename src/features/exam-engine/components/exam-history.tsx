@@ -97,8 +97,8 @@ export function ExamHistory({ examId }: { examId: string }) {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Benar {attempt.correct_count} · Salah {attempt.wrong_count} · Kosong{" "}
-                    {attempt.skipped_count}
+                    Benar {attempt.correct_count} · Salah {attempt.wrong_count} · Tidak dijawab{" "}
+                    {attempt.skipped_count} · {attempt.total_questions} soal
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {dateFormatter.format(

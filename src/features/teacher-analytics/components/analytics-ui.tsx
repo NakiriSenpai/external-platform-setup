@@ -164,8 +164,8 @@ export function StudentAvatar({
   className,
 }: {
   name: string;
-  avatarUrl?: string | null;
-  className?: string;
+  avatarUrl?: string | null | undefined;
+  className?: string | undefined;
 }) {
   return (
     <Avatar className={cn("size-9 shrink-0", className)}>

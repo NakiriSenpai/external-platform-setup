@@ -56,11 +56,7 @@ async function buildSnapshot(exam: ExamRow) {
       instruction: q.instruction ?? null,
       image_url: q.image_url,
       audio_url: q.audio_url,
-      category: q.category,
-      difficulty: q.difficulty,
-      question_type: q.question_type,
       lesson_id: q.lesson_id,
-      grammar_tags: q.grammar_tags,
       explanation: q.explanation,
       correct_label: (correct?.label as AnswerLabel | undefined) ?? null,
       answers: answers.map((a) => ({

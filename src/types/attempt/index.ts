@@ -72,11 +72,7 @@ export type SnapshotQuestion = {
   instruction?: string | null;
   image_url: string | null;
   audio_url: string | null;
-  category: string;
-  difficulty: string;
-  question_type: string;
   lesson_id: string | null;
-  grammar_tags: GrammarTagRow[];
   answers: SnapshotAnswer[];
   /** Hanya ada pada payload internal (tidak dikirim ke siswa). */
   explanation?: string | null;

@@ -1,12 +1,7 @@
-import type { ExamDifficulty } from "@/types/exam";
 import type {
-  GrammarTagRow,
   QuestionAnswerRow,
   QuestionOrigin,
   QuestionSourceType,
-  QuestionType,
-  QuestionVisibility,
-  TagRow,
 } from "@/types/question-bank";
 
 export type MediaSlot = "image" | "audio";
@@ -24,16 +19,10 @@ export type QuestionFormValue = {
   image_url: string | null;
   audio_url: string | null;
   explanation: string | null;
-  category: string;
-  difficulty: ExamDifficulty;
   lesson_id?: string | null;
   source_type?: QuestionSourceType;
   origin?: QuestionOrigin;
-  question_type?: QuestionType;
-  visibility?: QuestionVisibility;
   version?: number;
   is_archived?: boolean;
-  grammar_tags: GrammarTagRow[];
-  tags?: TagRow[];
   answers: QuestionAnswerRow[];
 };

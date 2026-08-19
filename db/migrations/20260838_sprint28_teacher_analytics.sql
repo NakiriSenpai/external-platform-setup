@@ -359,22 +359,27 @@ begin
   ), firsts as (
     select distinct on (user_id, exam_id) *
     from scoped order by user_id, exam_id, submitted_at asc
-  ), agg as (
-    select s.id,
-           (select count(*) from scoped x where x.user_id = s.id)::bigint as attempts,
-           (select count(distinct x.exam_id) from scoped x where x.user_id = s.id)::bigint as exams_taken,
-           (select coalesce(round(avg(f.score), 2), 0) from firsts f where f.user_id = s.id) as average_score,
-           (select coalesce(round(100.0 * count(*) filter (where f.passed) / nullif(count(*), 0), 2), 0)
-              from firsts f where f.user_id = s.id) as pass_rate,
-           (select max(x.submitted_at) from scoped x where x.user_id = s.id) as last_submitted_at
-    from students s
+  ), all_agg as (
+    -- Agregasi sekali jalan (bukan subquery per siswa).
+    select x.user_id,
+           count(*)::bigint as attempts,
+           count(distinct x.exam_id)::bigint as exams_taken,
+           max(x.submitted_at) as last_submitted_at
+    from scoped x group by x.user_id
+  ), first_agg as (
+    select f.user_id,
+           round(avg(f.score), 2) as average_score,
+           round(100.0 * count(*) filter (where f.passed) / nullif(count(*), 0), 2) as pass_rate
+    from firsts f group by f.user_id
   )
   select s.id, s.name, s.username, s.avatar_url, s.analytics_excluded, s.is_active, s.last_login_at,
-         a.attempts, a.exams_taken, a.average_score, a.pass_rate, a.last_submitted_at,
+         coalesce(aa.attempts, 0), coalesce(aa.exams_taken, 0),
+         coalesce(fa.average_score, 0), coalesce(fa.pass_rate, 0), aa.last_submitted_at,
          (select count(*) from students)::bigint as total_rows
   from students s
-  join agg a on a.id = s.id
-  order by a.attempts desc, s.name asc
+  left join all_agg aa on aa.user_id = s.id
+  left join first_agg fa on fa.user_id = s.id
+  order by coalesce(aa.attempts, 0) desc, s.name asc
   limit least(greatest(coalesce(p_limit, 20), 1), 200)
   offset greatest(coalesce(p_offset, 0), 0);
 end;

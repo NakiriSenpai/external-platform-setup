@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   answerColorTest,
+  cancelAttemptFromColorTest,
   archiveColorTestQuestion,
   createColorTestQuestions,
   finishColorTest,
@@ -81,6 +82,32 @@ export function useFinishColorTest(attemptId: string) {
       reason?: "manual" | "exit" | "time_up";
     }) => finishColorTest(sessionId, reason ?? "manual"),
     onSuccess: write,
+  });
+}
+
+/**
+ * Keluar paksa dari Color Test: attempt ujian induk dibatalkan di server,
+ * lalu seluruh cache riwayat/hasil/leaderboard di-invalidate.
+ */
+export function useCancelAttemptFromColorTest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (attemptId: string) => cancelAttemptFromColorTest(attemptId),
+    onSuccess: (_data, attemptId) => {
+      queryClient.removeQueries({ queryKey: ["color-test", attemptId] });
+      queryClient.removeQueries({ queryKey: ["attempt-session", attemptId] });
+      queryClient.removeQueries({ queryKey: ["attempt-result", attemptId] });
+      queryClient.removeQueries({ queryKey: ["attempt-review", attemptId] });
+      void queryClient.invalidateQueries({ queryKey: ["my-attempts"] });
+      void queryClient.invalidateQueries({ queryKey: ["user-attempts"] });
+      void queryClient.invalidateQueries({ queryKey: ["my-results"] });
+      void queryClient.invalidateQueries({ queryKey: ["available-exams"] });
+      void queryClient.invalidateQueries({ queryKey: ["color-test-summaries"] });
+      void queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
+      void queryClient.invalidateQueries({ queryKey: ["leaderboard-podium"] });
+      void queryClient.invalidateQueries({ queryKey: ["leaderboard-my-rank"] });
+      void queryClient.invalidateQueries({ queryKey: ["leaderboard-exams"] });
+    },
   });
 }
 

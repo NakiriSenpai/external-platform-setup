@@ -1,29 +1,67 @@
 import { useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
-import { ArrowLeft, ChevronLeft, ChevronRight, Clock, Eye } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { ChevronLeft, ChevronRight, Clock, Eye, Flag, List, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RichText } from "@/components/common/rich-text";
 import { useExam, useExamQuestions, useExamSections } from "@/hooks/exam";
-import { EXAM_SECTION_LABELS } from "@/features/exam/exam.constants";
+import { AudioButton, AudioManagerProvider } from "@/features/exam-engine/workspace/audio-manager";
+import {
+  QuestionListDialog,
+  type PaletteGroup,
+} from "@/features/exam-engine/workspace/question-list-dialog";
+import { AnswerShell, QuestionStem } from "@/features/exam-engine/workspace/question-stem";
+import {
+  WorkspaceBody,
+  WorkspaceShell,
+} from "@/features/exam-engine/workspace/workspace-shell";
 import { cn } from "@/lib/utils";
 
 type Props = { examId: string };
 
 /**
- * Simulasi ujian READ-ONLY untuk admin: memakai data exam yang sedang diedit,
- * tanpa membuat attempt, tanpa menyentuh status/skor/riwayat siswa.
+ * Simulasi ujian READ-ONLY untuk admin. Memakai komponen runner asli
+ * (WorkspaceShell/Body, QuestionStem, AnswerShell, Daftar Soal) sehingga tampil
+ * persis seperti yang dilihat siswa — tanpa attempt, skor, atau riwayat.
  */
 export function ExamPreview({ examId }: Props) {
+  const navigate = useNavigate();
   const examQuery = useExam(examId);
   const sectionsQuery = useExamSections(examId);
   const questionsQuery = useExamQuestions(examId);
 
   const questions = useMemo(() => questionsQuery.data ?? [], [questionsQuery.data]);
-  const sections = sectionsQuery.data ?? [];
-  const [index, setIndex] = useState(0);
+  const sections = useMemo(() => sectionsQuery.data ?? [], [sectionsQuery.data]);
+
+  const [activeIndex, setActiveIndex] = useState(0);
   const [picked, setPicked] = useState<Record<string, string>>({});
+  const [flags, setFlags] = useState<Record<string, boolean>>({});
+  const [listOpen, setListOpen] = useState(false);
+
+  const paletteGroups = useMemo<PaletteGroup[]>(() => {
+    const groups: PaletteGroup[] = [];
+    questions.forEach((question, index) => {
+      const section = sections.find((s) => s.id === question.section_id);
+      const id = section?.id ?? "tanpa-section";
+      let group = groups.find((g) => g.id === id);
+      if (!group) {
+        group = { id, title: section?.title ?? "Soal", items: [] };
+        groups.push(group);
+      }
+      group.items.push({
+        questionId: question.id,
+        index,
+        status: picked[question.id] ? "answered" : "unanswered",
+        flagged: Boolean(flags[question.id]),
+      });
+    });
+    return groups;
+  }, [questions, sections, picked, flags]);
+
+  const exitPreview = () =>
+    void navigate({ to: "/owner/exam-studio/$examId", params: { examId } });
 
   if (examQuery.isLoading || questionsQuery.isLoading) {
     return <Skeleton className="h-64 w-full rounded-2xl" />;
@@ -33,123 +71,205 @@ export function ExamPreview({ examId }: Props) {
   }
 
   const exam = examQuery.data;
-  const question = questions[Math.min(index, Math.max(questions.length - 1, 0))];
-  const section = sections.find((s) => s.id === question?.section_id);
+  const index = Math.min(activeIndex, Math.max(questions.length - 1, 0));
+  const current = questions[index];
+  const section = sections.find((s) => s.id === current?.section_id);
+  const answeredCount = questions.filter((q) => picked[q.id]).length;
 
-  return (
-    <section className="min-w-0 space-y-4 pb-8">
-      <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-        <Button asChild variant="ghost" size="icon" aria-label="Kembali ke Edit Exam">
-          <Link to="/owner/exam-studio/$examId" params={{ examId }}>
-            <ArrowLeft className="size-5" />
-          </Link>
-        </Button>
-        <div className="min-w-0">
-          <h1 className="truncate text-base font-semibold">Preview Ujian</h1>
-          <p className="truncate text-xs text-muted-foreground">{exam.title}</p>
-        </div>
-        <Badge variant="outline" className="shrink-0">
-          <Eye className="mr-1 size-3.5" /> Simulasi
-        </Badge>
-      </header>
-
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3 text-xs text-muted-foreground">
-        <span className="inline-flex items-center gap-1">
-          <Clock className="size-3.5" /> {exam.duration_minutes} menit
-        </span>
-        <span>· {questions.length} soal</span>
-        <span className="ml-auto">Tidak tersimpan sebagai attempt siswa</span>
-      </div>
-
-      {!question ? (
+  if (!current) {
+    return (
+      <section className="space-y-4 p-4">
         <p className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
           Belum ada soal untuk disimulasikan.
         </p>
-      ) : (
-        <article className="min-w-0 space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
-          <div className="flex flex-wrap items-center gap-2">
-            {section ? (
-              <Badge variant="outline">{EXAM_SECTION_LABELS[section.type]}</Badge>
-            ) : null}
-            <span className="text-xs text-muted-foreground">
-              Soal {index + 1} dari {questions.length}
+        <Button variant="outline" className="w-full" onClick={exitPreview}>
+          Kembali ke Edit Exam
+        </Button>
+      </section>
+    );
+  }
+
+  const toggleFlag = () =>
+    setFlags((prev) => ({ ...prev, [current.id]: !prev[current.id] }));
+
+  return (
+    <AudioManagerProvider>
+      <WorkspaceShell
+        header={
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Keluar dari preview"
+              onClick={exitPreview}
+            >
+              <X className="size-5" />
+            </Button>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{exam.title}</p>
+              <p className="truncate text-[11px] text-muted-foreground">
+                Mode preview · tidak tersimpan sebagai attempt siswa
+              </p>
+            </div>
+            <Badge variant="outline" className="shrink-0">
+              <Eye className="mr-1 size-3.5" /> Simulasi
+            </Badge>
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-muted px-2 py-1 text-[11px] font-semibold tabular-nums">
+              <Clock className="size-3.5" /> {exam.duration_minutes}:00
             </span>
-          </div>
 
-          {section?.instruction ? (
-            <p className="break-words text-xs text-muted-foreground">{section.instruction}</p>
-          ) : null}
-
-          <p className="break-words text-sm font-medium">{question.text}</p>
-
-          {question.image_url ? (
-            <img
-              src={question.image_url}
-              alt="Gambar soal"
-              loading="lazy"
-              className="max-h-64 w-full max-w-full rounded-xl border border-border object-contain"
+            <div className="flex w-full min-w-0 items-center gap-2">
+              <div className="h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-primary-muted">
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{
+                    width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%`,
+                  }}
+                />
+              </div>
+              <span className="shrink-0 text-[10px] font-semibold tabular-nums text-muted-foreground">
+                {answeredCount}/{questions.length} terjawab
+              </span>
+            </div>
+          </>
+        }
+        footer={
+          <>
+            <div className="flex min-w-0 justify-start">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-10 rounded-xl px-3 text-xs sm:text-sm"
+                disabled={index === 0}
+                onClick={() => setActiveIndex((i) => Math.max(0, i - 1))}
+              >
+                <ChevronLeft className="mr-1 size-4" /> Sebelumnya
+              </Button>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10 rounded-xl px-3 text-xs sm:text-sm"
+              onClick={() => setListOpen(true)}
+            >
+              <List className="mr-1.5 size-4" /> Daftar Soal
+            </Button>
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                className="h-10 rounded-xl px-3 text-xs sm:text-sm"
+                disabled={index >= questions.length - 1}
+                onClick={() => setActiveIndex((i) => Math.min(questions.length - 1, i + 1))}
+              >
+                Selanjutnya <ChevronRight className="ml-1 size-4" />
+              </Button>
+            </div>
+          </>
+        }
+      >
+        <WorkspaceBody
+          question={
+            <QuestionStem
+              questionId={current.id}
+              number={index + 1}
+              total={questions.length}
+              sectionTitle={section?.title}
+              sectionInstruction={section?.instruction}
+              instruction={current.instruction}
+              text={current.text}
+              imageUrl={current.image_url}
+              audioUrl={current.audio_url}
+              right={
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={flags[current.id] ? "default" : "outline"}
+                  onClick={toggleFlag}
+                >
+                  <Flag className="mr-1.5 size-4" />
+                  {flags[current.id] ? "Ditandai" : "Tandai"}
+                </Button>
+              }
             />
-          ) : null}
-          {question.audio_url ? (
-            <audio controls src={question.audio_url} className="w-full max-w-full">
-              <track kind="captions" />
-            </audio>
-          ) : null}
-
-          <ul className="space-y-2">
-            {question.answers.map((answer) => {
-              const active = picked[question.id] === answer.label;
-              return (
-                <li key={answer.id ?? answer.label}>
-                  <button
-                    type="button"
-                    onClick={() => setPicked((prev) => ({ ...prev, [question.id]: answer.label }))}
-                    className={cn(
-                      "w-full min-w-0 rounded-xl border border-border p-3 text-left text-sm transition-colors",
-                      active && "border-primary bg-primary/10",
-                    )}
+          }
+          answers={
+            <div className="min-w-0">
+              <div className="space-y-2">
+                {current.answers.map((answer, answerIndex) => (
+                  <AnswerShell
+                    key={answer.id ?? answer.label}
+                    index={answerIndex}
+                    selected={picked[current.id] === answer.label}
+                    onClick={() =>
+                      setPicked((prev) => ({ ...prev, [current.id]: answer.label }))
+                    }
                   >
-                    <span className="mr-2 font-semibold">{answer.label}.</span>
-                    <span className="break-words">{answer.text}</span>
+                    {answer.text ? (
+                      <RichText
+                        html={answer.text}
+                        as="span"
+                        className="block text-sm text-foreground"
+                      />
+                    ) : null}
                     {answer.image_url ? (
                       <img
                         src={answer.image_url}
-                        alt={`Gambar jawaban ${answer.label}`}
+                        alt={`Pilihan ${answerIndex + 1}`}
                         loading="lazy"
-                        className="mt-2 max-h-44 w-full max-w-full rounded-lg border border-border object-contain"
+                        draggable={false}
+                        className="max-h-20 w-auto max-w-[min(100%,10rem)] rounded-lg border border-border object-contain sm:max-h-24"
                       />
                     ) : null}
                     {answer.audio_url ? (
-                      <audio controls src={answer.audio_url} className="mt-2 w-full max-w-full">
-                        <track kind="captions" />
-                      </audio>
+                      <span
+                        className="block"
+                        role="presentation"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <AudioButton
+                          size="sm"
+                          audioKey={`preview:${current.id}:${answer.label}`}
+                          src={answer.audio_url}
+                          label={`Audio pilihan ${answerIndex + 1}`}
+                        />
+                      </span>
                     ) : null}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </article>
-      )}
+                    {!answer.text && !answer.image_url && !answer.audio_url ? (
+                      <span className="block text-sm text-muted-foreground">
+                        Pilihan {answerIndex + 1}
+                      </span>
+                    ) : null}
+                  </AnswerShell>
+                ))}
+              </div>
 
-      <div className="flex items-center justify-between gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={index <= 0}
-          onClick={() => setIndex((i) => Math.max(0, i - 1))}
-        >
-          <ChevronLeft className="mr-1 size-4" /> Sebelumnya
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={index >= questions.length - 1}
-          onClick={() => setIndex((i) => Math.min(questions.length - 1, i + 1))}
-        >
-          Berikutnya <ChevronRight className="ml-1 size-4" />
-        </Button>
-      </div>
-    </section>
+              <button
+                type="button"
+                onClick={toggleFlag}
+                className={cn(
+                  "mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-colors",
+                  flags[current.id]
+                    ? "bg-destructive/10 text-destructive"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80",
+                )}
+              >
+                <Flag className="size-4" />
+                Saya tidak yakin dengan jawaban ini
+              </button>
+            </div>
+          }
+        />
+      </WorkspaceShell>
+
+      <QuestionListDialog
+        open={listOpen}
+        onOpenChange={setListOpen}
+        groups={paletteGroups}
+        activeIndex={index}
+        mode="exam"
+        onJump={setActiveIndex}
+      />
+    </AudioManagerProvider>
   );
 }

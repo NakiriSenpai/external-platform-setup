@@ -265,3 +265,89 @@
   color: oklch(0.99 0 0);
   box-shadow: 0 16px 34px -16px oklch(0.58 0.19 285 / 70%);
 }
+
+/*
+ * Rich text read-only (soal, perintah, jawaban, pembahasan).
+ * Dipakai oleh komponen <RichText>; aman untuk layar kecil (anti overflow).
+ */
+.rich-text {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.rich-text > :first-child {
+  margin-top: 0;
+}
+
+.rich-text > :last-child {
+  margin-bottom: 0;
+}
+
+.rich-text p {
+  margin: 0 0 0.5em;
+}
+
+.rich-text strong,
+.rich-text b {
+  font-weight: 700;
+}
+
+.rich-text em,
+.rich-text i {
+  font-style: italic;
+}
+
+.rich-text u {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.rich-text s {
+  text-decoration: line-through;
+}
+
+.rich-text ul,
+.rich-text ol {
+  margin: 0 0 0.5em;
+  padding-left: 1.35em;
+}
+
+.rich-text ul {
+  list-style: disc;
+}
+
+.rich-text ol {
+  list-style: decimal;
+}
+
+.rich-text li {
+  margin: 0.15em 0;
+}
+
+.rich-text a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.rich-text br {
+  content: "";
+}
+
+.rich-text img,
+.rich-text table {
+  max-width: 100%;
+}
+
+.rich-text table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.rich-text th,
+.rich-text td {
+  border: 1px solid var(--border);
+  padding: 0.35em 0.6em;
+}

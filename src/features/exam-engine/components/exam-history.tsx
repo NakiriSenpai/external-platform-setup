@@ -129,7 +129,7 @@ export function ExamHistory({ examId }: { examId: string }) {
                       })
                     }
                   >
-                    Review
+                    Review Jawaban
                   </Button>
                   {isOwner ? (
                     <Button

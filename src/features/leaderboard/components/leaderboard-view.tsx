@@ -184,9 +184,9 @@ export function LeaderboardView() {
         <div className="min-w-0 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
           <p>
             Peringkat berdasarkan jumlah ujian yang telah dikerjakan dan total skor dari attempt
-            pertama setiap ujian.
+            terbaru yang sudah selesai pada setiap ujian.
           </p>
-          <p>Setiap ujian hanya dihitung satu kali berdasarkan attempt pertama.</p>
+          <p>Setiap ujian hanya dihitung satu kali berdasarkan attempt terakhir yang selesai.</p>
         </div>
       </div>
 
@@ -218,8 +218,8 @@ export function LeaderboardView() {
           </p>
           <p className="text-sm text-muted-foreground">
             {examId
-              ? "Belum ada siswa yang menyelesaikan attempt pertama pada ujian ini."
-              : "Belum ada siswa yang menyelesaikan attempt pertama pada ujian."}
+              ? "Belum ada siswa yang menyelesaikan ujian ini."
+              : "Belum ada siswa yang menyelesaikan ujian."}
           </p>
         </div>
       ) : (
@@ -291,7 +291,7 @@ export function LeaderboardView() {
         <div className="min-w-0 space-y-1">
           <p className="text-sm font-semibold text-primary">Peringkat diperbarui real-time.</p>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Setiap kali ada siswa menyelesaikan attempt pertama pada suatu ujian, peringkat akan
+            Setiap kali ada siswa menyelesaikan ujian, peringkat akan
             langsung menyesuaikan secara otomatis.
           </p>
         </div>

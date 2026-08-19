@@ -2,15 +2,18 @@
 
 import type { ExamDifficulty } from "@/types/exam";
 import type {
-  GrammarTagRow,
   QuestionAnswerRow,
   QuestionBankRow,
   QuestionOrigin,
   QuestionSourceType,
-  QuestionType,
-  QuestionVisibility,
-  TagRow,
 } from "@/types/question-bank";
+
+/** Grammar Tag kini hanya dipakai oleh blok Lesson (bukan lagi oleh soal). */
+export type GrammarTagRow = {
+  id: string;
+  slug: string;
+  name: string;
+};
 
 
 export type LessonStatus = "draft" | "published" | "archived";
@@ -86,16 +89,10 @@ export type LessonQuestionWithAnswers = LessonQuestionRef & {
   image_url: string | null;
   audio_url: string | null;
   explanation: string | null;
-  category: string;
-  difficulty: ExamDifficulty;
-  question_type: QuestionType;
-  visibility: QuestionVisibility;
   origin: QuestionOrigin;
   source_type: QuestionSourceType;
   version: number;
   is_archived: boolean;
-  grammar_tags: GrammarTagRow[];
-  tags: TagRow[];
   answers: QuestionAnswerRow[];
 };
 

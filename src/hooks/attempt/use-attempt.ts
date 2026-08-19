@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ExamAttemptExpiredError,
   ExamSnapshotMissingError,
+  deleteAttempt,
   getActiveAttempt,
   getAttemptResult,
   getAttemptReview,
@@ -23,6 +24,19 @@ export function useAvailableExams() {
     queryKey: ["available-exams"],
     queryFn: listAvailableExams,
     staleTime: 30_000,
+  });
+}
+
+/** Hapus satu riwayat attempt (Owner only). */
+export function useDeleteAttempt() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteAttempt,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["my-attempts"] });
+      void queryClient.invalidateQueries({ queryKey: ["my-results"] });
+      void queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
+    },
   });
 }
 

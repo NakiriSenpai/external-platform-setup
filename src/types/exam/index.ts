@@ -1,16 +1,12 @@
 /** Tipe domain Exam Studio (Sprint 6 & 7). */
 
 import type {
-  GrammarTagRow,
   QuestionAnswerRow,
   QuestionSourceType,
   QuestionOrigin,
-  QuestionType,
-  QuestionVisibility,
-  TagRow,
 } from "@/types/question-bank";
 
-export type { GrammarTagRow, QuestionAnswerRow, QuestionSourceType };
+export type { QuestionAnswerRow, QuestionSourceType };
 
 export type ExamStatus = "draft" | "published" | "archived";
 export type ExamDifficulty = "mudah" | "sedang" | "sulit";
@@ -69,19 +65,13 @@ export type ExamQuestionWithAnswers = ExamQuestionRef & {
   image_url: string | null;
   audio_url: string | null;
   explanation: string | null;
-  category: string;
-  difficulty: ExamDifficulty;
   lesson_id: string | null;
   source_type: QuestionSourceType;
   origin: QuestionOrigin;
-  question_type: QuestionType;
-  visibility: QuestionVisibility;
   version: number;
   is_archived: boolean;
   used_count: number;
   last_used_at: string | null;
-  grammar_tags: GrammarTagRow[];
-  tags: TagRow[];
   answers: QuestionAnswerRow[];
 };
 

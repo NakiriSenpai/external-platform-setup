@@ -1,12 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+  countQuestionReferences,
   createBankQuestion,
   deleteBankQuestion,
   listBankQuestions,
-  listGrammarTags,
   listLessons,
-  listTags,
   setQuestionArchived,
   markQuestionsUsed,
   updateBankQuestion,
@@ -21,14 +20,6 @@ export function useBankQuestions(filters: QuestionBankFilters) {
   });
 }
 
-export function useGrammarTags() {
-  return useQuery({
-    queryKey: ["grammar-tags"],
-    queryFn: listGrammarTags,
-    staleTime: 5 * 60_000,
-  });
-}
-
 export function useLessons() {
   return useQuery({
     queryKey: ["lessons"],
@@ -37,34 +28,35 @@ export function useLessons() {
   });
 }
 
-export function useTags() {
+/** Referensi Exam/Lesson untuk satu soal (dipakai dialog konfirmasi hapus). */
+export function useQuestionReferences(questionId: string | null) {
   return useQuery({
-    queryKey: ["question-tags"],
-    queryFn: listTags,
-    staleTime: 5 * 60_000,
+    queryKey: ["question-references", questionId],
+    queryFn: () => countQuestionReferences(questionId as string),
+    enabled: Boolean(questionId),
+    staleTime: 10_000,
   });
 }
 
-function useBankMutation<TVars>(fn: (vars: TVars) => Promise<unknown>) {
+function useBankMutation<TVars, TData>(fn: (vars: TVars) => Promise<TData>) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: fn,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["question-bank"] });
       void queryClient.invalidateQueries({ queryKey: ["exam-questions"] });
-      void queryClient.invalidateQueries({ queryKey: ["question-tags"] });
     },
   });
 }
 
-export const useCreateBankQuestion = () => useBankMutation<QuestionBankInput>(createBankQuestion);
+export const useCreateBankQuestion = () => useBankMutation<QuestionBankInput, string>(createBankQuestion);
 export const useUpdateBankQuestion = () =>
-  useBankMutation<{ id: string; input: QuestionBankInput }>(({ id, input }) =>
+  useBankMutation<{ id: string; input: QuestionBankInput }, void>(({ id, input }) =>
     updateBankQuestion(id, input),
   );
-export const useDeleteBankQuestion = () => useBankMutation<string>(deleteBankQuestion);
-export const useMarkQuestionsUsed = () => useBankMutation<string[]>(markQuestionsUsed);
+export const useDeleteBankQuestion = () => useBankMutation(deleteBankQuestion);
+export const useMarkQuestionsUsed = () => useBankMutation<string[], void>(markQuestionsUsed);
 export const useArchiveBankQuestion = () =>
-  useBankMutation<{ id: string; isArchived: boolean }>(({ id, isArchived }) =>
+  useBankMutation<{ id: string; isArchived: boolean }, void>(({ id, isArchived }) =>
     setQuestionArchived(id, isArchived),
   );

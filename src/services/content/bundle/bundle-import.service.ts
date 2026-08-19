@@ -161,8 +161,6 @@ function questionIssues(bundle: QuestionBundle, label: string): ValidationIssue[
       text: bundle.text,
       image_url: bundle.image?.url ?? null,
       audio_url: bundle.audio?.url ?? null,
-      question_type: bundle.question_type,
-      visibility: bundle.visibility,
       is_archived: false,
       answers: bundle.answers.map((a) => ({
         text: a.text,
@@ -233,26 +231,15 @@ export async function analyzeQuestionBundle(bundle: QuestionBankFileBundle) {
 // ------------------------------------------------------------ write helpers
 
 type QuestionWriteContext = {
-  grammarMap: Map<string, string>;
-  tagMap: Map<string, string>;
   lessonMap: Map<string, string>;
 };
 
 async function buildWriteContext(questions: QuestionBundle[]): Promise<QuestionWriteContext> {
-  const grammarMap = await resolveTagTable(
-    QUESTION_TABLES.grammarTags,
-    questions.flatMap((q) => q.grammar_tags),
-  );
-  const tagMap = await resolveTagTable(QUESTION_TABLES.tags, questions.flatMap((q) => q.tags));
   const lessonMap = await resolveLessons(questions.map((q) => q.lesson_slug ?? "").filter(Boolean));
-  return { grammarMap, tagMap, lessonMap };
+  return { lessonMap };
 }
 
-async function writeQuestionRelations(
-  questionId: string,
-  bundle: QuestionBundle,
-  ctx: QuestionWriteContext,
-) {
+async function writeQuestionRelations(questionId: string, bundle: QuestionBundle) {
   await supabase.from(QUESTION_TABLES.answers).delete().eq("question_id", questionId);
   const { error: answerError } = await supabase.from(QUESTION_TABLES.answers).insert(
     bundle.answers.map((answer) => ({
@@ -265,26 +252,6 @@ async function writeQuestionRelations(
     })),
   );
   if (answerError) throw new Error("Gagal menyimpan pilihan jawaban.");
-
-  await supabase.from(QUESTION_TABLES.questionGrammarTags).delete().eq("question_id", questionId);
-  const grammarIds = bundle.grammar_tags
-    .map((tag) => ctx.grammarMap.get(slugifyKey(tag.slug || tag.name)))
-    .filter(Boolean) as string[];
-  if (grammarIds.length > 0) {
-    await supabase
-      .from(QUESTION_TABLES.questionGrammarTags)
-      .insert(Array.from(new Set(grammarIds)).map((tag_id) => ({ question_id: questionId, tag_id })));
-  }
-
-  await supabase.from(QUESTION_TABLES.questionTags).delete().eq("question_id", questionId);
-  const tagIds = bundle.tags
-    .map((tag) => ctx.tagMap.get(slugifyKey(tag.slug || tag.name)))
-    .filter(Boolean) as string[];
-  if (tagIds.length > 0) {
-    await supabase
-      .from(QUESTION_TABLES.questionTags)
-      .insert(Array.from(new Set(tagIds)).map((tag_id) => ({ question_id: questionId, tag_id })));
-  }
 }
 
 function newExternalKey(base: string) {
@@ -306,13 +273,9 @@ async function insertQuestion(
       image_url: bundle.image?.url ?? null,
       audio_url: bundle.audio?.url ?? null,
       explanation: bundle.explanation,
-      category: bundle.category,
-      difficulty: bundle.difficulty,
       lesson_id: bundle.lesson_slug ? (ctx.lessonMap.get(bundle.lesson_slug) ?? null) : null,
       source_type: "import",
       origin: "import",
-      question_type: bundle.question_type,
-      visibility: bundle.visibility,
       created_by: userId,
       updated_by: userId,
     })
@@ -321,7 +284,7 @@ async function insertQuestion(
   if (error || !data) throw new Error("Gagal menyimpan soal.");
   const questionId = (data as { id: string }).id;
   try {
-    await writeQuestionRelations(questionId, bundle, ctx);
+    await writeQuestionRelations(questionId, bundle);
   } catch (err) {
     await supabase.from(QUESTION_TABLES.questions).delete().eq("id", questionId);
     throw err;
@@ -350,17 +313,13 @@ async function updateQuestionRow(
       image_url: bundle.image?.url ?? null,
       audio_url: bundle.audio?.url ?? null,
       explanation: bundle.explanation,
-      category: bundle.category,
-      difficulty: bundle.difficulty,
       lesson_id: bundle.lesson_slug ? (ctx.lessonMap.get(bundle.lesson_slug) ?? null) : null,
-      question_type: bundle.question_type,
-      visibility: bundle.visibility,
       version,
       updated_by: userId,
     })
     .eq("id", questionId);
   if (error) throw new Error("Gagal memperbarui soal.");
-  await writeQuestionRelations(questionId, bundle, ctx);
+  await writeQuestionRelations(questionId, bundle);
 }
 
 export type QuestionImportOptions = {
@@ -687,7 +646,7 @@ export async function importLesson(
   }
 
   const grammarMap = await resolveTagTable(
-    QUESTION_TABLES.grammarTags,
+    "grammar_tags",
     lesson.sections
       .flatMap((s) => s.blocks)
       .map((b) => b.grammar_tag_slug)

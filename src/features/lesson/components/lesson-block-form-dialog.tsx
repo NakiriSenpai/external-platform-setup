@@ -29,7 +29,7 @@ import {
   LESSON_BLOCK_TYPES,
 } from "@/features/lesson/lesson.constants";
 import { useCreateLessonBlock, useUpdateLessonBlock } from "@/hooks/lesson";
-import { useGrammarTags } from "@/hooks/question-bank";
+import { useGrammarTags } from "@/hooks/lesson";
 import type { LessonBlockRow, LessonBlockType } from "@/types/lesson";
 
 type Props = {

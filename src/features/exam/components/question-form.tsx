@@ -30,8 +30,7 @@ import { AutosaveIndicator, useReportAutosave } from "./exam-autosave";
 import { useArchiveBankQuestion, useLessons } from "@/hooks/question-bank";
 import { ANSWER_LABELS } from "@/features/exam/exam.constants";
 import { cn } from "@/lib/utils";
-import type { ExamDifficulty } from "@/types/exam";
-import { ORIGIN_LABELS, type QuestionType, type QuestionVisibility } from "@/types/question-bank";
+import { ORIGIN_LABELS } from "@/types/question-bank";
 import type { QuestionBankInput, QuestionSourceType } from "@/types/question-bank";
 import type { AnswerLabel, MediaSlot, QuestionFormValue } from "./question-types";
 import { audioDebug } from "@/lib/media/audio-debug";
@@ -93,16 +92,7 @@ export function QuestionForm({
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [showImage, setShowImage] = useState(false);
   const [showAudio, setShowAudio] = useState(false);
-  const [tagIds, setTagIds] = useState<string[]>([]);
-  const [generalTagIds, setGeneralTagIds] = useState<string[]>([]);
-  const [newTags, setNewTags] = useState<string[]>([]);
-  const [questionType, setQuestionType] = useState<QuestionType>("reading");
-  const [visibility, setVisibility] = useState<QuestionVisibility>("private");
   const [isArchived, setIsArchived] = useState(false);
-  // Kategori soal tidak lagi diedit di Exam Studio (hanya di Detail Exam);
-  // nilai existing dipertahankan agar Question Bank/import-export tidak berubah.
-  const category = question?.category ?? "umum";
-  const [difficulty, setDifficulty] = useState<ExamDifficulty>("sedang");
   const [lessonId, setLessonId] = useState<string>(NO_LESSON);
   const [explanation, setExplanation] = useState("");
   const [answers, setAnswers] = useState<AnswerState[]>(emptyAnswers());
@@ -127,13 +117,7 @@ export function QuestionForm({
       setAudioUrl(question.audio_url);
       setShowImage(Boolean(question.image_url));
       setShowAudio(Boolean(question.audio_url));
-      setTagIds(question.grammar_tags.map((t) => t.id));
-      setGeneralTagIds((question.tags ?? []).map((t) => t.id));
-      setQuestionType(question.question_type ?? "reading");
-      setVisibility(question.visibility ?? "private");
       setIsArchived(question.is_archived ?? false);
-      setNewTags([]);
-      setDifficulty(question.difficulty ?? "sedang");
       setLessonId(question.lesson_id ?? NO_LESSON);
       setExplanation(question.explanation ?? "");
       const next = ANSWER_LABELS.map((label) => {
@@ -159,13 +143,7 @@ export function QuestionForm({
       setAudioUrl(null);
       setShowImage(false);
       setShowAudio(false);
-      setTagIds([]);
-      setGeneralTagIds([]);
-      setNewTags([]);
-      setQuestionType("reading");
-      setVisibility("private");
       setIsArchived(false);
-      setDifficulty("sedang");
       setLessonId(defaultLessonId ?? NO_LESSON);
       setExplanation("");
       setAnswers(emptyAnswers());
@@ -216,16 +194,9 @@ export function QuestionForm({
     image_url: imageUrl,
     audio_url: audioUrl,
     explanation: clean(explanation),
-    category,
-    difficulty,
     lesson_id: lessonId === NO_LESSON ? null : lessonId,
-    question_type: questionType,
-    visibility,
     source_type: sourceType,
     created_from: createdFrom ?? examId ?? null,
-    grammar_tag_ids: tagIds,
-    tag_ids: generalTagIds,
-    new_tags: newTags,
     answers: answers.map((a) => ({
       label: a.label,
       text: clean(a.text),

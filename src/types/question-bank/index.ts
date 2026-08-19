@@ -1,30 +1,8 @@
-/** Tipe domain Question Bank (Sprint 7). */
-
-import type { ExamDifficulty } from "@/types/exam";
+/** Tipe domain Question Bank (Sprint 7, dibersihkan pada Sprint 22). */
 
 export type QuestionSourceType = "exam" | "lesson" | "import" | "manual";
 export type QuestionOrigin = "manual" | "exam" | "lesson" | "import";
-export type QuestionType =
-  | "reading"
-  | "listening"
-  | "grammar"
-  | "vocabulary"
-  | "conversation"
-  | "mixed";
-export type QuestionVisibility = "private" | "public";
 export type MediaFilter = "semua" | "image" | "audio" | "none";
-
-export type GrammarTagRow = {
-  id: string;
-  slug: string;
-  name: string;
-};
-
-export type TagRow = {
-  id: string;
-  slug: string;
-  name: string;
-};
 
 export type LessonRow = {
   id: string;
@@ -51,15 +29,13 @@ export type QuestionBankRow = {
   image_url: string | null;
   audio_url: string | null;
   explanation: string | null;
-  category: string;
-  difficulty: ExamDifficulty;
   lesson_id: string | null;
   source_type: QuestionSourceType;
   origin: QuestionOrigin;
-  question_type: QuestionType;
-  visibility: QuestionVisibility;
   version: number;
   is_archived: boolean;
+  /** Soal yang dihapus dari Question Bank aktif (tetap dipakai Exam lama). */
+  deleted_at: string | null;
   correct_count: number;
   wrong_count: number;
   skip_count: number;
@@ -71,8 +47,6 @@ export type QuestionBankRow = {
   created_at: string;
   updated_at: string;
   answers: QuestionAnswerRow[];
-  grammar_tags: GrammarTagRow[];
-  tags: TagRow[];
   lesson: LessonRow | null;
 };
 
@@ -90,31 +64,18 @@ export type QuestionBankInput = {
   image_url: string | null;
   audio_url: string | null;
   explanation: string;
-  category: string;
-  difficulty: ExamDifficulty;
   lesson_id: string | null;
   source_type: QuestionSourceType;
   origin?: QuestionOrigin;
-  question_type: QuestionType;
-  visibility: QuestionVisibility;
   created_from: string | null;
-  grammar_tag_ids: string[];
-  tag_ids?: string[];
-  new_tags?: string[];
   answers: QuestionAnswerInput[];
 };
 
 export type QuestionBankFilters = {
   search?: string;
   source?: "semua" | QuestionSourceType;
-  grammar?: "semua" | string;
-  category?: "semua" | string;
-  difficulty?: "semua" | ExamDifficulty;
   media?: MediaFilter;
-  questionType?: "semua" | QuestionType;
-  visibility?: "semua" | QuestionVisibility;
   origin?: "semua" | QuestionOrigin;
-  tag?: "semua" | string;
   archived?: "aktif" | "arsip" | "semua";
   page?: number;
   pageSize?: number;
@@ -128,14 +89,13 @@ export type QuestionBankResult = {
   totalPages: number;
 };
 
+/** Hasil penghapusan soal dari Question Bank. */
+export type QuestionDeleteResult = "hard" | "soft";
+
 export const QUESTION_TABLES = {
   questions: "questions",
   answers: "question_answers",
-  grammarTags: "grammar_tags",
-  questionGrammarTags: "question_grammar_tags",
   lessons: "lessons",
-  tags: "tags",
-  questionTags: "question_tags",
 } as const;
 
 export const SOURCE_LABELS: Record<QuestionSourceType, string> = {
@@ -145,23 +105,9 @@ export const SOURCE_LABELS: Record<QuestionSourceType, string> = {
   manual: "Manual",
 };
 
-export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
-  reading: "Reading",
-  listening: "Listening",
-  grammar: "Grammar",
-  vocabulary: "Vocabulary",
-  conversation: "Conversation",
-  mixed: "Mixed",
-};
-
 export const ORIGIN_LABELS: Record<QuestionOrigin, string> = {
   manual: "Manual",
   exam: "Exam Studio",
   lesson: "Lesson Studio",
   import: "Import",
-};
-
-export const VISIBILITY_LABELS: Record<QuestionVisibility, string> = {
-  private: "Privat",
-  public: "Publik",
 };

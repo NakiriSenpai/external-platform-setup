@@ -273,7 +273,7 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
                           size="sm"
                           audioKey={`review:${question.question_id}:${answer.label}`}
                           src={answer.audio_url}
-                          label={`Audio pilihan ${answerIndex + 1}`}
+                          label={`Putar audio pilihan ${answerIndex + 1}`}
                         />
                       ) : null}
                       <span className="flex flex-wrap gap-2 text-xs">
@@ -297,23 +297,7 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
                 ) : (
                   <p className="text-foreground">Belum ada pembahasan.</p>
                 )}
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                      Grammar
-                    </p>
-                    {question.grammar_tags.length > 0 ? (
-                      <div className="mt-1 flex flex-wrap gap-1.5">
-                        {question.grammar_tags.map((tag) => (
-                          <Badge key={tag.id} variant="secondary">
-                            {tag.name}
-                          </Badge>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground">Belum dihubungkan.</p>
-                    )}
-                  </div>
+                <div className="grid gap-3">
                   <div>
                     <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                       Materi Terkait

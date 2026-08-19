@@ -17,16 +17,7 @@ export const MAX_BUNDLE_BYTES = 8 * 1024 * 1024;
 export type BundleType = "question_bank" | "exam" | "lesson";
 
 const difficulty = z.enum(["mudah", "sedang", "sulit"]);
-const questionTypeEnum = z.enum([
-  "reading",
-  "listening",
-  "grammar",
-  "vocabulary",
-  "conversation",
-  "mixed",
-]);
 const originEnum = z.enum(["manual", "exam", "lesson", "import"]);
-const visibilityEnum = z.enum(["private", "public"]);
 const answerLabel = z.enum(["A", "B", "C", "D"]);
 
 /** Referensi media portable (URL saja tidak dianggap stabil). */
@@ -59,19 +50,13 @@ export const questionBundleSchema = z.object({
   /** UUID asal — informasi saja, tidak dipakai untuk resolusi. */
   source_id: z.string().nullish(),
   text: z.string().max(8000).default(""),
-  question_type: questionTypeEnum.default("reading"),
-  difficulty: difficulty.default("sedang"),
-  category: z.string().min(1).max(80).default("umum"),
   origin: originEnum.default("import"),
-  visibility: visibilityEnum.default("private"),
   version: z.number().int().min(1).default(1),
   explanation: z.string().max(8000).nullable().default(null),
   image: mediaRefSchema.default(null),
   audio: mediaRefSchema.default(null),
   /** Referensi lesson memakai slug, bukan UUID. */
   lesson_slug: z.string().max(160).nullable().default(null),
-  grammar_tags: z.array(tagRefSchema).default([]),
-  tags: z.array(tagRefSchema).default([]),
   answers: z.array(answerBundleSchema).min(1).max(8),
   created_at: z.string().nullish(),
   updated_at: z.string().nullish(),

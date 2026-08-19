@@ -56,11 +56,7 @@ async function buildSnapshot(exam: ExamRow) {
       instruction: q.instruction ?? null,
       image_url: q.image_url,
       audio_url: q.audio_url,
-      category: q.category,
-      difficulty: q.difficulty,
-      question_type: q.question_type,
       lesson_id: q.lesson_id,
-      grammar_tags: q.grammar_tags,
       explanation: q.explanation,
       correct_label: (correct?.label as AnswerLabel | undefined) ?? null,
       answers: answers.map((a) => ({
@@ -437,4 +433,13 @@ export async function listMyResults(): Promise<AttemptResultRow[]> {
     .order("submitted_at", { ascending: true });
   if (error) return [];
   return (data as AttemptResultRow[] | null) ?? [];
+}
+
+/**
+ * Hapus satu riwayat attempt (Owner only).
+ * Otorisasi dijaga oleh RLS/RPC di server; klien hanya menyembunyikan tombol.
+ */
+export async function deleteAttempt(attemptId: string): Promise<void> {
+  const { error } = await supabase.rpc("delete_exam_attempt", { p_attempt_id: attemptId });
+  if (error) throw new Error("Gagal menghapus riwayat ujian.");
 }

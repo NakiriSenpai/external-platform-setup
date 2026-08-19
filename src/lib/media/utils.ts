@@ -62,20 +62,20 @@ export function formatDuration(seconds: number): string {
 
 /**
  * Nilai atribut accept untuk <input type="file">.
- * Sengaja memakai wildcard (image/*, audio/*) agar Android Photo Picker,
- * Documents Provider, Google Photos, dan galeri bawaan menampilkan semua folder.
+ * Audio difilter ke MIME/ekstensi audio saja; gambar memakai wildcard image/*.
  * Validasi format tetap dilakukan setelah file dipilih.
  */
 export function acceptMime(kinds: MediaKind | MediaKind[]): string {
   const list = Array.isArray(kinds) ? kinds : [kinds];
   const values = list.flatMap((kind) => {
     if (kind === "audio") {
-      // Sejumlah Android Documents Provider memberi audio MIME generik atau
-      // application/ogg. Ekstensi membuat file tetap muncul di native picker.
+      // Hanya audio: wildcard + daftar MIME/ekstensi audio agar Android Storage
+      // memfilter file non-audio. MIME generik TIDAK dimasukkan di sini supaya
+      // gambar/video/dokumen tidak ikut ditawarkan; fallback MIME generik tetap
+      // ditangani saat validasi setelah file dipilih.
       return [
         "audio/*",
-        "application/ogg",
-        "application/octet-stream",
+        ...MEDIA_MIME.audio,
         ...MEDIA_EXTENSIONS.audio.map((extension) => `.${extension}`),
       ];
     }

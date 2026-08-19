@@ -4,17 +4,13 @@ import {
   markQuestionsUsed,
   updateBankQuestion,
 } from "@/services/question-bank";
-import type {
-  GrammarTagRow,
-  QuestionAnswerRow,
-  QuestionBankInput,
-  TagRow,
-} from "@/types/question-bank";
+import type { QuestionAnswerRow, QuestionBankInput } from "@/types/question-bank";
 import {
   LESSON_TABLES,
   type LessonBlockInput,
   type LessonBlockRow,
   type LessonDetailRow,
+  type GrammarTagRow,
   type LessonInput,
   type LessonListItem,
   type LessonListParams,
@@ -312,9 +308,17 @@ export async function reorderLessonBlocks(ids: string[]) {
 // ---------- PRACTICE (referensi Question Bank) ----------
 
 const LESSON_QUESTION_SELECT = `id, lesson_id, section_id, question_id, order_index,
-  question:questions(*, answers:question_answers(*),
-    tag_links:question_grammar_tags(tag:grammar_tags(*)),
-    general_tag_links:question_tags(tag:tags(*)))`;
+  question:questions(*, answers:question_answers(*))`;
+
+/** Daftar Grammar Tag (dipakai blok grammar_highlight pada Lesson). */
+export async function listGrammarTags(): Promise<GrammarTagRow[]> {
+  const { data, error } = await supabase
+    .from("grammar_tags")
+    .select("id,slug,name")
+    .order("name", { ascending: true });
+  if (error) return [];
+  return (data as GrammarTagRow[] | null) ?? [];
+}
 
 type RawLessonQuestion = {
   id: string;
@@ -328,17 +332,11 @@ type RawLessonQuestion = {
         image_url: string | null;
         audio_url: string | null;
         explanation: string | null;
-        category: string;
-        difficulty: LessonQuestionWithAnswers["difficulty"];
-        question_type?: LessonQuestionWithAnswers["question_type"] | null;
-        visibility?: LessonQuestionWithAnswers["visibility"] | null;
         origin?: LessonQuestionWithAnswers["origin"] | null;
         source_type?: LessonQuestionWithAnswers["source_type"] | null;
         version?: number | null;
         is_archived?: boolean | null;
         answers?: QuestionAnswerRow[] | null;
-        tag_links?: { tag: GrammarTagRow | null }[] | null;
-        general_tag_links?: { tag: TagRow | null }[] | null;
       }
     | null;
 };
@@ -367,16 +365,10 @@ export async function listLessonQuestions(
         image_url: q.image_url,
         audio_url: q.audio_url,
         explanation: q.explanation,
-        category: q.category,
-        difficulty: q.difficulty,
-        question_type: q.question_type ?? "reading",
-        visibility: q.visibility ?? "private",
         origin: q.origin ?? "lesson",
         source_type: q.source_type ?? "lesson",
         version: q.version ?? 1,
         is_archived: q.is_archived ?? false,
-        tags: (q.general_tag_links ?? []).map((l) => l.tag).filter(Boolean) as TagRow[],
-        grammar_tags: (q.tag_links ?? []).map((l) => l.tag).filter(Boolean) as GrammarTagRow[],
         answers: (q.answers ?? []).slice().sort((a, b) => a.label.localeCompare(b.label)),
       };
     });

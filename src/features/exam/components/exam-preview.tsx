@@ -224,7 +224,7 @@ export function ExamPreview({ examId }: Props) {
                           size="sm"
                           audioKey={`preview:${current.id}:${answer.label}`}
                           src={answer.audio_url}
-                          label={`Audio pilihan ${answerIndex + 1}`}
+                          label={`Putar audio pilihan ${answerIndex + 1}`}
                         />
                       </span>
                     ) : null}

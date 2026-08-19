@@ -5,7 +5,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { RichText } from "@/components/common/rich-text";
 import { richTextToPlain } from "@/lib/rich-text";
 import { cn } from "@/lib/utils";
@@ -86,14 +85,6 @@ export function QuestionPreviewDialog({ open, onOpenChange, question }: Props) {
                 <RichText html={question.explanation} className="mt-1" />
               </div>
             ) : null}
-
-            <div className="flex flex-wrap gap-1.5">
-              {question.grammar_tags.map((tag) => (
-                <Badge key={tag.id} variant="outline" className="text-[11px]">
-                  {tag.name}
-                </Badge>
-              ))}
-            </div>
           </div>
         ) : null}
       </DialogContent>

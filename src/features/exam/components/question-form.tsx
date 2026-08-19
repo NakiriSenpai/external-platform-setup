@@ -116,6 +116,8 @@ export function QuestionForm({
   const updateQuestion = useUpdateQuestion();
   const pending = createQuestion.isPending || updateQuestion.isPending || submitting;
 
+  const questionId = question?.question_id ?? null;
+
   useEffect(() => {
     setError(null);
     if (question) {
@@ -170,7 +172,10 @@ export function QuestionForm({
       setAnswerMedia({});
       setCorrect("A");
     }
-  }, [question, defaultLessonId, resetKey]);
+    // Objek `question` dapat berganti referensi saat TanStack Query refetch on
+    // focus setelah Android Storage ditutup. Jangan reset/unmount file input
+    // untuk soal yang sama karena hasil native picker belum sempat dikirim.
+  }, [questionId, defaultLessonId, resetKey]);
 
   const setAnswer = (label: AnswerLabel, patch: Partial<AnswerState>) =>
     setAnswers((prev) => prev.map((a) => (a.label === label ? { ...a, ...patch } : a)));

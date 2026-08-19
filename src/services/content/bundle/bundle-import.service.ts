@@ -159,7 +159,6 @@ function questionIssues(bundle: QuestionBundle, label: string): ValidationIssue[
   const issues = validateQuestion(
     {
       text: bundle.text,
-      instruction: bundle.instruction ?? null,
       image_url: bundle.image?.url ?? null,
       audio_url: bundle.audio?.url ?? null,
       is_archived: false,

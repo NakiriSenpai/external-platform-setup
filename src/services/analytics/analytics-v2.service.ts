@@ -8,6 +8,7 @@ import type {
   AnalyticsStudentRow,
   AnalyticsTrendPoint,
   AttendanceReport,
+  QuestionScope,
   QuestionStats,
   ScoreMatrix,
 } from "@/types/analytics/analytics-v2";
@@ -168,6 +169,7 @@ export async function fetchScoreMatrix(filters: AnalyticsFilterState): Promise<S
   const { data, error } = await supabase.rpc("analytics_score_matrix", {
     ...baseArgs(filters),
     p_exam_id: filters.examId,
+    p_student_id: filters.studentId,
     p_tenant_id: null,
   });
   if (error) throw new Error("Gagal memuat tabel nilai.");
@@ -179,15 +181,18 @@ export async function fetchScoreMatrix(filters: AnalyticsFilterState): Promise<S
 export async function fetchQuestionStats(
   examId: string,
   filters: AnalyticsFilterState,
+  scope: QuestionScope = "first",
 ): Promise<QuestionStats> {
   const { data, error } = await supabase.rpc("analytics_question_stats", {
     p_exam_id: examId,
     ...baseArgs(filters),
+    p_student_id: filters.studentId,
+    p_scope: scope,
     p_tenant_id: null,
   });
   if (error) throw new Error("Gagal memuat analisis soal.");
   const raw = (data as Partial<QuestionStats> | null) ?? {};
-  return { attempts: raw.attempts ?? 0, questions: raw.questions ?? [] };
+  return { scope: raw.scope ?? scope, attempts: raw.attempts ?? 0, questions: raw.questions ?? [] };
 }
 
 /** Rekap kehadiran / aktivitas siswa. */

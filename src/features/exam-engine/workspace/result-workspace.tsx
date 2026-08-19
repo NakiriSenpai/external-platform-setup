@@ -1,6 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, CircleSlash, Loader2, RotateCcw, Trophy, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  CircleSlash,
+  Loader2,
+  RotateCcw,
+  Trophy,
+  XCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAttemptResult, useStartAttempt } from "@/hooks/attempt";
+import { useColorTestResult } from "@/hooks/color-test";
 import { formatDurasi } from "@/types/attempt";
 import { formatTanggal } from "@/utils/format";
 import { WorkspaceShell } from "./workspace-shell";
@@ -17,6 +25,17 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useAttemptResult(attemptId);
   const startAttempt = useStartAttempt();
+  const colorTest = useColorTestResult(attemptId);
+  const colorSession = colorTest.data?.session ?? null;
+
+  // Tahap wajib: selama Tes Buta Warna belum selesai, hasil ujian belum dibuka.
+  useEffect(() => {
+    if (colorTest.isLoading || colorTest.isError) return;
+    if (!colorSession || colorSession.status === "in_progress") {
+      void navigate({ to: "/ujian/color-test/$attemptId", params: { attemptId } });
+    }
+  }, [colorTest.isLoading, colorTest.isError, colorSession, attemptId, navigate]);
+
 
   if (isLoading) {
     return (
@@ -162,6 +181,50 @@ export function ResultWorkspace({ attemptId }: { attemptId: string }) {
               </CardContent>
             </Card>
           </div>
+
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                Hasil Tes Buta Warna
+              </p>
+              <Separator className="my-3" />
+              {colorSession ? (
+                <>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-muted-foreground">Status</span>
+                    <Badge
+                      variant={colorSession.passed ? "default" : "destructive"}
+                      className={colorSession.passed ? "bg-success text-success-foreground" : ""}
+                    >
+                      {colorSession.passed ? "LULUS" : "TIDAK LULUS"}
+                    </Badge>
+                  </div>
+                  <dl className="mt-3 space-y-3 text-sm">
+                    <Row
+                      label="Benar"
+                      value={`${colorSession.correct_count} / ${colorSession.total_questions}`}
+                    />
+                    <Row
+                      label="Salah"
+                      value={`${colorSession.wrong_count} / ${colorSession.total_questions}`}
+                    />
+                    <Row
+                      label="Skip"
+                      value={`${colorSession.skipped_count} / ${colorSession.max_skip}`}
+                    />
+                    <Row
+                      label="Waktu"
+                      value={formatDurasi(colorSession.duration_seconds ?? 0)}
+                    />
+                  </dl>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Tes buta warna untuk attempt ini belum tersedia.
+                </p>
+              )}
+            </CardContent>
+          </Card>
 
           <Card>
             <CardContent className="space-y-1 p-4 text-center">

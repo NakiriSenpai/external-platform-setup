@@ -29,6 +29,7 @@ import { Route as AdminAnalyticsRouteImport } from './routes/admin_.analytics'
 import { Route as AdminUsersRouteImport } from './routes/admin_.users'
 import { Route as MateriIndexRouteImport } from './routes/materi.index'
 import { Route as MateriCategoryRouteImport } from './routes/materi.$category'
+import { Route as OwnerColorTestRouteImport } from './routes/owner_.color-test'
 import { Route as OwnerQuestionBankRouteImport } from './routes/owner_.question-bank'
 import { Route as OwnerSettingsRouteImport } from './routes/owner_.settings'
 import { Route as OwnerTenantsRouteImport } from './routes/owner_.tenants'
@@ -39,6 +40,7 @@ import { Route as UjianAttemptIdRouteImport } from './routes/ujian.$attemptId'
 import { Route as MateriLessonLessonIdRouteImport } from './routes/materi.lesson.$lessonId'
 import { Route as OwnerExamStudioIndexRouteImport } from './routes/owner_.exam-studio.index'
 import { Route as OwnerLessonStudioIndexRouteImport } from './routes/owner_.lesson-studio.index'
+import { Route as UjianColorTestAttemptIdRouteImport } from './routes/ujian.color-test.$attemptId'
 import { Route as UjianHasilAttemptIdRouteImport } from './routes/ujian.hasil.$attemptId'
 import { Route as UjianReviewAttemptIdRouteImport } from './routes/ujian.review.$attemptId'
 import { Route as UjianRiwayatExamIdRouteImport } from './routes/ujian.riwayat.$examId'
@@ -147,6 +149,11 @@ const MateriCategoryRoute = MateriCategoryRouteImport.update({
   path: '/$category',
   getParentRoute: () => MateriRoute,
 } as any)
+const OwnerColorTestRoute = OwnerColorTestRouteImport.update({
+  id: '/owner_/color-test',
+  path: '/owner/color-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OwnerQuestionBankRoute = OwnerQuestionBankRouteImport.update({
   id: '/owner_/question-bank',
   path: '/owner/question-bank',
@@ -196,6 +203,11 @@ const OwnerLessonStudioIndexRoute = OwnerLessonStudioIndexRouteImport.update({
   id: '/owner_/lesson-studio/',
   path: '/owner/lesson-studio/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const UjianColorTestAttemptIdRoute = UjianColorTestAttemptIdRouteImport.update({
+  id: '/color-test/$attemptId',
+  path: '/color-test/$attemptId',
+  getParentRoute: () => UjianRoute,
 } as any)
 const UjianHasilAttemptIdRoute = UjianHasilAttemptIdRouteImport.update({
   id: '/hasil/$attemptId',
@@ -257,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/users': typeof AdminUsersRoute
   '/materi/$category': typeof MateriCategoryRoute
+  '/owner/color-test': typeof OwnerColorTestRoute
   '/owner/question-bank': typeof OwnerQuestionBankRoute
   '/owner/settings': typeof OwnerSettingsRoute
   '/owner/tenants': typeof OwnerTenantsRoute
@@ -266,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/materi/': typeof MateriIndexRoute
   '/ujian/': typeof UjianIndexRoute
   '/materi/lesson/$lessonId': typeof MateriLessonLessonIdRoute
+  '/ujian/color-test/$attemptId': typeof UjianColorTestAttemptIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
   '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
   '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
@@ -294,6 +308,7 @@ export interface FileRoutesByTo {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/users': typeof AdminUsersRoute
   '/materi/$category': typeof MateriCategoryRoute
+  '/owner/color-test': typeof OwnerColorTestRoute
   '/owner/question-bank': typeof OwnerQuestionBankRoute
   '/owner/settings': typeof OwnerSettingsRoute
   '/owner/tenants': typeof OwnerTenantsRoute
@@ -303,6 +318,7 @@ export interface FileRoutesByTo {
   '/materi': typeof MateriIndexRoute
   '/ujian': typeof UjianIndexRoute
   '/materi/lesson/$lessonId': typeof MateriLessonLessonIdRoute
+  '/ujian/color-test/$attemptId': typeof UjianColorTestAttemptIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
   '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
   '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
@@ -334,6 +350,7 @@ export interface FileRoutesById {
   '/admin_/analytics': typeof AdminAnalyticsRoute
   '/admin_/users': typeof AdminUsersRoute
   '/materi/$category': typeof MateriCategoryRoute
+  '/owner_/color-test': typeof OwnerColorTestRoute
   '/owner_/question-bank': typeof OwnerQuestionBankRoute
   '/owner_/settings': typeof OwnerSettingsRoute
   '/owner_/tenants': typeof OwnerTenantsRoute
@@ -343,6 +360,7 @@ export interface FileRoutesById {
   '/materi/': typeof MateriIndexRoute
   '/ujian/': typeof UjianIndexRoute
   '/materi/lesson/$lessonId': typeof MateriLessonLessonIdRoute
+  '/ujian/color-test/$attemptId': typeof UjianColorTestAttemptIdRoute
   '/ujian/hasil/$attemptId': typeof UjianHasilAttemptIdRoute
   '/ujian/review/$attemptId': typeof UjianReviewAttemptIdRoute
   '/ujian/riwayat/$examId': typeof UjianRiwayatExamIdRoute
@@ -375,6 +393,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/users'
     | '/materi/$category'
+    | '/owner/color-test'
     | '/owner/question-bank'
     | '/owner/settings'
     | '/owner/tenants'
@@ -384,6 +403,7 @@ export interface FileRouteTypes {
     | '/materi/'
     | '/ujian/'
     | '/materi/lesson/$lessonId'
+    | '/ujian/color-test/$attemptId'
     | '/ujian/hasil/$attemptId'
     | '/ujian/review/$attemptId'
     | '/ujian/riwayat/$examId'
@@ -412,6 +432,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/users'
     | '/materi/$category'
+    | '/owner/color-test'
     | '/owner/question-bank'
     | '/owner/settings'
     | '/owner/tenants'
@@ -421,6 +442,7 @@ export interface FileRouteTypes {
     | '/materi'
     | '/ujian'
     | '/materi/lesson/$lessonId'
+    | '/ujian/color-test/$attemptId'
     | '/ujian/hasil/$attemptId'
     | '/ujian/review/$attemptId'
     | '/ujian/riwayat/$examId'
@@ -451,6 +473,7 @@ export interface FileRouteTypes {
     | '/admin_/analytics'
     | '/admin_/users'
     | '/materi/$category'
+    | '/owner_/color-test'
     | '/owner_/question-bank'
     | '/owner_/settings'
     | '/owner_/tenants'
@@ -460,6 +483,7 @@ export interface FileRouteTypes {
     | '/materi/'
     | '/ujian/'
     | '/materi/lesson/$lessonId'
+    | '/ujian/color-test/$attemptId'
     | '/ujian/hasil/$attemptId'
     | '/ujian/review/$attemptId'
     | '/ujian/riwayat/$examId'
@@ -490,6 +514,7 @@ export interface RootRouteChildren {
   UjianRoute: typeof UjianRouteWithChildren
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminUsersRoute: typeof AdminUsersRoute
+  OwnerColorTestRoute: typeof OwnerColorTestRoute
   OwnerQuestionBankRoute: typeof OwnerQuestionBankRoute
   OwnerSettingsRoute: typeof OwnerSettingsRoute
   OwnerTenantsRoute: typeof OwnerTenantsRoute
@@ -645,6 +670,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MateriCategoryRouteImport
       parentRoute: typeof MateriRoute
     }
+    '/owner_/color-test': {
+      id: '/owner_/color-test'
+      path: '/owner/color-test'
+      fullPath: '/owner/color-test'
+      preLoaderRoute: typeof OwnerColorTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/owner_/question-bank': {
       id: '/owner_/question-bank'
       path: '/owner/question-bank'
@@ -714,6 +746,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/owner/lesson-studio/'
       preLoaderRoute: typeof OwnerLessonStudioIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/ujian/color-test/$attemptId': {
+      id: '/ujian/color-test/$attemptId'
+      path: '/color-test/$attemptId'
+      fullPath: '/ujian/color-test/$attemptId'
+      preLoaderRoute: typeof UjianColorTestAttemptIdRouteImport
+      parentRoute: typeof UjianRoute
     }
     '/ujian/hasil/$attemptId': {
       id: '/ujian/hasil/$attemptId'
@@ -785,6 +824,7 @@ const MateriRouteWithChildren =
 interface UjianRouteChildren {
   UjianAttemptIdRoute: typeof UjianAttemptIdRoute
   UjianIndexRoute: typeof UjianIndexRoute
+  UjianColorTestAttemptIdRoute: typeof UjianColorTestAttemptIdRoute
   UjianHasilAttemptIdRoute: typeof UjianHasilAttemptIdRoute
   UjianReviewAttemptIdRoute: typeof UjianReviewAttemptIdRoute
   UjianRiwayatExamIdRoute: typeof UjianRiwayatExamIdRoute
@@ -793,6 +833,7 @@ interface UjianRouteChildren {
 const UjianRouteChildren: UjianRouteChildren = {
   UjianAttemptIdRoute: UjianAttemptIdRoute,
   UjianIndexRoute: UjianIndexRoute,
+  UjianColorTestAttemptIdRoute: UjianColorTestAttemptIdRoute,
   UjianHasilAttemptIdRoute: UjianHasilAttemptIdRoute,
   UjianReviewAttemptIdRoute: UjianReviewAttemptIdRoute,
   UjianRiwayatExamIdRoute: UjianRiwayatExamIdRoute,
@@ -819,6 +860,7 @@ const rootRouteChildren: RootRouteChildren = {
   UjianRoute: UjianRouteWithChildren,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminUsersRoute: AdminUsersRoute,
+  OwnerColorTestRoute: OwnerColorTestRoute,
   OwnerQuestionBankRoute: OwnerQuestionBankRoute,
   OwnerSettingsRoute: OwnerSettingsRoute,
   OwnerTenantsRoute: OwnerTenantsRoute,

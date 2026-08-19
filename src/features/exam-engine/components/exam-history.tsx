@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAvailableExams, useDeleteAttempt, useMyAttempts } from "@/hooks/attempt";
 import { useAuth } from "@/hooks/auth";
+import { useColorTestSummaries } from "@/hooks/color-test";
 import { formatDurasi } from "@/types/attempt";
 
 const dateFormatter = new Intl.DateTimeFormat("id-ID", {
@@ -42,6 +43,9 @@ export function ExamHistory({ examId }: { examId: string }) {
     .sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
   const numberById = new Map(ascending.map((a, i) => [a.id, i + 1]));
   const rows = [...ascending].reverse();
+  // Color Test per attempt (bukan yang terbaru secara global).
+  const { data: colorTests } = useColorTestSummaries(ascending.map((a) => a.id));
+  const colorByAttempt = new Map((colorTests ?? []).map((c) => [c.exam_attempt_id, c]));
 
   if (isLoading) {
     return (
@@ -100,6 +104,26 @@ export function ExamHistory({ examId }: { examId: string }) {
                     Benar {attempt.correct_count} · Salah {attempt.wrong_count} · Tidak dijawab{" "}
                     {attempt.skipped_count} · {attempt.total_questions} soal
                   </p>
+                  {(() => {
+                    const color = colorByAttempt.get(attempt.id);
+                    if (!color) return null;
+                    return (
+                      <p className="text-xs text-muted-foreground">
+                        Tes Buta Warna:{" "}
+                        <span
+                          className={
+                            color.passed
+                              ? "font-semibold text-success"
+                              : "font-semibold text-destructive"
+                          }
+                        >
+                          {color.passed ? "Lulus" : "Tidak Lulus"}
+                        </span>{" "}
+                        · {color.correct_count} / {color.total_questions} benar · Skip{" "}
+                        {color.skipped_count}/{color.max_skip}
+                      </p>
+                    );
+                  })()}
                   <p className="text-xs text-muted-foreground">
                     {dateFormatter.format(
                       new Date(attempt.submitted_at ?? attempt.finished_at ?? attempt.created_at),

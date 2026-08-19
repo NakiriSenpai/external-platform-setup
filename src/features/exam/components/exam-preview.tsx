@@ -93,7 +93,7 @@ export function ExamPreview({ examId }: Props) {
     setFlags((prev) => ({ ...prev, [current.id]: !prev[current.id] }));
 
   return (
-    <AudioManagerProvider>
+    <AudioManagerProvider attemptId={`preview:${examId}`} lockAfterPlay={false}>
       <WorkspaceShell
         header={
           <>

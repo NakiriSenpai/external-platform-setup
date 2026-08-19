@@ -26,7 +26,7 @@ import { isRichTextEmpty, richTextToPlain } from "@/lib/rich-text";
 import { Switch } from "@/components/ui/switch";
 import { useCreateQuestion, useUpdateQuestion } from "@/hooks/exam";
 import { useAutosave } from "@/hooks/use-autosave";
-import { useReportAutosave } from "./exam-autosave";
+import { AutosaveIndicator, useReportAutosave } from "./exam-autosave";
 import { useArchiveBankQuestion, useLessons } from "@/hooks/question-bank";
 import { ANSWER_LABELS, CATEGORY_LABELS, EXAM_CATEGORIES } from "@/features/exam/exam.constants";
 import { cn } from "@/lib/utils";

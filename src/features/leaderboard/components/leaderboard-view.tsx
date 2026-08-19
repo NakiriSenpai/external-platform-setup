@@ -76,7 +76,7 @@ function RankRow({ row }: { row: LeaderboardRow }) {
 }
 
 
-/** Papan peringkat siswa dalam satu tenant — skor attempt pertama per ujian. */
+/** Papan peringkat siswa dalam satu tenant — skor attempt selesai terbaru per ujian. */
 export function LeaderboardView() {
   const router = useRouter();
   const [examId, setExamId] = useState<string | null>(null);

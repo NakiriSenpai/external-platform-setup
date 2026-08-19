@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import {
   Archive,
   ArchiveRestore,
   Download,
+  Eye,
   Image as ImageIcon,
   Music,
   Trash2,
@@ -96,13 +98,26 @@ export function QuestionBankList() {
 
   return (
     <section className="space-y-5">
-      <header className="space-y-1">
-        <h1 className="text-lg font-semibold">Question Bank</h1>
-        <p className="text-sm text-muted-foreground">
-          Kumpulan seluruh soal yang pernah dibuat dari Exam Studio dan Lesson Studio. Soal baru
-          hanya dapat dibuat dari Studio, bukan dari halaman ini.
-        </p>
+      <header className="space-y-3">
+        <div className="space-y-1">
+          <h1 className="text-lg font-semibold">Question Bank</h1>
+          <p className="text-sm text-muted-foreground">
+            Kumpulan seluruh soal yang pernah dibuat dari Exam Studio dan Lesson Studio. Soal baru
+            hanya dapat dibuat dari Studio, bukan dari halaman ini.
+          </p>
+        </div>
+        <nav className="flex flex-wrap gap-2" aria-label="Kategori bank soal">
+          <Button size="sm" variant="default" className="min-h-9">
+            Soal Ujian
+          </Button>
+          <Button size="sm" variant="outline" className="min-h-9" asChild>
+            <Link to="/owner/color-test">
+              <Eye className="mr-1 size-4" /> Tes Buta Warna
+            </Link>
+          </Button>
+        </nav>
       </header>
+
 
       <div className="flex flex-wrap gap-2">
         <Button variant="outline" className="min-h-11" onClick={() => setImportOpen(true)}>

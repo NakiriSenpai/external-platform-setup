@@ -139,3 +139,17 @@ export async function archiveColorTestQuestion(id: string): Promise<void> {
     .eq("id", id);
   if (error) throw new Error(error.message);
 }
+
+/** Ubah soal pool (gambar, jawaban, status aktif). */
+export async function updateColorTestQuestion(
+  id: string,
+  patch: Partial<Pick<ColorTestQuestionInput, "image_url" | "image_public_id" | "correct_answer">> & {
+    active?: boolean;
+  },
+): Promise<void> {
+  const { error } = await supabase
+    .from("color_test_questions")
+    .update({ ...patch, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}

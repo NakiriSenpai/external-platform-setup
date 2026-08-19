@@ -61,15 +61,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(nextSession);
       setIsSessionLoading(false);
       const nextUserId = nextSession?.user?.id ?? null;
-      if (nextUserId !== profileUserRef.current) {
+      const userChanged = nextUserId !== profileUserRef.current;
+      if (userChanged) {
         // User berganti: buang profil lama sebelum profil baru selesai dimuat.
         profileUserRef.current = nextUserId;
         setProfile(null);
         setIsProfileLoading(Boolean(nextUserId));
       }
       if (!nextSession) setIsProfileLoading(false);
-      // Panggilan Supabase lain tidak boleh dilakukan langsung di dalam callback.
-      setTimeout(() => void loadProfile(nextSession), 0);
+      // TOKEN_REFRESHED lazim terjadi ketika Android kembali dari native picker.
+      // Profil untuk user yang sama sudah valid; memuatnya ulang akan membuat
+      // RequireRole menukar seluruh editor dengan LoadingScreen dan menghancurkan
+      // input file sebelum browser mengirim event change.
+      if (userChanged) {
+        // Panggilan Supabase lain tidak boleh dilakukan langsung di dalam callback.
+        setTimeout(() => void loadProfile(nextSession), 0);
+      }
     });
 
     void getCurrentSession().then(async (restored) => {

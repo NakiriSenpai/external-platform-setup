@@ -575,6 +575,7 @@ begin
     group by k.question_id, k.question_index, k.question_text, k.correct_label
   )
   select jsonb_build_object(
+    'scope', v_scope,
     'attempts', (select count(*) from scoped_attempts),
     'questions', coalesce((select jsonb_agg(jsonb_build_object(
         'question_id', st.question_id,
@@ -595,7 +596,7 @@ begin
 end;
 $$;
 
-grant execute on function public.analytics_question_stats(uuid, date, date, uuid) to authenticated;
+grant execute on function public.analytics_question_stats(uuid, date, date, uuid, text, uuid) to authenticated;
 
 -- 10. ATTENDANCE -------------------------------------------------------
 create or replace function public.analytics_attendance(

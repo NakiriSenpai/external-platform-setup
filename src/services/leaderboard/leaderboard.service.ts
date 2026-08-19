@@ -18,8 +18,10 @@ function normalize(row: Record<string, unknown>): LeaderboardRow {
     username: (row["username"] as string | null) ?? null,
     avatar_url: (row["avatar_url"] as string | null) ?? null,
     role: String(row["role"] ?? "siswa"),
-    attempt_count: Number(row["attempt_count"] ?? 0),
-    first_attempt_score: Number(row["first_attempt_score"] ?? 0),
+    // Fallback menjaga UI tetap terbaca selama corrective migration external
+    // belum diterapkan; kontrak baru tetap menjadi source of truth sesudahnya.
+    attempt_count: Number(row["attempt_count"] ?? row["exams_taken"] ?? 0),
+    first_attempt_score: Number(row["first_attempt_score"] ?? row["total_score"] ?? 0),
     first_qualified_at: (row["first_qualified_at"] as string | null) ?? null,
     is_current_user: Boolean(row["is_current_user"]),
     total_rows: Number(row["total_rows"] ?? 0),

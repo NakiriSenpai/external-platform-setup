@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { ExamMediaField } from "./media-field";
 import { RichTextEditor } from "@/components/common/rich-text-editor";
-import { isRichTextEmpty, richTextToPlain } from "@/lib/rich-text";
+import { isRichTextEmpty } from "@/lib/rich-text";
 import { Switch } from "@/components/ui/switch";
 import { useCreateQuestion, useUpdateQuestion } from "@/hooks/exam";
 import { useAutosave } from "@/hooks/use-autosave";

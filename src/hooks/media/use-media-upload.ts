@@ -27,6 +27,11 @@ export function useMediaUpload(options: Options = {}) {
   const run = useCallback(
     async (target: File) => {
       const expected: MediaKind | null = allowed.length === 1 ? (allowed[0] as MediaKind) : null;
+      const detected = getMediaType(target, expected);
+      audioDebug(
+        "05 MEDIA_DETECTION",
+        detected ? `kind=${detected}; expected=${expected ?? "auto"}` : "kind=none",
+      );
       const validation = validateMediaFile(target, allowed);
       if (!validation.valid) {
         audioDebug("06 VALIDATION_FAIL", validation.message);
@@ -49,8 +54,7 @@ export function useMediaUpload(options: Options = {}) {
       setError(null);
 
       try {
-        const kind = (getMediaType(target, expected) ?? expected ?? "image") as MediaKind;
-        audioDebug("05 MEDIA_DETECTION", `kind=${kind}; expected=${expected ?? "auto"}`);
+        const kind = (detected ?? expected ?? "image") as MediaKind;
         audioDebug("07 UPLOAD_CALLED", "uploadMedia dipanggil");
         const result = await uploadMedia(target, {
           ...(folder ? { folder } : {}),

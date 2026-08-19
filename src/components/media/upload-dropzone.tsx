@@ -7,7 +7,11 @@ import { MEDIA_SIZE_LIMIT } from "@/lib/media/constants";
 import { getFileExtension } from "@/lib/media/utils";
 import {
   audioDebug,
+  clearAudioPickerPending,
   clearAudioDebug,
+  getAudioDocumentId,
+  markAudioPickerPending,
+  readAudioPickerPending,
 } from "@/lib/media/audio-debug";
 import type { MediaKind } from "@/types/media";
 
@@ -33,6 +37,14 @@ export function UploadDropzone({
 
   useEffect(() => {
     if (!audioOnly) return;
+    const pending = readAudioPickerPending();
+    if (pending && pending.documentId !== getAudioDocumentId()) {
+      audioDebug(
+        "02 DOCUMENT_RELOADED",
+        "Dokumen berubah saat native picker masih terbuka; File tidak dapat dikembalikan ke input lama",
+      );
+      clearAudioPickerPending();
+    }
     const reportReturn = () => {
       if (!pickerOpenedRef.current) return;
       audioDebug("02 PICKER_RETURN", "Halaman aktif kembali; menunggu event input/change");
@@ -66,6 +78,7 @@ export function UploadDropzone({
     }
     lastFileRef.current = fingerprint;
     pickerOpenedRef.current = false;
+    clearAudioPickerPending();
     audioDebug(
       "04 FILE_RECEIVED",
       `name=${file.name || "(tanpa nama)"}; type=${file.type || "(kosong)"}; size=${file.size}; ext=${getFileExtension(file.name) || "(kosong)"}`,
@@ -130,6 +143,7 @@ export function UploadDropzone({
           pickerOpenedRef.current = true;
           if (audioOnly) {
             clearAudioDebug();
+            markAudioPickerPending();
             audioDebug("01 PICKER_OPEN", `Native picker dibuka; accept=${acceptMime(allowed)}`);
           }
         }}

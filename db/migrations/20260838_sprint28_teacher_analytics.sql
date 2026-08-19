@@ -10,6 +10,10 @@
 -- Tidak mengubah snapshot, scoring, timer, leaderboard, maupun color test.
 -- =====================================================================
 
+-- 0. INDEX PENDUKUNG (aditif, tidak mengubah data) ---------------------
+create index if not exists exam_attempt_results_user_exam_idx
+  on public.exam_attempt_results (user_id, exam_id, submitted_at asc);
+
 -- 1. FLAG SISWA UNTUK PERHITUNGAN ANALITIK -----------------------------
 alter table public.profiles
   add column if not exists analytics_excluded boolean not null default false;
@@ -355,22 +359,27 @@ begin
   ), firsts as (
     select distinct on (user_id, exam_id) *
     from scoped order by user_id, exam_id, submitted_at asc
-  ), agg as (
-    select s.id,
-           (select count(*) from scoped x where x.user_id = s.id)::bigint as attempts,
-           (select count(distinct x.exam_id) from scoped x where x.user_id = s.id)::bigint as exams_taken,
-           (select coalesce(round(avg(f.score), 2), 0) from firsts f where f.user_id = s.id) as average_score,
-           (select coalesce(round(100.0 * count(*) filter (where f.passed) / nullif(count(*), 0), 2), 0)
-              from firsts f where f.user_id = s.id) as pass_rate,
-           (select max(x.submitted_at) from scoped x where x.user_id = s.id) as last_submitted_at
-    from students s
+  ), all_agg as (
+    -- Agregasi sekali jalan (bukan subquery per siswa).
+    select x.user_id,
+           count(*)::bigint as attempts,
+           count(distinct x.exam_id)::bigint as exams_taken,
+           max(x.submitted_at) as last_submitted_at
+    from scoped x group by x.user_id
+  ), first_agg as (
+    select f.user_id,
+           round(avg(f.score), 2) as average_score,
+           round(100.0 * count(*) filter (where f.passed) / nullif(count(*), 0), 2) as pass_rate
+    from firsts f group by f.user_id
   )
   select s.id, s.name, s.username, s.avatar_url, s.analytics_excluded, s.is_active, s.last_login_at,
-         a.attempts, a.exams_taken, a.average_score, a.pass_rate, a.last_submitted_at,
+         coalesce(aa.attempts, 0), coalesce(aa.exams_taken, 0),
+         coalesce(fa.average_score, 0), coalesce(fa.pass_rate, 0), aa.last_submitted_at,
          (select count(*) from students)::bigint as total_rows
   from students s
-  join agg a on a.id = s.id
-  order by a.attempts desc, s.name asc
+  left join all_agg aa on aa.user_id = s.id
+  left join first_agg fa on fa.user_id = s.id
+  order by coalesce(aa.attempts, 0) desc, s.name asc
   limit least(greatest(coalesce(p_limit, 20), 1), 200)
   offset greatest(coalesce(p_offset, 0), 0);
 end;
@@ -433,10 +442,12 @@ $$;
 grant execute on function public.analytics_student_attempts(uuid, date, date, uuid, uuid) to authenticated;
 
 -- 8. TABEL NILAI (MATRIKS SISWA x SET UJIAN) ---------------------------
+drop function if exists public.analytics_score_matrix(date, date, uuid, uuid);
 create or replace function public.analytics_score_matrix(
   p_from date default null,
   p_to date default null,
   p_exam_id uuid default null,
+  p_student_id uuid default null,
   p_tenant_id uuid default null
 )
 returns jsonb
@@ -455,6 +466,7 @@ begin
     from public.profiles p
     where p.tenant_id is not distinct from v_tenant
       and p.role = 'siswa' and p.analytics_excluded = false
+      and (p_student_id is null or p.id = p_student_id)
   ), scoped as (
     select r.*
     from public.exam_attempt_results r
@@ -493,14 +505,18 @@ begin
 end;
 $$;
 
-grant execute on function public.analytics_score_matrix(date, date, uuid, uuid) to authenticated;
+grant execute on function public.analytics_score_matrix(date, date, uuid, uuid, uuid) to authenticated;
 
 -- 9. ANALISIS SOAL -----------------------------------------------------
 -- Membaca snapshot immutable (payload) hanya untuk kunci jawaban & teks soal.
+-- p_scope: 'first' (default, konsisten dengan analitik utama) atau 'all'.
+drop function if exists public.analytics_question_stats(uuid, date, date, uuid);
 create or replace function public.analytics_question_stats(
   p_exam_id uuid,
   p_from date default null,
   p_to date default null,
+  p_student_id uuid default null,
+  p_scope text default 'first',
   p_tenant_id uuid default null
 )
 returns jsonb
@@ -511,17 +527,23 @@ set search_path = public
 as $$
 declare
   v_tenant uuid := public.analytics_require_staff(p_tenant_id);
+  v_scope text := case when lower(coalesce(p_scope, 'first')) = 'all' then 'all' else 'first' end;
   v_result jsonb;
 begin
-  with scoped_attempts as (
-    select r.attempt_id
+  with base as (
+    select r.attempt_id, r.user_id, r.submitted_at,
+           row_number() over (partition by r.user_id order by r.submitted_at asc) as rn
     from public.exam_attempt_results r
     join public.profiles p on p.id = r.user_id
     where p.tenant_id is not distinct from v_tenant
       and p.role = 'siswa' and p.analytics_excluded = false
       and r.exam_id = p_exam_id
+      and (p_student_id is null or r.user_id = p_student_id)
       and (p_from is null or r.submitted_at >= p_from::timestamptz)
       and (p_to is null or r.submitted_at < (p_to + 1)::timestamptz)
+  ), scoped_attempts as (
+    select b.attempt_id from base b
+    where v_scope = 'all' or b.rn = 1
   ), keys as (
     select distinct on (q->>'question_id')
       (q->>'question_id')::uuid as question_id,
@@ -533,15 +555,15 @@ begin
     cross join lateral jsonb_array_elements(s.payload->'questions') q
     order by q->>'question_id', coalesce((q->>'index')::int, 0)
   ), answers as (
-    select a.question_id, a.selected_label
+    select a.attempt_id, a.question_id, a.selected_label
     from public.exam_attempt_answers a
     join scoped_attempts sa on sa.attempt_id = a.attempt_id
   ), stats as (
     select k.question_id, k.question_index, k.question_text, k.correct_label,
-           count(a.*)::int as attempts,
+           count(a.attempt_id)::int as attempts,
            count(*) filter (where a.selected_label is not null and a.selected_label = k.correct_label)::int as correct_count,
            count(*) filter (where a.selected_label is not null and a.selected_label <> k.correct_label)::int as wrong_count,
-           count(*) filter (where a.selected_label is null)::int as skipped_count,
+           count(*) filter (where a.attempt_id is not null and a.selected_label is null)::int as skipped_count,
            jsonb_build_object(
              'A', count(*) filter (where a.selected_label = 'A'),
              'B', count(*) filter (where a.selected_label = 'B'),
@@ -553,6 +575,7 @@ begin
     group by k.question_id, k.question_index, k.question_text, k.correct_label
   )
   select jsonb_build_object(
+    'scope', v_scope,
     'attempts', (select count(*) from scoped_attempts),
     'questions', coalesce((select jsonb_agg(jsonb_build_object(
         'question_id', st.question_id,
@@ -573,7 +596,7 @@ begin
 end;
 $$;
 
-grant execute on function public.analytics_question_stats(uuid, date, date, uuid) to authenticated;
+grant execute on function public.analytics_question_stats(uuid, date, date, uuid, text, uuid) to authenticated;
 
 -- 10. ATTENDANCE -------------------------------------------------------
 create or replace function public.analytics_attendance(

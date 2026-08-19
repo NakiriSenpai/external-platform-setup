@@ -32,11 +32,7 @@ type RawExportQuestion = {
   image_url: string | null;
   audio_url: string | null;
   explanation: string | null;
-  category: string;
-  difficulty: QuestionBundle["difficulty"];
-  question_type: QuestionBundle["question_type"];
   origin: QuestionBundle["origin"];
-  visibility: QuestionBundle["visibility"];
   version: number | null;
   is_archived: boolean | null;
   created_at: string;
@@ -49,8 +45,6 @@ type RawExportQuestion = {
     audio_url: string | null;
     is_correct: boolean;
   }[] | null;
-  tag_links: { tag: { slug: string; name: string } | null }[] | null;
-  general_tag_links: { tag: { slug: string; name: string } | null }[] | null;
 };
 
 /** Derive referensi media portable dari URL Cloudinary. */

@@ -33,6 +33,7 @@ export function UploadDropzone({
   const inputRef = useRef<HTMLInputElement>(null);
   const lastFileRef = useRef("");
   const pickerOpenedRef = useRef(false);
+  const pickerReturnReportedRef = useRef(false);
   const [dragging, setDragging] = useState(false);
   const audioOnly = allowed.length === 1 && allowed[0] === "audio";
 
@@ -50,7 +51,10 @@ export function UploadDropzone({
     const reportReturn = (source: string) => {
       if (!pickerOpenedRef.current) return;
       audioDebug(source, "Halaman aktif kembali dari Android Storage");
-      audioDebug("04 AUDIO_PICKER_RETURN", "Menunggu change event dari input yang sama");
+      if (!pickerReturnReportedRef.current) {
+        pickerReturnReportedRef.current = true;
+        audioDebug("04 AUDIO_PICKER_RETURN", "Menunggu change event dari input yang sama");
+      }
     };
     const reportVisibility = () => {
       if (!pickerOpenedRef.current) return;
@@ -104,6 +108,10 @@ export function UploadDropzone({
 
   const handleFileInput = (event: ChangeEvent<HTMLInputElement>) => {
     if (audioOnly) {
+      if (!pickerReturnReportedRef.current) {
+        pickerReturnReportedRef.current = true;
+        audioDebug("04 AUDIO_PICKER_RETURN", "Picker mengembalikan kontrol melalui change event");
+      }
       audioDebug("05 AUDIO_CHANGE_EVENT", "change event terpanggil");
       audioDebug("06 AUDIO_FILES_LENGTH", String(event.currentTarget.files?.length ?? 0));
     }
@@ -133,6 +141,7 @@ export function UploadDropzone({
       audioDebug("01 AUDIO_PICKER_BUTTON_CLICK", "Tombol picker ditekan oleh user");
       markAudioPickerPending();
       pickerOpenedRef.current = true;
+      pickerReturnReportedRef.current = false;
     }
     inputRef.current?.click();
     if (audioOnly) audioDebug("03 AUDIO_PICKER_OPEN", "input.click() selesai dipanggil sinkron");

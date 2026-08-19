@@ -31,9 +31,9 @@ export function ExamMediaField({ kind, url, onChange, uploadLabel, folder = "exa
           label={uploadLabel}
           onChange={(asset) => {
             if (!asset) return;
-            if (kind === "audio") audioDebug("14 FIELD_CHANGE", "ExamMediaField menerima URL audio");
+            if (kind === "audio") audioDebug("AUDIO_FIELD_CHANGE", "ExamMediaField menerima URL audio");
             onChange(asset.url);
-            if (kind === "audio") audioDebug("15 FORM_CHANGE", "URL audio diteruskan ke QuestionForm");
+            if (kind === "audio") audioDebug("AUDIO_FORM_CHANGE", "URL audio diteruskan ke QuestionForm");
             setReplacing(false);
           }}
         />

@@ -29,12 +29,12 @@ export function useMediaUpload(options: Options = {}) {
       const expected: MediaKind | null = allowed.length === 1 ? (allowed[0] as MediaKind) : null;
       const detected = getMediaType(target, expected);
       audioDebug(
-        "05 MEDIA_DETECTION",
-        detected ? `kind=${detected}; expected=${expected ?? "auto"}` : "kind=none",
+        "12 AUDIO_MEDIA_TYPE_DETECTED",
+        detected ? `PASS — kind=${detected}; expected=${expected ?? "auto"}` : "FAIL — kind=none",
       );
       const validation = validateMediaFile(target, allowed);
       if (!validation.valid) {
-        audioDebug("06 VALIDATION_FAIL", validation.message);
+        audioDebug("13 AUDIO_VALIDATION", `FAIL — ${validation.message}`);
         console.error("[AUDIO DEBUG] validation=FAIL", {
           name: target.name,
           type: target.type,
@@ -45,7 +45,7 @@ export function useMediaUpload(options: Options = {}) {
         setError(validation.message);
         return null;
       }
-      audioDebug("06 VALIDATION_PASS", "File diterima validator");
+      audioDebug("13 AUDIO_VALIDATION", "PASS — File diterima validator");
 
       const controller = new AbortController();
       controllerRef.current = controller;
@@ -55,7 +55,7 @@ export function useMediaUpload(options: Options = {}) {
 
       try {
         const kind = (detected ?? expected ?? "image") as MediaKind;
-        audioDebug("07 UPLOAD_CALLED", "uploadMedia dipanggil");
+        audioDebug("14 AUDIO_UPLOAD_START", "uploadMedia dipanggil");
         const result = await uploadMedia(target, {
           ...(folder ? { folder } : {}),
           kind,
@@ -64,9 +64,7 @@ export function useMediaUpload(options: Options = {}) {
         });
         setAsset(result);
         setStatus("success");
-        audioDebug("09 CLOUDINARY_SUCCESS", "Cloudinary mengembalikan secure URL");
         onSuccess?.(result);
-        audioDebug("10 UPLOAD_STATE", "Hook upload berstatus success");
         return result;
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") {
@@ -74,7 +72,7 @@ export function useMediaUpload(options: Options = {}) {
           setError("Unggahan dibatalkan.");
           return null;
         }
-        audioDebug("09 UPLOAD_FAIL", err instanceof Error ? err.message : "Upload gagal");
+        audioDebug("15 AUDIO_UPLOAD_RESPONSE", `FAIL — ${err instanceof Error ? err.message : "Upload gagal"}`);
         setStatus("error");
         setError(err instanceof Error ? err.message : "Gagal mengunggah media.");
         return null;

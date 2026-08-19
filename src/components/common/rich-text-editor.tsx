@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Bold, Italic, List, ListOrdered, Strikethrough, Underline } from "lucide-react";
 
 import { sanitizeRichText } from "@/lib/rich-text";

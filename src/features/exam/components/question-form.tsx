@@ -201,13 +201,15 @@ export function QuestionForm({
    */
   const validate = (): string | null => null;
 
+  /** Rich text kosong (mis. "<p><br></p>") disimpan sebagai kosong, bukan konten. */
+  const clean = (html: string): string => (isRichTextEmpty(html) ? "" : html.trim());
 
   const buildPayload = (): QuestionBankInput => ({
-    text: text.trim(),
-    instruction: instruction.trim() || null,
+    text: clean(text),
+    instruction: clean(instruction) || null,
     image_url: imageUrl,
     audio_url: audioUrl,
-    explanation: explanation.trim(),
+    explanation: clean(explanation),
     category,
     difficulty,
     lesson_id: lessonId === NO_LESSON ? null : lessonId,
@@ -220,12 +222,13 @@ export function QuestionForm({
     new_tags: newTags,
     answers: answers.map((a) => ({
       label: a.label,
-      text: a.text.trim(),
+      text: clean(a.text),
       image_url: a.image_url,
       audio_url: a.audio_url,
       is_correct: a.label === correct,
     })),
   });
+
 
   const invalid = validate();
   const autosaveValue = { payload: buildPayload(), archived: isArchived };

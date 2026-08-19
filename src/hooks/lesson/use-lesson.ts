@@ -11,6 +11,7 @@ import {
   deleteLessonSection,
   detachLessonQuestion,
   getLesson,
+  listGrammarTags,
   listLessonBlocks,
   listLessonQuestions,
   listLessonSections,
@@ -32,6 +33,15 @@ import type {
   LessonStatus,
 } from "@/types/lesson";
 import type { QuestionBankInput } from "@/types/question-bank";
+
+/** Grammar Tag untuk blok Lesson (grammar_highlight). */
+export function useGrammarTags() {
+  return useQuery({
+    queryKey: ["grammar-tags"],
+    queryFn: listGrammarTags,
+    staleTime: 5 * 60_000,
+  });
+}
 
 export function useLessons(params: LessonListParams) {
   return useQuery({

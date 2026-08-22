@@ -451,10 +451,28 @@ export function ImportBundleDialog({
             </>
           ) : null}
           {step === "done" ? (
-            <Button variant="outline" className="min-h-11" onClick={reset}>
-              Import file lain
-            </Button>
+            <>
+              {bundleType === "exam" && completedOperation?.report.createdEntityId ? (
+                <Button
+                  className="min-h-11"
+                  onClick={() => {
+                    const examId = completedOperation.report.createdEntityId!;
+                    close(false);
+                    void navigate({
+                      to: "/owner_/exam-studio/$examId",
+                      params: { examId },
+                    });
+                  }}
+                >
+                  Buka Exam hasil import
+                </Button>
+              ) : null}
+              <Button variant="outline" className="min-h-11" onClick={reset}>
+                Import file lain
+              </Button>
+            </>
           ) : null}
+
           {step === "done" || step === "pick" ? (
             <Button variant="outline" className="min-h-11" onClick={() => close(false)}>
               Tutup

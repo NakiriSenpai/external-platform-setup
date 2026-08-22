@@ -213,4 +213,75 @@ describe("importExam create-only", () => {
       ),
     ).toEqual([4, 4, 4]);
   });
+  it("graph penuh: TEST A dan TEST B tidak pernah bertukar question/answer", async () => {
+    const build = (name: string) => {
+      const bundle = bundleFor(name);
+      const exam = bundle.data[0];
+      if (!exam) throw new Error("Fixture exam kosong.");
+      exam.title = `TEST ${name}`;
+      exam.slug = `test-${name.toLowerCase()}`;
+      exam.sections[0]!.title = `SECTION FROM ${name}`;
+      const q1 = exam.question_bundle[0]!;
+      q1.text = `QUESTION FROM ${name}`;
+      q1.instruction = `INSTRUCTION FROM ${name}`;
+      q1.answers = [
+        { label: "A", order: 0, text: `ANSWER FROM ${name}`, is_correct: true },
+        { label: "B", order: 1, text: `WRONG FROM ${name}`, is_correct: false },
+      ] as never;
+      return bundle;
+    };
+
+    const idA = (await importExam(build("A"))).createdEntityId ?? "";
+    const idB = (await importExam(build("B"))).createdEntityId ?? "";
+
+    const graph = (examId: string) => {
+      const exam = importedExam(examId)!;
+      const sections = rows("exam_sections")
+        .filter((row) => row["exam_id"] === examId)
+        .sort((a, b) => Number(a["order_index"]) - Number(b["order_index"]));
+      const refs = rows("exam_questions")
+        .filter((row) => row["exam_id"] === examId)
+        .sort((a, b) => Number(a["order_index"]) - Number(b["order_index"]));
+      const first = refs[0]!;
+      const question = rows("questions").find((q) => q["id"] === first["question_id"])!;
+      const answers = rows("question_answers")
+        .filter((a) => a["question_id"] === question["id"])
+        .sort((a, b) => String(a["label"]).localeCompare(String(b["label"])));
+      return {
+        title: exam["title"],
+        sectionTitle: sections[0]!["title"],
+        sectionOwned: first["section_id"] === sections[0]!["id"],
+        question: question["text"],
+        instruction: question["instruction"],
+        answer: answers[0]!["text"],
+        correct: answers[0]!["is_correct"],
+        questionId: question["id"],
+        answerIds: answers.map((a) => a["id"]),
+      };
+    };
+
+    const a = graph(idA);
+    const b = graph(idB);
+
+    expect(a).toMatchObject({
+      title: "TEST A",
+      sectionTitle: "SECTION FROM A",
+      sectionOwned: true,
+      question: "QUESTION FROM A",
+      instruction: "INSTRUCTION FROM A",
+      answer: "ANSWER FROM A",
+      correct: true,
+    });
+    expect(b).toMatchObject({
+      title: "TEST B",
+      sectionTitle: "SECTION FROM B",
+      sectionOwned: true,
+      question: "QUESTION FROM B",
+      instruction: "INSTRUCTION FROM B",
+      answer: "ANSWER FROM B",
+      correct: true,
+    });
+    expect(a.questionId).not.toBe(b.questionId);
+    expect(a.answerIds).not.toEqual(b.answerIds);
+  });
 });

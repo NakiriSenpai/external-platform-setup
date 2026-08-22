@@ -146,7 +146,7 @@ export function ImportBundleDialog({
             : { kind: "lesson", lessons: await analyzeLessonBundle(bundle) };
       if (selection !== selectionRef.current) return;
       setPreview(nextPreview);
-      setOperation({ operationId: `${Date.now()}-${selection}`, fileName: file.name, bundle });
+      setOperation({ operationId: crypto.randomUUID(), fileName: file.name, bundle });
       setStep("preview");
     } catch (err) {
       if (selection !== selectionRef.current) return;
@@ -161,10 +161,7 @@ export function ImportBundleDialog({
     if (preview.kind === "exam") {
       const exam = preview.exams[0];
       if (!exam) return true;
-      const unresolved = exam.missingKeys.filter(
-        (key) => !(importBundled && exam.resolvableFromBundle.includes(key)),
-      );
-      return unresolved.length > 0 && !allowMissingQuestions;
+      return exam.missingKeys.length > 0;
     }
     const lesson = preview.lessons[0];
     if (!lesson) return true;
@@ -198,12 +195,7 @@ export function ImportBundleDialog({
           onProgress,
         });
       } else if (preview.kind === "exam") {
-        report = await importExam(op.bundle as never, {
-          strategy: op.resolution,
-          importBundledQuestions: op.importBundledQuestions,
-          allowMissingQuestions: op.continueMissingQuestions,
-          onProgress,
-        });
+        report = await importExam(op.bundle as never, { onProgress });
       } else {
         report = await importLesson(op.bundle as never, {
           strategy: op.resolution,
@@ -245,7 +237,7 @@ export function ImportBundleDialog({
             : bundleType === "exam"
               ? "import_exam"
               : "import_lesson",
-        entity: fileName,
+        entity: op.fileName,
         count: 0,
         result: "failed",
         detail: { message },
@@ -331,7 +323,7 @@ export function ImportBundleDialog({
               />
             ) : null}
 
-            <div className="space-y-3 rounded-lg border p-3">
+            {preview.kind !== "exam" ? <div className="space-y-3 rounded-lg border p-3">
               <div className="space-y-1">
                 <Label>Jika data sudah ada</Label>
                 <Select value={strategy} onValueChange={(v) => setStrategy(v as ConflictStrategy)}>
@@ -371,7 +363,7 @@ export function ImportBundleDialog({
                   />
                 </>
               )}
-            </div>
+            </div> : null}
 
             {bundleType !== "question_bank" ? (
               <p className="text-xs text-muted-foreground">
@@ -421,7 +413,7 @@ export function ImportBundleDialog({
               </Button>
               <Button className="min-h-11" disabled={blocked} onClick={() => void runImport()}>
                 <Upload className="mr-2 h-4 w-4" />
-                Import sekarang
+                {bundleType === "exam" ? "Import Exam" : "Import sekarang"}
               </Button>
             </>
           ) : null}

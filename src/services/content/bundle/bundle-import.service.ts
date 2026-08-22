@@ -487,8 +487,7 @@ export async function analyzeExamBundle(bundle: ExamFileBundle): Promise<ExamImp
   for (const exam of bundle.data) {
     const keys = Array.from(new Set(exam.question_refs.map((r) => r.question_key)));
     const bundleKeys = new Set(exam.question_bundle.map((q) => q.key));
-    const existing = await findExistingQuestions(keys.filter((key) => !bundleKeys.has(key)));
-    const missingKeys = keys.filter((key) => !existing.has(key) && !bundleKeys.has(key));
+    const missingKeys = keys.filter((key) => !bundleKeys.has(key));
     const { data: slugRow } = await supabase
       .from(EXAM_TABLES.exams)
       .select("id")
@@ -500,13 +499,11 @@ export async function analyzeExamBundle(bundle: ExamFileBundle): Promise<ExamImp
       title: exam.title,
       sectionCount: exam.sections.length,
       questionRefCount: exam.question_refs.length,
-      resolvedKeys: keys.filter((key) => existing.has(key) || bundleKeys.has(key)),
+      resolvedKeys: keys.filter((key) => bundleKeys.has(key)),
       missingKeys,
       resolvableFromBundle: keys.filter((key) => bundleKeys.has(key)),
       slugTaken: Boolean(slugRow),
-      questionPreview: exam.question_bundle.length
-        ? await analyzeQuestions(exam.question_bundle, "exam")
-        : null,
+      questionPreview: null,
     });
   }
   return previews;
@@ -528,56 +525,32 @@ async function findBySlug(table: string, slug: string): Promise<string | null> {
 }
 
 export type ExamImportOptions = {
-  /** Import soal dari question_bundle terlebih dahulu. */
-  importBundledQuestions: boolean;
-  strategy: ConflictStrategy;
-  /** Lanjutkan walau ada soal yang tidak ditemukan. */
-  allowMissingQuestions: boolean;
   onProgress?: ((done: number, total: number) => void) | undefined;
 };
 
-/** Import Exam. Hasil SELALU berstatus draft. */
+/**
+ * Import SATU Exam secara create-only. Semua mapping hanya hidup selama call ini;
+ * source_id/external_key dari bundle tidak pernah dipakai sebagai database ID.
+ */
 export async function importExam(
   bundle: ExamFileBundle,
-  options: ExamImportOptions,
+  options: ExamImportOptions = {},
 ): Promise<ImportResultReport> {
+  if (bundle.data.length !== 1) {
+    throw new Error("Satu file import harus berisi tepat satu Exam.");
+  }
   const exam = bundle.data[0];
   if (!exam) throw new Error("Bundle exam kosong.");
 
   const report: ImportResultReport = { imported: 0, updated: 0, skipped: 0, failed: 0, failures: [] };
 
-  // Identity exam = slug bundle. Hanya exam dengan slug yang sama yang dianggap konflik.
-  const existingExamId = await findBySlug(EXAM_TABLES.exams, exam.slug);
-  if (existingExamId && options.strategy === "skip") {
-    report.skipped += 1;
-    report.failures.push({
-      label: exam.title,
-      reason: `Exam dengan slug "${exam.slug}" sudah ada — dilewati.`,
-    });
-    report.createdEntityId = existingExamId;
-    return report;
-  }
-
-  const resolved = await resolveOperationQuestions({
-    namespace: exam.slug,
-    bundleType: "exam",
-    questionBundle: exam.question_bundle,
-    refKeys: exam.question_refs.map((r) => r.question_key),
-    strategy: options.strategy,
-    importBundledQuestions: options.importBundledQuestions,
-    onProgress: options.onProgress,
-  });
-  report.imported += resolved.imported;
-  report.updated += resolved.updated;
-  report.skipped += resolved.skipped;
-  report.failed += resolved.failed;
-  report.failures.push(...resolved.failures);
-  const keyMap = resolved.keyMap;
-
   const keys = Array.from(new Set(exam.question_refs.map((r) => r.question_key)));
-  const missing = keys.filter((key) => !keyMap.has(key));
-  if (missing.length > 0 && !options.allowMissingQuestions) {
-    throw new Error(`${missing.length} soal tidak ditemukan. Import dibatalkan.`);
+  const bundledByKey = new Map(exam.question_bundle.map((question) => [question.key, question]));
+  const missing = keys.filter((key) => !bundledByKey.has(key));
+  if (missing.length > 0) {
+    throw new Error(
+      `${missing.length} soal referensi tidak tersedia di file (${missing.join(", ")}). Import dibatalkan.`,
+    );
   }
 
   const { data: userData } = await supabase.auth.getUser();
@@ -595,30 +568,35 @@ export async function importExam(
     status: "draft" as const,
   };
 
-  const updateInPlace = Boolean(existingExamId) && options.strategy === "update";
-  let examId: string;
-
-  if (updateInPlace) {
-    examId = existingExamId!;
-    const { error } = await supabase.from(EXAM_TABLES.exams).update(payload).eq("id", examId);
-    if (error) throw new Error("Gagal memperbarui exam hasil import.");
-    // struktur lama diganti penuh oleh struktur bundle
-    await supabase.from(EXAM_TABLES.questions).delete().eq("exam_id", examId);
-    await supabase.from(EXAM_TABLES.sections).delete().eq("exam_id", examId);
-    report.updated += 1;
-  } else {
-    const slug = await uniqueSlug(EXAM_TABLES.exams, exam.slug);
-    const { data: created, error } = await supabase
-      .from(EXAM_TABLES.exams)
-      .insert({ ...payload, slug, created_by: userId })
-      .select("id")
-      .single();
-    if (error || !created) throw new Error("Gagal membuat exam hasil import.");
-    examId = (created as { id: string }).id;
-    report.imported += 1;
-  }
+  const slug = await uniqueSlug(EXAM_TABLES.exams, exam.slug);
+  const { data: created, error } = await supabase
+    .from(EXAM_TABLES.exams)
+    .insert({ ...payload, slug, created_by: userId })
+    .select("id")
+    .single();
+  if (error || !created) throw new Error("Gagal membuat exam hasil import.");
+  const examId = (created as { id: string }).id;
+  const createdQuestionIds: string[] = [];
+  report.imported += 1;
 
   try {
+    const questionContext = await buildWriteContext(exam.question_bundle);
+    const questionIdBySourceKey = new Map<string, string>();
+    let completedQuestions = 0;
+    for (const question of exam.question_bundle) {
+      const questionId = await insertQuestion(
+        question,
+        questionContext,
+        `import-${crypto.randomUUID()}`,
+        userId,
+      );
+      createdQuestionIds.push(questionId);
+      questionIdBySourceKey.set(question.key, questionId);
+      report.imported += 1;
+      completedQuestions += 1;
+      options.onProgress?.(completedQuestions, exam.question_bundle.length);
+    }
+
     const sectionIdByKey = new Map<string, string>();
     for (const section of [...exam.sections].sort((a, b) => a.order - b.order)) {
       const { data: sectionRow, error: sectionError } = await supabase
@@ -641,7 +619,7 @@ export async function importExam(
       .map((ref) => ({
         exam_id: examId,
         section_id: sectionIdByKey.get(ref.section_key) ?? null,
-        question_id: keyMap.get(ref.question_key) ?? null,
+        question_id: questionIdBySourceKey.get(ref.question_key) ?? null,
         order_index: ref.order,
       }))
       .filter((row) => row.section_id && row.question_id);
@@ -651,15 +629,17 @@ export async function importExam(
       if (refError) throw new Error("Gagal menghubungkan soal ke exam.");
     }
 
-    report.skipped += missing.length;
-    for (const key of missing) {
-      report.failures.push({ label: `Soal ${key}`, reason: "Tidak ditemukan di Question Bank." });
-    }
     report.createdEntityId = examId;
     return report;
   } catch (err) {
-    // rollback hanya untuk exam yang BARU dibuat di operasi ini
-    if (!updateInPlace) await supabase.from(EXAM_TABLES.exams).delete().eq("id", examId);
+    // Best-effort rollback hanya menyentuh entity yang dibuat oleh operasi ini.
+    await supabase.from(EXAM_TABLES.questions).delete().eq("exam_id", examId);
+    await supabase.from(EXAM_TABLES.sections).delete().eq("exam_id", examId);
+    for (const questionId of createdQuestionIds) {
+      await supabase.from(QUESTION_TABLES.answers).delete().eq("question_id", questionId);
+      await supabase.from(QUESTION_TABLES.questions).delete().eq("id", questionId);
+    }
+    await supabase.from(EXAM_TABLES.exams).delete().eq("id", examId);
     throw err;
   }
 }
@@ -712,7 +692,12 @@ export async function analyzeLessonBundle(bundle: LessonFileBundle): Promise<Les
   return previews;
 }
 
-export type LessonImportOptions = ExamImportOptions;
+export type LessonImportOptions = {
+  importBundledQuestions: boolean;
+  strategy: ConflictStrategy;
+  allowMissingQuestions: boolean;
+  onProgress?: ((done: number, total: number) => void) | undefined;
+};
 
 /** Import Lesson. Hasil SELALU berstatus draft. */
 export async function importLesson(

@@ -414,11 +414,17 @@ export function ImportBundleDialog({
               </Button>
             </>
           ) : null}
+          {step === "done" ? (
+            <Button variant="outline" className="min-h-11" onClick={reset}>
+              Import file lain
+            </Button>
+          ) : null}
           {step === "done" || step === "pick" ? (
             <Button variant="outline" className="min-h-11" onClick={() => close(false)}>
               Tutup
             </Button>
           ) : null}
+
         </DialogFooter>
       </DialogContent>
     </Dialog>

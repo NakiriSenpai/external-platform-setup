@@ -1,0 +1,2093 @@
+{
+  "schema_version": 1,
+  "bundle_type": "exam",
+  "exported_at": "2026-08-22T04:00:49.035934+00:00",
+  "exported_by": "generated",
+  "source": "lpk-learning",
+  "data": [
+    {
+      "slug": "set-2",
+      "source_id": "generated-set-2",
+      "title": "Set 2 — 자기소개 · 생활용품 · 위치와 장소",
+      "category": "set",
+      "description": "EPS-TOPIK practice based only on the supplied textbook material.",
+      "icon": null,
+      "difficulty": "mudah",
+      "passing_score": 85,
+      "duration_minutes": 50,
+      "shuffle_questions": true,
+      "shuffle_answers": true,
+      "sections": [
+        {
+          "key": "reading-0",
+          "title": "Reading",
+          "type": "reading",
+          "instruction": "Baca soal dengan teliti dan pilih jawaban yang paling tepat.",
+          "order": 0
+        },
+        {
+          "key": "listening-1",
+          "title": "Listening",
+          "type": "listening",
+          "instruction": "Dengarkan percakapan dengan teliti dan pilih jawaban yang paling tepat.",
+          "order": 1
+        }
+      ],
+      "question_refs": [
+        {
+          "question_key": "q_reading_01",
+          "section_key": "reading-0",
+          "order": 0
+        },
+        {
+          "question_key": "q_reading_02",
+          "section_key": "reading-0",
+          "order": 1
+        },
+        {
+          "question_key": "q_reading_03",
+          "section_key": "reading-0",
+          "order": 2
+        },
+        {
+          "question_key": "q_reading_04",
+          "section_key": "reading-0",
+          "order": 3
+        },
+        {
+          "question_key": "q_reading_05",
+          "section_key": "reading-0",
+          "order": 4
+        },
+        {
+          "question_key": "q_reading_06",
+          "section_key": "reading-0",
+          "order": 5
+        },
+        {
+          "question_key": "q_reading_07",
+          "section_key": "reading-0",
+          "order": 6
+        },
+        {
+          "question_key": "q_reading_08",
+          "section_key": "reading-0",
+          "order": 7
+        },
+        {
+          "question_key": "q_reading_09",
+          "section_key": "reading-0",
+          "order": 8
+        },
+        {
+          "question_key": "q_reading_10",
+          "section_key": "reading-0",
+          "order": 9
+        },
+        {
+          "question_key": "q_reading_11",
+          "section_key": "reading-0",
+          "order": 10
+        },
+        {
+          "question_key": "q_reading_12",
+          "section_key": "reading-0",
+          "order": 11
+        },
+        {
+          "question_key": "q_reading_13",
+          "section_key": "reading-0",
+          "order": 12
+        },
+        {
+          "question_key": "q_reading_14",
+          "section_key": "reading-0",
+          "order": 13
+        },
+        {
+          "question_key": "q_reading_15",
+          "section_key": "reading-0",
+          "order": 14
+        },
+        {
+          "question_key": "q_reading_16",
+          "section_key": "reading-0",
+          "order": 15
+        },
+        {
+          "question_key": "q_reading_17",
+          "section_key": "reading-0",
+          "order": 16
+        },
+        {
+          "question_key": "q_reading_18",
+          "section_key": "reading-0",
+          "order": 17
+        },
+        {
+          "question_key": "q_reading_19",
+          "section_key": "reading-0",
+          "order": 18
+        },
+        {
+          "question_key": "q_reading_20",
+          "section_key": "reading-0",
+          "order": 19
+        },
+        {
+          "question_key": "q_listening_01",
+          "section_key": "listening-1",
+          "order": 0
+        },
+        {
+          "question_key": "q_listening_02",
+          "section_key": "listening-1",
+          "order": 1
+        },
+        {
+          "question_key": "q_listening_03",
+          "section_key": "listening-1",
+          "order": 2
+        },
+        {
+          "question_key": "q_listening_04",
+          "section_key": "listening-1",
+          "order": 3
+        },
+        {
+          "question_key": "q_listening_05",
+          "section_key": "listening-1",
+          "order": 4
+        },
+        {
+          "question_key": "q_listening_06",
+          "section_key": "listening-1",
+          "order": 5
+        },
+        {
+          "question_key": "q_listening_07",
+          "section_key": "listening-1",
+          "order": 6
+        },
+        {
+          "question_key": "q_listening_08",
+          "section_key": "listening-1",
+          "order": 7
+        },
+        {
+          "question_key": "q_listening_09",
+          "section_key": "listening-1",
+          "order": 8
+        },
+        {
+          "question_key": "q_listening_10",
+          "section_key": "listening-1",
+          "order": 9
+        },
+        {
+          "question_key": "q_listening_11",
+          "section_key": "listening-1",
+          "order": 10
+        },
+        {
+          "question_key": "q_listening_12",
+          "section_key": "listening-1",
+          "order": 11
+        },
+        {
+          "question_key": "q_listening_13",
+          "section_key": "listening-1",
+          "order": 12
+        },
+        {
+          "question_key": "q_listening_14",
+          "section_key": "listening-1",
+          "order": 13
+        },
+        {
+          "question_key": "q_listening_15",
+          "section_key": "listening-1",
+          "order": 14
+        },
+        {
+          "question_key": "q_listening_16",
+          "section_key": "listening-1",
+          "order": 15
+        },
+        {
+          "question_key": "q_listening_17",
+          "section_key": "listening-1",
+          "order": 16
+        },
+        {
+          "question_key": "q_listening_18",
+          "section_key": "listening-1",
+          "order": 17
+        },
+        {
+          "question_key": "q_listening_19",
+          "section_key": "listening-1",
+          "order": 18
+        },
+        {
+          "question_key": "q_listening_20",
+          "section_key": "listening-1",
+          "order": 19
+        }
+      ],
+      "question_bundle": [
+        {
+          "key": "q_reading_01",
+          "source_id": "generated-reading-01",
+          "text": "여기는 어디예요?",
+          "instruction": "그림을 보고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "그림의 간판과 건물 형태를 보고 장소를 확인합니다. 그림은 약국이므로 '약국이에요'가 맞습니다.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "약국이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "회사예요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "식당이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "미용실이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_02",
+          "source_id": "generated-reading-02",
+          "text": "여기는 어디예요?",
+          "instruction": "그림을 보고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "그림의 건물 간판을 보고 장소를 확인합니다. 그림은 회사이므로 '회사예요'가 맞습니다.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "은행이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "회사예요.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "병원이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "시장에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_03",
+          "source_id": "generated-reading-03",
+          "text": "여기는 어디예요?",
+          "instruction": "그림을 보고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "그림의 간판을 보고 장소를 확인합니다. 그림은 편의점이므로 '편의점이에요'가 맞습니다.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "편의점이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "식당이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "미용실이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "병원이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_04",
+          "source_id": "generated-reading-04",
+          "text": "여기는 어디예요?",
+          "instruction": "그림을 보고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "그림의 간판과 내부 모습을 보고 장소를 확인합니다. 그림은 미용실이므로 '미용실이에요'가 맞습니다.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "시장에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "미용실이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "약국이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "은행이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_05",
+          "source_id": "generated-reading-05",
+          "text": "받침이 있는 명사와 알맞게 연결된 것을 고르십시오.",
+          "instruction": "다음 중 알맞은 것을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "컵 memiliki 받침, sehingga menggunakan 이에요: 컵이에요.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "시계예요",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "컵이에요",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "컴퓨터이에요",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "의자이에요",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_06",
+          "source_id": "generated-reading-06",
+          "text": "가: 이건 뭐예요?\n나: 네, 이것은 ______.",
+          "instruction": "다음 대화의 빈칸에 들어갈 가장 알맞은 것을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "시계 tidak memiliki 받침, sehingga menggunakan 예요: 시계예요.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "시계예요",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "시계는 있어요",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "시계가 아니에요?",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "시계이에요",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_07",
+          "source_id": "generated-reading-07",
+          "text": "가: 이건 화장품이에요?\n나: 아니요, ______. 빗이에요.",
+          "instruction": "다음 대화의 빈칸에 들어갈 가장 알맞은 것을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Untuk menyangkal kata benda, gunakan pola '명사 + 이/가 아니에요'. 화장품 memiliki 받침, sehingga menjadi 화장품이 아니에요.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "그건 화장품이에요",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "그건 화장품에 있어요",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "그건 화장품이 아니에요",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "그건 화장품이 있어요",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_08",
+          "source_id": "generated-reading-08",
+          "text": "'나의'를 줄여서 쓴 표현을 고르십시오.",
+          "instruction": "다음 중 알맞은 것을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "나의 dapat disingkat menjadi 내.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "제",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "내",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "네",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "저",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_09",
+          "source_id": "generated-reading-09",
+          "text": "'저의'를 줄여서 쓴 표현을 고르십시오.",
+          "instruction": "다음 중 알맞은 것을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "저의 dapat disingkat menjadi 제.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "내",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "네",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "저는",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "제",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            }
+          ]
+        },
+        {
+          "key": "q_reading_10",
+          "source_id": "generated-reading-10",
+          "text": "직업을 나타내는 표현으로 알맞은 것을 고르십시오.",
+          "instruction": "다음 중 알맞은 것을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "근로자 tidak memiliki 받침, sehingga bentuknya 근로자예요.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "칼로는 근로자입니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "칼로는 근로자예요.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "칼로는 근로자가 없어요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "칼로는 근로자에 있어요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_11",
+          "source_id": "generated-reading-11",
+          "text": "그림을 보십시오. 방에 냉장고가 ______.",
+          "instruction": "그림을 보고 문장의 빈칸에 들어갈 가장 알맞은 것을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "그림에 냉장고가 실제로 보이므로 존재를 나타내는 '있어요'를 사용합니다. '방에 냉장고가 있어요'가 맞습니다.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "있어요.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "없어요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "아니에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "예요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_12",
+          "source_id": "generated-reading-12",
+          "text": "의자는 어디에 있어요?",
+          "instruction": "그림을 보고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "그림에서 의자의 위치를 확인하고 '장소 + 에 있어요' 형태로 답합니다. 의자가 방에 있으므로 '방에 있어요'가 맞습니다.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "방에 있어요.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "회사예요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "의자가 아니에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "방이 없어요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_13",
+          "source_id": "generated-reading-13",
+          "text": "방에 침대가 있어요. 책상___ 있어요.",
+          "instruction": "그림을 보고 문장의 빈칸에 들어갈 가장 알맞은 것을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "그림에서 침대뿐 아니라 책상도 함께 존재합니다. 이미 언급된 것에 다른 것을 추가하여 '도'의 의미를 나타내므로 '책상도 있어요'가 맞습니다.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "도",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "에",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "의",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "은",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_14",
+          "source_id": "generated-reading-14",
+          "text": "여기는 어디예요?",
+          "instruction": "그림을 보고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "그림 전체의 공간을 보고 현재 장소를 판단합니다. 그림은 사무실이므로 '사무실이에요'가 맞습니다.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "사무실이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "화장실이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "식당이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "병원이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_15",
+          "source_id": "generated-reading-15",
+          "text": "'어디에 있어요?'에 대한 대답으로 가장 알맞은 것을 고르십시오.",
+          "instruction": "다음 중 알맞은 것을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "어디에 있어요? menanyakan lokasi, sehingga jawaban yang tepat menggunakan pola '식당에 있어요'.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "식당이 아니에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "식당은 뭐예요?",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "식당에 있어요.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "식당이에요.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_16",
+          "source_id": "generated-reading-16",
+          "text": "한국에서 생활용품을 싸게 구입하는 방법으로 본문과 일치하는 것을 고르십시오.",
+          "instruction": "다음 중 알맞은 것을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Berdasarkan materi, cara membeli barang kebutuhan dengan lebih murah antara lain memanfaatkan promo 1+1, 2+1, harga khusus akhir pekan, dan informasi dari selebaran.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "대형 마트의 할인 행사를 이용할 수 있다.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "전단지에는 할인 정보가 없다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "중고 거래에서는 생활용품을 살 수 없다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "온라인 쇼핑몰에서는 쿠폰을 사용할 수 없다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_17",
+          "source_id": "generated-reading-17",
+          "text": "중고 거래 플랫폼에 대한 내용으로 맞는 것을 고르십시오.",
+          "instruction": "다음 중 알맞은 것을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Berdasarkan materi, platform jual beli barang bekas dapat digunakan untuk membeli barang kebutuhan, peralatan elektronik, dan furnitur.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "새로운 생활용품만 거래할 수 있다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "판매자는 사용한 물건을 팔 수 없다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "가구나 가전제품도 살 수 있다.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "항상 다른 지역 사람과만 거래한다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_18",
+          "source_id": "generated-reading-18",
+          "text": "서울에 대한 설명으로 본문과 일치하는 것을 고르십시오.",
+          "instruction": "다음 중 알맞은 것을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Berdasarkan materi, Seoul bersama Incheon dan Gyeonggi-do membentuk wilayah metropolitan 수도권.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "서울은 특별자치시이다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "서울에는 한국 사람의 절반보다 적은 사람이 산다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "서울 주변의 인천과 경기도는 수도권을 이룬다.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "서울은 한국의 도시 중 하나이지만 정치와 경제의 중심지는 아니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_19",
+          "source_id": "generated-reading-19",
+          "text": "부산에 대한 설명으로 본문과 일치하는 것을 고르십시오.",
+          "instruction": "다음 중 알맞은 것을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Berdasarkan materi, Busan merupakan kota terbesar kedua di Korea dan memiliki pelabuhan besar.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "부산은 관광객이 거의 방문하지 않는다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "부산은 한국에서 두 번째로 큰 도시이다.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "부산에는 항구가 없다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "부산은 행정중심복합도시이다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_reading_20",
+          "source_id": "generated-reading-20",
+          "text": "세종특별자치시에 대한 설명으로 본문과 일치하는 것을 고르십시오.",
+          "instruction": "다음 중 알맞은 것을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Berdasarkan materi, Sejong Special Self-Governing City dibuat sebagai kota pusat administrasi untuk menjalankan tugas pemerintahan secara lebih efisien.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "관광객이 많이 방문하는 항구 도시입니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "문화와 예술의 중심지인 남서쪽 도시입니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "한국에서 가장 큰 항구가 있는 도시입니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "행정 업무를 효율적으로 수행하기 위해 만들어진 도시입니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            }
+          ]
+        },
+        {
+          "key": "q_listening_01",
+          "source_id": "generated-listening-01",
+          "text": "가: 어느 나라 사람입니까?\n나: 저는 네팔 사람입니다.\n\n질문: 남자는 어느 나라 사람입니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 어느 나라 사람입니까?\n나: 저는 네팔 사람입니다.\n\nTips mengerjakan: Fokus pada nama negara dan pola “~ 사람입니다”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "네팔",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "필리핀",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "태국",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "베트남",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_02",
+          "source_id": "generated-listening-02",
+          "text": "가: 안녕하세요? 저는 아궁입니다. 동티모르 사람입니다.\n나: 안녕하세요? 저는 마두입니다. 네팔 사람입니다.\n\n질문: 아궁은 어느 나라 사람입니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 안녕하세요? 저는 아궁입니다. 동티모르 사람입니다.\n나: 안녕하세요? 저는 마두입니다. 네팔 사람입니다.\n\nTips mengerjakan: Fokus pada nama negara dan pola “~ 사람입니다”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "네팔",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "방글라데시",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "미얀마",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "동티모르",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            }
+          ]
+        },
+        {
+          "key": "q_listening_03",
+          "source_id": "generated-listening-03",
+          "text": "가: 안녕하세요? 저는 칼로입니다. 필리핀 사람입니다.\n나: 칼로 씨는 학생입니까?\n가: 아니요. 저는 근로자입니다.\n\n질문: 칼로 씨의 직업은 무엇입니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 안녕하세요? 저는 칼로입니다. 필리핀 사람입니다.\n나: 칼로 씨는 학생입니까?\n가: 아니요. 저는 근로자입니다.\n\nTips mengerjakan: Fokus pada kata yang menunjukkan pekerjaan, terutama pola “~입니다”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "학생",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "선생님",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "회사원",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "근로자",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            }
+          ]
+        },
+        {
+          "key": "q_listening_04",
+          "source_id": "generated-listening-04",
+          "text": "가: 이건 뭐예요?\n나: 시계예요.\n\n질문: 무엇에 대해 이야기하고 있습니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 이건 뭐예요?\n나: 시계예요.\n\nTips mengerjakan: Perhatikan kata benda yang disebut setelah “~예요/이에요”, terutama jika ada koreksi dengan “아니요”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "달력",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "안경",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "시계",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "컴퓨터",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_05",
+          "source_id": "generated-listening-05",
+          "text": "가: 이건 가위예요?\n나: 아니요, 가위가 아니에요. 칼이에요.\n\n질문: 그것은 무엇입니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 이건 가위예요?\n나: 아니요, 가위가 아니에요. 칼이에요.\n\nTips mengerjakan: Perhatikan kata benda yang disebut setelah “~예요/이에요”, terutama jika ada koreksi dengan “아니요”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "칼",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "가위",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "볼펜",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "연필",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_06",
+          "source_id": "generated-listening-06",
+          "text": "가: 이건 가족사진이에요?\n나: 아니요, 그건 가족사진이 아니에요. 여권이에요.\n\n질문: 그것은 무엇입니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 이건 가족사진이에요?\n나: 아니요, 그건 가족사진이 아니에요. 여권이에요.\n\nTips mengerjakan: Perhatikan kata benda yang disebut setelah “~예요/이에요”, terutama jika ada koreksi dengan “아니요”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "열쇠",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "가족사진",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "여권",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "지갑",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_07",
+          "source_id": "generated-listening-07",
+          "text": "가: 유수프 씨, 아궁 씨의 가방이에요?\n나: 아니요, 제 가방이에요.\n\n질문: 가방은 누구의 것입니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 유수프 씨, 아궁 씨의 가방이에요?\n나: 아니요, 제 가방이에요.\n\nTips mengerjakan: Perhatikan kata kepemilikan seperti “제”, “내”, atau “~의 것”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "유수프 씨의 것",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "아궁 씨의 것",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "마두 씨의 것",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "알 수 없습니다",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_08",
+          "source_id": "generated-listening-08",
+          "text": "가: 지금 퇴근하세요?\n나: 네, 반장님. 내일 뵙겠습니다.\n\n질문: 남자는 지금 무엇을 합니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 지금 퇴근하세요?\n나: 네, 반장님. 내일 뵙겠습니다.\n\nTips mengerjakan: Fokus pada kata kerja kegiatan yang menunjukkan apa yang sedang dilakukan.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "출근합니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "쇼핑합니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "퇴근합니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "식사합니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_09",
+          "source_id": "generated-listening-09",
+          "text": "가: 여기는 어디예요?\n나: 사무실이에요.\n가: 사무실에 뭐가 있어요?\n나: 컴퓨터가 있어요.\n\n질문: 사무실에 무엇이 있습니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 여기는 어디예요?\n나: 사무실이에요.\n가: 사무실에 뭐가 있어요?\n나: 컴퓨터가 있어요.\n\nTips mengerjakan: Perhatikan pasangan “있어요/없어요” dan benda yang benar-benar dinyatakan ada.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "냉장고",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "소파",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "컴퓨터",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "침대",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_10",
+          "source_id": "generated-listening-10",
+          "text": "가: 넛차난 씨는 어디에 있어요?\n나: 식당에 있어요.\n가: 아지자 씨도 식당에 있어요?\n나: 아니요, 아지자 씨는 미용실에 있어요.\n\n질문: 아지자 씨는 어디에 있습니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 넛차난 씨는 어디에 있어요?\n나: 식당에 있어요.\n가: 아지자 씨도 식당에 있어요?\n나: 아니요, 아지자 씨는 미용실에 있어요.\n\nTips mengerjakan: Cari nama tempat yang muncul bersama pola “~에 있어요”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "병원",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "미용실",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "회사",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "식당",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_11",
+          "source_id": "generated-listening-11",
+          "text": "가: 청소기가 있어요?\n나: 아니요, 청소기가 없어요.\n가: 냉장고가 있어요?\n나: 네, 냉장고가 있어요.\n\n질문: 무엇이 있습니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 청소기가 있어요?\n나: 아니요, 청소기가 없어요.\n가: 냉장고가 있어요?\n나: 네, 냉장고가 있어요.\n\nTips mengerjakan: Perhatikan pasangan “있어요/없어요” dan benda yang benar-benar dinyatakan ada.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "청소기",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "청소기와 냉장고",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "냉장고",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "세탁기만",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_12",
+          "source_id": "generated-listening-12",
+          "text": "가: 방에 책상이 있어요?\n나: 네, 책상이 있어요.\n가: 의자도 있어요?\n나: 네, 의자도 있어요.\n\n질문: 방에 있는 것은 무엇입니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 방에 책상이 있어요?\n나: 네, 책상이 있어요.\n가: 의자도 있어요?\n나: 네, 의자도 있어요.\n\nTips mengerjakan: Perhatikan kata benda yang disebut setelah “~예요/이에요”, terutama jika ada koreksi dengan “아니요”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "책상만",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "책상과 의자",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "컴퓨터와 의자",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "의자만",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_13",
+          "source_id": "generated-listening-13",
+          "text": "가: 이건 뭐예요?\n나: 화장품이에요.\n가: 저건 뭐예요?\n나: 빗이에요.\n\n질문: 저것은 무엇입니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 이건 뭐예요?\n나: 화장품이에요.\n가: 저건 뭐예요?\n나: 빗이에요.\n\nTips mengerjakan: Perhatikan kata benda yang disebut setelah “~예요/이에요”, terutama jika ada koreksi dengan “아니요”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "화장품",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "우산",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "여권",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "빗",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            }
+          ]
+        },
+        {
+          "key": "q_listening_14",
+          "source_id": "generated-listening-14",
+          "text": "가: 이건 컴퓨터예요?\n나: 아니요, 컴퓨터가 아니에요. 거울이에요.\n\n질문: 그것은 무엇이 아닙니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 이건 컴퓨터예요?\n나: 아니요, 컴퓨터가 아니에요. 거울이에요.\n\nTips mengerjakan: Perhatikan kata benda yang disebut setelah “~예요/이에요”, terutama jika ada koreksi dengan “아니요”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "화장품",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "컴퓨터",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "거울",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "빗",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_15",
+          "source_id": "generated-listening-15",
+          "text": "가: 여기는 어디예요?\n나: 약국이에요.\n가: 약국에 뭐가 있어요?\n나: 약이 있어요.\n\n질문: 여기는 어디입니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 여기는 어디예요?\n나: 약국이에요.\n가: 약국에 뭐가 있어요?\n나: 약이 있어요.\n\nTips mengerjakan: Cari nama tempat yang muncul bersama pola “~에 있어요”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "약국",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "병원",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "편의점",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "은행",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_16",
+          "source_id": "generated-listening-16",
+          "text": "가: 다라 씨는 어디에 있어요?\n나: 식당에 있어요.\n가: 아지자 씨는요?\n나: 미용실에 있어요.\n\n질문: 다라 씨는 어디에 있습니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 다라 씨는 어디에 있어요?\n나: 식당에 있어요.\n가: 아지자 씨는요?\n나: 미용실에 있어요.\n\nTips mengerjakan: Cari nama tempat yang muncul bersama pola “~에 있어요”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "시장",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "미용실",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "식당",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "회사",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_17",
+          "source_id": "generated-listening-17",
+          "text": "가: 한국에서 생활용품을 싸게 사려면 어떻게 해요?\n나: 대형 마트의 1+1이나 2+1 같은 할인 행사를 이용할 수 있어요.\n\n질문: 생활용품을 싸게 사는 방법으로 알맞은 것은 무엇입니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 한국에서 생활용품을 싸게 사려면 어떻게 해요?\n나: 대형 마트의 1+1이나 2+1 같은 할인 행사를 이용할 수 있어요.\n\nTips mengerjakan: Perhatikan kata benda yang disebut setelah “~예요/이에요”, terutama jika ada koreksi dengan “아니요”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "전단지를 버립니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "할인 행사를 이용합니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "항상 새 제품만 삽니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "할인 쿠폰을 사용하지 않습니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_18",
+          "source_id": "generated-listening-18",
+          "text": "가: 온라인 쇼핑몰에서도 생활용품을 싸게 살 수 있어요?\n나: 네. 할인 행사를 하거나 할인 쿠폰을 제공해요.\n\n질문: 온라인 쇼핑몰에서 받을 수 있는 것은 무엇입니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 온라인 쇼핑몰에서도 생활용품을 싸게 살 수 있어요?\n나: 네. 할인 행사를 하거나 할인 쿠폰을 제공해요.\n\nTips mengerjakan: Perhatikan kata benda yang disebut setelah “~예요/이에요”, terutama jika ada koreksi dengan “아니요”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "할인 쿠폰",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "직업 소개",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "무료 식사",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "교통카드",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_19",
+          "source_id": "generated-listening-19",
+          "text": "가: 서울은 어떤 도시예요?\n나: 한국에서 가장 큰 도시이고 정치, 경제, 문화의 중심지예요.\n\n질문: 서울에 대한 설명으로 알맞은 것은 무엇입니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 서울은 어떤 도시예요?\n나: 한국에서 가장 큰 도시이고 정치, 경제, 문화의 중심지예요.\n\nTips mengerjakan: Perhatikan kata benda yang disebut setelah “~예요/이에요”, terutama jika ada koreksi dengan “아니요”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "정치와 경제의 중심지입니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "큰 항구가 있는 도시입니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "행정중심복합도시입니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "한국에서 가장 작은 도시입니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        },
+        {
+          "key": "q_listening_20",
+          "source_id": "generated-listening-20",
+          "text": "가: 부산에는 무엇이 있어요?\n나: 큰 항구가 있고 아름다운 해변이 있어요. 그래서 관광객들이 많이 방문해요.\n\n질문: 부산에 대한 설명으로 알맞은 것은 무엇입니까?",
+          "instruction": "다음 대화를 듣고 질문에 가장 알맞은 답을 고르십시오.",
+          "origin": "exam",
+          "version": 1,
+          "explanation": "Transkrip:\n가: 부산에는 무엇이 있어요?\n나: 큰 항구가 있고 아름다운 해변이 있어요. 그래서 관광객들이 많이 방문해요.\n\nTips mengerjakan: Perhatikan kata benda yang disebut setelah “~예요/이에요”, terutama jika ada koreksi dengan “아니요”.",
+          "image": null,
+          "audio": null,
+          "lesson_slug": null,
+          "answers": [
+            {
+              "label": "A",
+              "order": 0,
+              "text": "항구가 없습니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "B",
+              "order": 1,
+              "text": "해변이 없습니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            },
+            {
+              "label": "C",
+              "order": 2,
+              "text": "관광객이 많이 방문합니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": true
+            },
+            {
+              "label": "D",
+              "order": 3,
+              "text": "한국의 행정 수도입니다.",
+              "image": null,
+              "audio": null,
+              "is_correct": false
+            }
+          ]
+        }
+      ],
+      "image_question_keys": [
+        "q_reading_01",
+        "q_reading_02",
+        "q_reading_03",
+        "q_reading_04",
+        "q_reading_11",
+        "q_reading_12",
+        "q_reading_13",
+        "q_reading_14"
+      ],
+      "image_assets_status": "pending_generation"
+    }
+  ]
+}

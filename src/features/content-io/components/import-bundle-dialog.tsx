@@ -35,7 +35,6 @@ import {
   readBundleFile,
   validateBundle,
   type ConflictStrategy,
-  type ExamImportDiagnostic,
   type ExamImportPreview,
   type ImportResultReport,
   type LessonImportPreview,
@@ -49,6 +48,10 @@ type ImportOperation = {
   fileSize: number;
   lastModified: number;
   bundle: unknown;
+};
+
+type CompletedImportOperation = ImportOperation & {
+  report: ImportResultReport;
 };
 
 type Step = "pick" | "preview" | "running" | "done";
@@ -75,15 +78,11 @@ export function ImportBundleDialog({
   onOpenChange,
   bundleType,
   onImported,
-  diagnostics = [],
-  onDiagnostic,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   bundleType: BundleType;
   onImported?: () => void | Promise<void>;
-  diagnostics?: ExamImportDiagnostic[];
-  onDiagnostic?: (diagnostic: ExamImportDiagnostic) => void;
 }) {
   const [step, setStep] = useState<Step>("pick");
   const [errors, setErrors] = useState<string[]>([]);
@@ -94,7 +93,7 @@ export function ImportBundleDialog({
   const [importBundled, setImportBundled] = useState(true);
   const [allowMissingQuestions, setAllowMissingQuestions] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState<ImportResultReport | null>(null);
+  const [completedOperation, setCompletedOperation] = useState<CompletedImportOperation | null>(null);
   const [fileName, setFileName] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
   /** Naik setiap kali file baru dipilih; hasil analisis lama diabaikan. */
@@ -107,7 +106,7 @@ export function ImportBundleDialog({
     setOperation(null);
     setPreview(null);
     setProgress(0);
-    setResult(null);
+    setCompletedOperation(null);
     setFileName("");
     setStrategy("skip");
     setAllowMissingLesson(true);
@@ -133,25 +132,12 @@ export function ImportBundleDialog({
     const file = input.files?.[0];
     if (!file) return;
     const operationId = crypto.randomUUID();
-    const fileDiagnostic = {
-      operationId,
-      fileName: file.name,
-      fileSize: file.size,
-      lastModified: file.lastModified,
-      payloadTitle: "",
-      payloadSlug: "",
-      questionCount: 0,
-      sectionCount: 0,
-      stage: "FILE_SELECTED" as const,
-    };
-    if (bundleType === "exam") onDiagnostic?.(fileDiagnostic);
-
     // Setiap pemilihan file selalu memulai state baru — tidak ada sisa data import sebelumnya.
     const selection = selectionRef.current + 1;
     selectionRef.current = selection;
     setOperation(null);
     setPreview(null);
-    setResult(null);
+    setCompletedOperation(null);
     setProgress(0);
     setErrors([]);
     setFileName(file.name);
@@ -171,19 +157,6 @@ export function ImportBundleDialog({
       return;
     }
     const bundle = validation.bundle;
-    if (bundle.bundle_type === "exam") {
-      const parsedExam = bundle.data[0];
-      if (parsedExam) {
-        onDiagnostic?.({
-          ...fileDiagnostic,
-          stage: "PARSED_BUNDLE",
-          payloadTitle: parsedExam.title,
-          payloadSlug: parsedExam.slug,
-          questionCount: parsedExam.question_bundle.length,
-          sectionCount: parsedExam.sections.length,
-        });
-      }
-    }
     try {
       const nextPreview: PreviewState =
         bundle.bundle_type === "question_bank"
@@ -250,13 +223,6 @@ export function ImportBundleDialog({
       } else if (preview.kind === "exam") {
         report = await importExam(op.bundle as never, {
           onProgress,
-          diagnostic: {
-            operationId: op.operationId,
-            fileName: op.fileName,
-            fileSize: op.fileSize,
-            lastModified: op.lastModified,
-          },
-          onDiagnostic,
         });
       } else {
         report = await importLesson(op.bundle as never, {
@@ -267,7 +233,7 @@ export function ImportBundleDialog({
         });
       }
       setProgress(100);
-      setResult(report);
+      setCompletedOperation({ ...op, report });
       if (inputRef.current) inputRef.current.value = "";
       setStep("done");
       void recordContentIoAudit({
@@ -345,10 +311,6 @@ export function ImportBundleDialog({
             ))}
             {errors.length > 12 ? <li>…dan {errors.length - 12} error lainnya.</li> : null}
           </ul>
-        ) : null}
-
-        {bundleType === "exam" && diagnostics.length > 0 ? (
-          <ImportDiagnosticPanel diagnostics={diagnostics} />
         ) : null}
 
         {step === "preview" && preview ? (
@@ -452,21 +414,21 @@ export function ImportBundleDialog({
           </div>
         ) : null}
 
-        {step === "done" && result ? (
+        {step === "done" && completedOperation ? (
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm font-medium">
               <CheckCircle2 className="h-4 w-4 text-emerald-400" />
               Import selesai
             </div>
             <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-              <Stat label="Baru" value={result.imported} />
-              <Stat label="Diperbarui" value={result.updated} />
-              <Stat label="Dilewati" value={result.skipped} />
-              <Stat label="Gagal" value={result.failed} />
+              <Stat label="Baru" value={completedOperation.report.imported} />
+              <Stat label="Diperbarui" value={completedOperation.report.updated} />
+              <Stat label="Dilewati" value={completedOperation.report.skipped} />
+              <Stat label="Gagal" value={completedOperation.report.failed} />
             </div>
-            {result.failures.length > 0 ? (
+            {completedOperation.report.failures.length > 0 ? (
               <ul className="max-h-40 space-y-1 overflow-y-auto rounded-lg border p-3 text-xs text-muted-foreground">
-                {result.failures.map((failure, index) => (
+                {completedOperation.report.failures.map((failure, index) => (
                   <li key={index}>
                     <span className="font-medium">{failure.label}</span> — {failure.reason}
                   </li>
@@ -502,46 +464,6 @@ export function ImportBundleDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function ImportDiagnosticPanel({ diagnostics }: { diagnostics: ExamImportDiagnostic[] }) {
-  const operations = Array.from(
-    diagnostics.reduce((map, diagnostic) => {
-      const previous = map.get(diagnostic.operationId);
-      map.set(diagnostic.operationId, { ...previous, ...diagnostic });
-      return map;
-    }, new Map<string, ExamImportDiagnostic>()),
-  ).map(([, diagnostic]) => diagnostic);
-
-  return (
-    <div className="space-y-2 rounded-lg border border-dashed p-3 text-xs" data-testid="import-debug">
-      <p className="font-semibold">[IMPORT DEBUG]</p>
-      {operations.map((trace) => (
-        <pre key={trace.operationId} className="overflow-x-auto whitespace-pre-wrap break-words font-mono text-muted-foreground">
-{`stage: ${trace.stage}
-operationId: ${trace.operationId}
-fileName: ${trace.fileName}
-fileSize: ${trace.fileSize}
-lastModified: ${trace.lastModified}
-payload.title: ${trace.payloadTitle || "—"}
-payload.slug: ${trace.payloadSlug || "—"}
-payload.questionCount: ${trace.questionCount}
-payload.sectionCount: ${trace.sectionCount}
-BEFORE MUTATION
-mutation.title: ${trace.mutationTitle ?? "—"}
-mutation.slug: ${trace.mutationSlug ?? "—"}
-AFTER MUTATION
-createdExamId: ${trace.createdExamId ?? "—"}
-createdExamTitle: ${trace.createdExamTitle ?? "—"}
-createdExamSlug: ${trace.createdExamSlug ?? "—"}
-THEN QUERY DATABASE
-examId: ${trace.queriedExamId ?? "—"}
-title: ${trace.queriedExamTitle ?? "—"}
-slug: ${trace.queriedExamSlug ?? "—"}`}
-        </pre>
-      ))}
-    </div>
   );
 }
 

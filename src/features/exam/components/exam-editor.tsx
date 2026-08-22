@@ -223,7 +223,7 @@ function ExamEditorContent({
       ) : (
         <ul className="space-y-3">
           {sections.map((section, index) => {
-            const sectionQuestions = questions.filter((q) => q.section_id === section.id);
+            const sectionQuestions = questionsBySection.get(section.id) ?? [];
             const isCollapsed = collapsed[section.id] ?? false;
             return (
               <li
@@ -321,7 +321,7 @@ function ExamEditorContent({
                     ) : (
                       <ul className="space-y-2">
                         {sectionQuestions.map((question) => {
-                          const number = questions.findIndex((q) => q.id === question.id) + 1;
+                          const number = displayNumbers.get(question.id) ?? 0;
                           const editing =
                             composer?.question?.id === question.id &&
                             composer.sectionId === section.id;

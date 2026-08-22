@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen, waitFor, fireEvent } from "@testing-library/react";
 
 vi.mock("@/services/content/bundle/audit.service", () => ({
   recordContentIoAudit: vi.fn(),
@@ -45,6 +45,8 @@ vi.mock("@/services/content/bundle/bundle-import.service", async () => {
 });
 
 const { ImportBundleDialog } = await import("../import-bundle-dialog");
+
+afterEach(cleanup);
 
 const bundleFor = (name: string, questions: number) =>
   new File(

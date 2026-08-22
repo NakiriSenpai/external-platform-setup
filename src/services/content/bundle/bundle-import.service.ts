@@ -769,25 +769,40 @@ export async function importLesson(
       .map((slug) => ({ slug: slug!, name: slug! })),
   );
 
-  const slug = await uniqueSlug(LESSON_TABLES.lessons, lesson.slug);
   const { data: userData } = await supabase.auth.getUser();
-  const { data: created, error } = await supabase
-    .from(LESSON_TABLES.lessons)
-    .insert({
-      title: lesson.title,
-      slug,
-      category: lesson.category,
-      description: lesson.description,
-      thumbnail_url: lesson.thumbnail?.url ?? null,
-      difficulty: lesson.difficulty,
-      status: "draft",
-      created_by: userData.user?.id ?? null,
-      updated_by: userData.user?.id ?? null,
-    })
-    .select("id")
-    .single();
-  if (error || !created) throw new Error("Gagal membuat lesson hasil import.");
-  const lessonId = (created as { id: string }).id;
+  const userId = userData.user?.id ?? null;
+  const payload = {
+    title: lesson.title,
+    category: lesson.category,
+    description: lesson.description,
+    thumbnail_url: lesson.thumbnail?.url ?? null,
+    difficulty: lesson.difficulty,
+    status: "draft" as const,
+    updated_by: userId,
+  };
+
+  const updateInPlace = Boolean(existingLessonId) && options.strategy === "update";
+  let lessonId: string;
+
+  if (updateInPlace) {
+    lessonId = existingLessonId!;
+    const { error } = await supabase.from(LESSON_TABLES.lessons).update(payload).eq("id", lessonId);
+    if (error) throw new Error("Gagal memperbarui lesson hasil import.");
+    await supabase.from(LESSON_TABLES.questions).delete().eq("lesson_id", lessonId);
+    await supabase.from(LESSON_TABLES.sections).delete().eq("lesson_id", lessonId);
+    report.updated += 1;
+  } else {
+    const slug = await uniqueSlug(LESSON_TABLES.lessons, lesson.slug);
+    const { data: created, error } = await supabase
+      .from(LESSON_TABLES.lessons)
+      .insert({ ...payload, slug, created_by: userId })
+      .select("id")
+      .single();
+    if (error || !created) throw new Error("Gagal membuat lesson hasil import.");
+    lessonId = (created as { id: string }).id;
+    report.imported += 1;
+  }
+
 
   try {
     for (const section of [...lesson.sections].sort((a, b) => a.order - b.order)) {

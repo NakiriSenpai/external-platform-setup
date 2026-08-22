@@ -12,7 +12,7 @@ const { parseBundle } = await import("../bundle-schema");
 /** Bundle exam dengan key soal generik (q1) — persis kasus nyata user. */
 function bundleFor(name: string) {
   const lower = name.toLowerCase();
-  return parseBundle(
+  const result = parseBundle(
     {
       schema_version: 1,
       exported_at: new Date().toISOString(),
@@ -42,6 +42,8 @@ function bundleFor(name: string) {
     },
     "exam",
   );
+  if (!result.ok) throw new Error(result.errors.join("; "));
+  return result.bundle;
 }
 
 const opts = (strategy: "skip" | "update" | "create_new") => ({
@@ -63,9 +65,7 @@ describe("import exam — isolasi & conflict resolution", () => {
 
   it("A -> B -> C menghasilkan tiga exam independen", async () => {
     for (const name of ["A", "B", "C"]) {
-      const bundle = bundleFor(name);
-      expect(bundle.ok).toBe(true);
-      await importExam((bundle as { bundle: never }).bundle, opts("skip"));
+      await importExam(bundleFor(name), opts("skip"));
     }
     expect(exams().map((e) => e.title)).toEqual(["IMPORT A", "IMPORT B", "IMPORT C"]);
     expect(examQuestionText("import-a")).toEqual(["AAA"]);
@@ -77,8 +77,7 @@ describe("import exam — isolasi & conflict resolution", () => {
 
   it("A -> B -> C -> A -> C -> B: setiap import memakai file terbarunya", async () => {
     for (const name of ["A", "B", "C", "A", "C", "B"]) {
-      const parsed = bundleFor(name) as { bundle: never };
-      const report = await importExam(parsed.bundle, opts("create_new"));
+      const report = await importExam(bundleFor(name), opts("create_new"));
       const exam = exams().find((e) => e.id === report.createdEntityId)!;
       expect(exam.title).toBe(`IMPORT ${name}`);
       const refs = (db["exam_questions"] ?? []).filter((r) => r["exam_id"] === exam.id);
@@ -88,11 +87,11 @@ describe("import exam — isolasi & conflict resolution", () => {
   });
 
   it("LEWATI: import ulang B tidak mengubah A maupun B", async () => {
-    await importExam((bundleFor("A") as { bundle: never }).bundle, opts("skip"));
-    await importExam((bundleFor("B") as { bundle: never }).bundle, opts("skip"));
+    await importExam(bundleFor("A"), opts("skip"));
+    await importExam(bundleFor("B"), opts("skip"));
     const before = JSON.stringify({ exams: exams(), questions: questions() });
 
-    const report = await importExam((bundleFor("B") as { bundle: never }).bundle, opts("skip"));
+    const report = await importExam(bundleFor("B"), opts("skip"));
     expect(report.skipped).toBeGreaterThan(0);
     expect(report.imported).toBe(0);
     expect(JSON.stringify({ exams: exams(), questions: questions() })).toBe(before);
@@ -100,12 +99,12 @@ describe("import exam — isolasi & conflict resolution", () => {
   });
 
   it("PERBARUI DATA LAMA: hanya entity dengan identity sama yang diubah", async () => {
-    await importExam((bundleFor("A") as { bundle: never }).bundle, opts("update"));
-    await importExam((bundleFor("B") as { bundle: never }).bundle, opts("update"));
+    await importExam(bundleFor("A"), opts("update"));
+    await importExam(bundleFor("B"), opts("update"));
 
-    const modifiedB = bundleFor("B") as { bundle: { data: { title: string }[] } };
-    modifiedB.bundle.data[0]!.title = "IMPORT B REV2";
-    await importExam(modifiedB.bundle as never, opts("update"));
+    const modifiedB = bundleFor("B");
+    modifiedB.data[0]!.title = "IMPORT B REV2";
+    await importExam(modifiedB, opts("update"));
 
     expect(exams()).toHaveLength(2);
     expect(exams().find((e) => e.slug === "import-a")!.title).toBe("IMPORT A");
@@ -115,9 +114,9 @@ describe("import exam — isolasi & conflict resolution", () => {
   });
 
   it("BUAT SEBAGAI SOAL BARU: konten berasal dari file terbaru, soal lama utuh", async () => {
-    await importExam((bundleFor("A") as { bundle: never }).bundle, opts("create_new"));
-    await importExam((bundleFor("B") as { bundle: never }).bundle, opts("create_new"));
-    const report = await importExam((bundleFor("B") as { bundle: never }).bundle, opts("create_new"));
+    await importExam(bundleFor("A"), opts("create_new"));
+    await importExam(bundleFor("B"), opts("create_new"));
+    const report = await importExam(bundleFor("B"), opts("create_new"));
 
     const exam = exams().find((e) => e.id === report.createdEntityId)!;
     expect(exam.title).toBe("IMPORT B");
@@ -129,27 +128,27 @@ describe("import exam — isolasi & conflict resolution", () => {
   });
 
   it("preview cocok dengan eksekusi (soal dari bundle tidak dianggap hilang)", async () => {
-    const parsed = bundleFor("B") as { bundle: never };
-    const [preview] = await analyzeExamBundle(parsed.bundle);
+    const parsed = bundleFor("B");
+    const [preview] = await analyzeExamBundle(parsed);
     expect(preview!.title).toBe("IMPORT B");
     expect(preview!.missingKeys).toEqual([]);
-    const report = await importExam(parsed.bundle, opts("skip"));
+    const report = await importExam(parsed, opts("skip"));
     expect(exams().find((e) => e.id === report.createdEntityId)!.title).toBe("IMPORT B");
   });
 
   it("allowMissingQuestions OFF membatalkan import dan tidak meninggalkan exam", async () => {
-    const parsed = bundleFor("C") as { bundle: { data: { question_bundle: unknown[] }[] } };
-    parsed.bundle.data[0]!.question_bundle = [];
-    await expect(importExam(parsed.bundle as never, opts("skip"))).rejects.toThrow(
+    const parsed = bundleFor("C");
+    parsed.data[0]!.question_bundle = [];
+    await expect(importExam(parsed, opts("skip"))).rejects.toThrow(
       /tidak ditemukan/i,
     );
     expect(exams()).toHaveLength(0);
   });
 
   it("allowMissingQuestions ON melanjutkan dan melaporkan soal hilang", async () => {
-    const parsed = bundleFor("C") as { bundle: { data: { question_bundle: unknown[] }[] } };
-    parsed.bundle.data[0]!.question_bundle = [];
-    const report = await importExam(parsed.bundle as never, {
+    const parsed = bundleFor("C");
+    parsed.data[0]!.question_bundle = [];
+    const report = await importExam(parsed, {
       ...opts("skip"),
       allowMissingQuestions: true,
     });
@@ -160,7 +159,7 @@ describe("import exam — isolasi & conflict resolution", () => {
   });
 
   it("importBundledQuestions OFF tidak membuat/mengubah soal apa pun", async () => {
-    const report = await importExam((bundleFor("A") as { bundle: never }).bundle, {
+    const report = await importExam(bundleFor("A"), {
       strategy: "skip",
       importBundledQuestions: false,
       allowMissingQuestions: true,

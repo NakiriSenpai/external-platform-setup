@@ -860,7 +860,8 @@ export async function importLesson(
     report.createdEntityId = lessonId;
     return report;
   } catch (err) {
-    await supabase.from(LESSON_TABLES.lessons).delete().eq("id", lessonId);
+    if (!updateInPlace) await supabase.from(LESSON_TABLES.lessons).delete().eq("id", lessonId);
     throw err;
   }
+
 }

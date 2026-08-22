@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, FileJson, Upload, XCircle } from "lucide-react";
 import { toast } from "sonner";
 

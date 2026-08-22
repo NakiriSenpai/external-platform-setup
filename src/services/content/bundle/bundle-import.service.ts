@@ -576,14 +576,14 @@ export async function importExam(
     .single();
   if (error || !created) throw new Error("Gagal membuat exam hasil import.");
   const createdExam = created as { id: string; title: string; slug: string };
-  if (createdExam.title !== exam.title || createdExam.slug !== slug) {
-    throw new Error("Identitas Exam yang tersimpan tidak cocok dengan file import.");
-  }
   const examId = createdExam.id;
   const createdQuestionIds: string[] = [];
   report.imported += 1;
 
   try {
+    if (createdExam.title !== exam.title || createdExam.slug !== slug) {
+      throw new Error("Identitas Exam yang tersimpan tidak cocok dengan file import.");
+    }
     const questionContext = await buildWriteContext(exam.question_bundle);
     const questionIdBySourceKey = new Map<string, string>();
     let completedQuestions = 0;

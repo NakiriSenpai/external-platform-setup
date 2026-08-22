@@ -223,12 +223,6 @@ export function ImportBundleDialog({
       } else if (preview.kind === "exam") {
         report = await importExam(op.bundle as never, {
           onProgress,
-          diagnostic: {
-            operationId: op.operationId,
-            fileName: op.fileName,
-            fileSize: op.fileSize,
-            lastModified: op.lastModified,
-          },
         });
       } else {
         report = await importLesson(op.bundle as never, {

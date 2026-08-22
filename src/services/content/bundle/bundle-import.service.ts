@@ -34,26 +34,6 @@ export type ImportResultReport = {
   createdEntityId?: string;
 };
 
-export type ExamImportDiagnostic = {
-  operationId: string;
-  fileName: string;
-  fileSize: number;
-  lastModified: number;
-  payloadTitle: string;
-  payloadSlug: string;
-  questionCount: number;
-  sectionCount: number;
-  mutationTitle?: string;
-  mutationSlug?: string;
-  createdExamId?: string;
-  createdExamTitle?: string;
-  createdExamSlug?: string;
-  queriedExamId?: string;
-  queriedExamTitle?: string;
-  queriedExamSlug?: string;
-  stage: "FILE_SELECTED" | "PARSED_BUNDLE" | "MUTATION_START" | "MUTATION_SUCCESS" | "DATABASE_QUERY";
-};
-
 export type QuestionPlanItem = {
   key: string;
   label: string;
@@ -546,13 +526,6 @@ async function findBySlug(table: string, slug: string): Promise<string | null> {
 
 export type ExamImportOptions = {
   onProgress?: ((done: number, total: number) => void) | undefined;
-  diagnostic?: {
-    operationId: string;
-    fileName: string;
-    fileSize: number;
-    lastModified: number;
-  };
-  onDiagnostic?: ((diagnostic: ExamImportDiagnostic) => void) | undefined;
 };
 
 /**
@@ -597,23 +570,6 @@ export async function importExam(
 
   const slug = await uniqueSlug(EXAM_TABLES.exams, exam.slug);
   const mutation = { ...payload, slug, created_by: userId };
-  const diagnosticBase = options.diagnostic
-    ? {
-        ...options.diagnostic,
-        payloadTitle: exam.title,
-        payloadSlug: exam.slug,
-        questionCount: exam.question_bundle.length,
-        sectionCount: exam.sections.length,
-      }
-    : null;
-  if (diagnosticBase) {
-    options.onDiagnostic?.({
-      ...diagnosticBase,
-      stage: "MUTATION_START",
-      mutationTitle: mutation.title,
-      mutationSlug: mutation.slug,
-    });
-  }
   const { data: created, error } = await supabase
     .from(EXAM_TABLES.exams)
     .insert(mutation)
@@ -621,17 +577,6 @@ export async function importExam(
     .single();
   if (error || !created) throw new Error("Gagal membuat exam hasil import.");
   const createdExam = created as { id: string; title: string; slug: string };
-  if (diagnosticBase) {
-    options.onDiagnostic?.({
-      ...diagnosticBase,
-      stage: "MUTATION_SUCCESS",
-      mutationTitle: mutation.title,
-      mutationSlug: mutation.slug,
-      createdExamId: createdExam.id,
-      createdExamTitle: createdExam.title,
-      createdExamSlug: createdExam.slug,
-    });
-  }
   const examId = createdExam.id;
   const createdQuestionIds: string[] = [];
   report.imported += 1;
@@ -695,21 +640,6 @@ export async function importExam(
       .eq("id", examId)
       .single();
     if (queryError || !queried) throw new Error("Gagal membaca ulang Exam setelah import.");
-    const queriedExam = queried as { id: string; title: string; slug: string };
-    if (diagnosticBase) {
-      options.onDiagnostic?.({
-        ...diagnosticBase,
-        stage: "DATABASE_QUERY",
-        mutationTitle: mutation.title,
-        mutationSlug: mutation.slug,
-        createdExamId: createdExam.id,
-        createdExamTitle: createdExam.title,
-        createdExamSlug: createdExam.slug,
-        queriedExamId: queriedExam.id,
-        queriedExamTitle: queriedExam.title,
-        queriedExamSlug: queriedExam.slug,
-      });
-    }
     report.createdEntityId = examId;
     return report;
   } catch (err) {

@@ -572,14 +572,18 @@ export async function importExam(
   const { data: created, error } = await supabase
     .from(EXAM_TABLES.exams)
     .insert({ ...payload, slug, created_by: userId })
-    .select("id")
+    .select("id, title, slug")
     .single();
   if (error || !created) throw new Error("Gagal membuat exam hasil import.");
-  const examId = (created as { id: string }).id;
+  const createdExam = created as { id: string; title: string; slug: string };
+  const examId = createdExam.id;
   const createdQuestionIds: string[] = [];
   report.imported += 1;
 
   try {
+    if (createdExam.title !== exam.title || createdExam.slug !== slug) {
+      throw new Error("Identitas Exam yang tersimpan tidak cocok dengan file import.");
+    }
     const questionContext = await buildWriteContext(exam.question_bundle);
     const questionIdBySourceKey = new Map<string, string>();
     let completedQuestions = 0;

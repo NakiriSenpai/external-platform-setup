@@ -163,4 +163,54 @@ describe("importExam create-only", () => {
     await expect(importExam(bundle)).rejects.toThrow(/tepat satu Exam/i);
     expect(rows("exams")).toHaveLength(0);
   });
+
+  it("clean-room ALPHA -> BETA -> GAMMA mempertahankan identitas sampai database", async () => {
+    const identities = [
+      ["ALPHA", "84721"],
+      ["BETA", "59384"],
+      ["GAMMA", "26173"],
+    ] as const;
+
+    const ids: string[] = [];
+    for (const [name, marker] of identities) {
+      const bundle = bundleFor(name);
+      const exam = bundle.data[0];
+      if (!exam) throw new Error("Fixture exam kosong.");
+      exam.title = `CLEAN ROOM EXAM ${name} ${marker}`;
+      exam.slug = `clean-room-${name.toLowerCase()}-${marker}`;
+      const question = exam.question_bundle[0];
+      if (!question) throw new Error("Fixture soal kosong.");
+      question.text = `<p>THIS IS ${name} ${marker}</p>`;
+
+      const report = await importExam(bundle);
+      ids.push(report.createdEntityId ?? "");
+    }
+
+    expect(rows("exams").map((row) => [row["title"], row["slug"]])).toEqual([
+      ["CLEAN ROOM EXAM ALPHA 84721", "clean-room-alpha-84721"],
+      ["CLEAN ROOM EXAM BETA 59384", "clean-room-beta-59384"],
+      ["CLEAN ROOM EXAM GAMMA 26173", "clean-room-gamma-26173"],
+    ]);
+    expect(ids.every(Boolean)).toBe(true);
+    expect(new Set(ids).size).toBe(3);
+    expect(ids.map((id) => contentFor(id)[0]?.["text"])).toEqual([
+      "<p>THIS IS ALPHA 84721</p>",
+      "<p>THIS IS BETA 59384</p>",
+      "<p>THIS IS GAMMA 26173</p>",
+    ]);
+
+    const refs = rows("exam_questions");
+    const questionIdsByExam = ids.map((id) =>
+      refs.filter((ref) => ref["exam_id"] === id).map((ref) => ref["question_id"]),
+    );
+    expect(new Set(questionIdsByExam.flat()).size).toBe(questionIdsByExam.flat().length);
+    expect(ids.map((id) => rows("exam_sections").filter((row) => row["exam_id"] === id).length)).toEqual([
+      2, 2, 2,
+    ]);
+    expect(
+      questionIdsByExam.map((questionIds) =>
+        rows("question_answers").filter((answer) => questionIds.includes(answer["question_id"])).length,
+      ),
+    ).toEqual([4, 4, 4]);
+  });
 });

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, FileJson, Upload, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -72,7 +72,7 @@ export function ImportBundleDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   bundleType: BundleType;
-  onImported?: () => void;
+  onImported?: () => void | Promise<void>;
 }) {
   const [step, setStep] = useState<Step>("pick");
   const [errors, setErrors] = useState<string[]>([]);
@@ -89,7 +89,7 @@ export function ImportBundleDialog({
   /** Naik setiap kali file baru dipilih; hasil analisis lama diabaikan. */
   const selectionRef = useRef(0);
 
-  const reset = () => {
+  const reset = useCallback(() => {
     selectionRef.current += 1;
     setStep("pick");
     setErrors([]);
@@ -98,8 +98,18 @@ export function ImportBundleDialog({
     setProgress(0);
     setResult(null);
     setFileName("");
+    setStrategy("skip");
+    setAllowMissingLesson(true);
+    setImportBundled(true);
+    setAllowMissingQuestions(false);
     if (inputRef.current) inputRef.current.value = "";
-  };
+  }, []);
+
+  const wasOpenRef = useRef(false);
+  useEffect(() => {
+    if (open && !wasOpenRef.current) reset();
+    wasOpenRef.current = open;
+  }, [open, reset]);
 
   const close = (value: boolean) => {
     if (step === "running") return;
@@ -204,6 +214,7 @@ export function ImportBundleDialog({
       }
       setProgress(100);
       setResult(report);
+      if (inputRef.current) inputRef.current.value = "";
       setStep("done");
       void recordContentIoAudit({
         action:
@@ -222,7 +233,7 @@ export function ImportBundleDialog({
           failed: report.failed,
         },
       });
-      onImported?.();
+      await onImported?.();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Import gagal.";
       setErrors([message]);

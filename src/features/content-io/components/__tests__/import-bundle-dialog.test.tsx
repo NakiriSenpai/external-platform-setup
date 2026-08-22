@@ -46,7 +46,10 @@ vi.mock("@/services/content/bundle/bundle-import.service", async () => {
 
 const { ImportBundleDialog } = await import("../import-bundle-dialog");
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  importExam.mockClear();
+});
 
 const bundleFor = (name: string, questions: number) =>
   new File(
@@ -115,5 +118,22 @@ describe("ImportBundleDialog", () => {
     expect(screen.queryByText("Import soal yang menyertai bundle")).toBeNull();
     expect(screen.queryByText("Lanjutkan walau ada soal yang hilang")).toBeNull();
     expect(screen.getByRole("button", { name: "Import Exam" })).toBeTruthy();
+  });
+
+  it("membuang state lama setiap dialog dibuka kembali", async () => {
+    const onOpenChange = vi.fn();
+    const { rerender } = render(
+      <ImportBundleDialog open onOpenChange={onOpenChange} bundleType="exam" />,
+    );
+    await pick(bundleFor("A", 1));
+    expect(screen.getByText("TEST A")).toBeTruthy();
+
+    rerender(<ImportBundleDialog open={false} onOpenChange={onOpenChange} bundleType="exam" />);
+    rerender(<ImportBundleDialog open onOpenChange={onOpenChange} bundleType="exam" />);
+
+    await waitFor(() => expect(document.getElementById("bundle-file")).toBeTruthy());
+    expect(screen.queryByText("TEST A")).toBeNull();
+    expect(importExam).not.toHaveBeenCalled();
+    expect((document.getElementById("bundle-file") as HTMLInputElement).value).toBe("");
   });
 });

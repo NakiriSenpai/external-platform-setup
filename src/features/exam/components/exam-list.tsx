@@ -356,6 +356,7 @@ export function ExamList() {
       <ExamFormDialog open={formOpen} onOpenChange={setFormOpen} exam={selected} />
       <ImportBundleDialog open={importOpen} onOpenChange={setImportOpen} bundleType="exam"
         onImported={async () => {
+          setPage(1);
           const keys = ["exams", "exam", "exam-sections", "exam-questions", "question-bank"];
           await Promise.all(
             keys.map((key) => queryClient.invalidateQueries({ queryKey: [key], refetchType: "all" })),

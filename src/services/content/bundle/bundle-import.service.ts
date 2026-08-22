@@ -723,32 +723,42 @@ export async function importLesson(
   if (!lesson) throw new Error("Bundle lesson kosong.");
 
   const report: ImportResultReport = { imported: 0, updated: 0, skipped: 0, failed: 0, failures: [] };
-  const keyMap = new Map<string, string>();
 
-  if (options.importBundledQuestions && lesson.question_bundle.length > 0) {
-    const preview = await analyzeQuestions(lesson.question_bundle, "lesson");
-    const questionResult = await importQuestions(preview, {
-      strategy: options.strategy,
-      allowMissingLesson: true,
-      onProgress: options.onProgress,
+  const existingLessonId = await findBySlug(LESSON_TABLES.lessons, lesson.slug);
+  if (existingLessonId && options.strategy === "skip") {
+    report.skipped += 1;
+    report.failures.push({
+      label: lesson.title,
+      reason: `Lesson dengan slug "${lesson.slug}" sudah ada — dilewati.`,
     });
-    report.imported += questionResult.imported;
-    report.updated += questionResult.updated;
-    report.skipped += questionResult.skipped;
-    report.failed += questionResult.failed;
-    report.failures.push(...questionResult.failures);
-    for (const [key, id] of questionResult.keyMap) keyMap.set(key, id);
+    report.createdEntityId = existingLessonId;
+    return report;
   }
 
   const keys = Array.from(
     new Set(lesson.sections.flatMap((s) => s.question_refs.map((r) => r.question_key))),
   );
-  const existing = await findExistingQuestions(keys);
-  for (const [key, id] of existing) keyMap.set(key, id);
+  const resolved = await resolveOperationQuestions({
+    namespace: lesson.slug,
+    bundleType: "lesson",
+    questionBundle: lesson.question_bundle,
+    refKeys: keys,
+    strategy: options.strategy,
+    importBundledQuestions: options.importBundledQuestions,
+    onProgress: options.onProgress,
+  });
+  report.imported += resolved.imported;
+  report.updated += resolved.updated;
+  report.skipped += resolved.skipped;
+  report.failed += resolved.failed;
+  report.failures.push(...resolved.failures);
+  const keyMap = resolved.keyMap;
+
   const missing = keys.filter((key) => !keyMap.has(key));
   if (missing.length > 0 && !options.allowMissingQuestions) {
     throw new Error(`${missing.length} soal tidak ditemukan. Import dibatalkan.`);
   }
+
 
   const grammarMap = await resolveTagTable(
     "grammar_tags",

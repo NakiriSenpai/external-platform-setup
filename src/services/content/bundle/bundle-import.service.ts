@@ -685,9 +685,9 @@ export async function analyzeLessonBundle(bundle: LessonFileBundle): Promise<Les
     const keys = Array.from(
       new Set(lesson.sections.flatMap((s) => s.question_refs.map((r) => r.question_key))),
     );
-    const existing = await findExistingQuestions(keys);
     const bundleKeys = new Set(lesson.question_bundle.map((q) => q.key));
-    const missingKeys = keys.filter((key) => !existing.has(key));
+    const existing = await findExistingQuestions(keys.filter((key) => !bundleKeys.has(key)));
+    const missingKeys = keys.filter((key) => !existing.has(key) && !bundleKeys.has(key));
     const { data: slugRow } = await supabase
       .from(LESSON_TABLES.lessons)
       .select("id")
@@ -701,7 +701,8 @@ export async function analyzeLessonBundle(bundle: LessonFileBundle): Promise<Les
       blockCount: lesson.sections.reduce((sum, s) => sum + s.blocks.length, 0),
       questionRefCount: keys.length,
       missingKeys,
-      resolvableFromBundle: missingKeys.filter((key) => bundleKeys.has(key)),
+      resolvableFromBundle: keys.filter((key) => bundleKeys.has(key)),
+
       slugTaken: Boolean(slugRow),
       questionPreview: lesson.question_bundle.length
         ? await analyzeQuestions(lesson.question_bundle, "lesson")

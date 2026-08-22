@@ -87,6 +87,33 @@ function ExamEditorContent({
   const questions = useMemo(() => questionsQuery.data ?? [], [questionsQuery.data]);
   const perQuestion = pointsPerQuestion(questions.length);
 
+  // Presentation-only numbering: section order, then order_index within section.
+  const questionsBySection = useMemo(() => {
+    const map = new Map<string, ExamQuestionWithAnswers[]>();
+    for (const q of questions) {
+      const list = map.get(q.section_id) ?? [];
+      list.push(q);
+      map.set(q.section_id, list);
+    }
+    for (const list of map.values()) {
+      list.sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
+    }
+    return map;
+  }, [questions]);
+
+  const displayNumbers = useMemo(() => {
+    const numbers = new Map<string, number>();
+    let n = 0;
+    for (const section of sections) {
+      for (const q of questionsBySection.get(section.id) ?? []) {
+        n += 1;
+        numbers.set(q.id, n);
+      }
+    }
+    return numbers;
+  }, [sections, questionsBySection]);
+
+
   const moveSection = async (index: number, direction: -1 | 1) => {
     const next = [...sections];
     const target = index + direction;
@@ -196,7 +223,7 @@ function ExamEditorContent({
       ) : (
         <ul className="space-y-3">
           {sections.map((section, index) => {
-            const sectionQuestions = questions.filter((q) => q.section_id === section.id);
+            const sectionQuestions = questionsBySection.get(section.id) ?? [];
             const isCollapsed = collapsed[section.id] ?? false;
             return (
               <li
@@ -294,7 +321,7 @@ function ExamEditorContent({
                     ) : (
                       <ul className="space-y-2">
                         {sectionQuestions.map((question) => {
-                          const number = questions.findIndex((q) => q.id === question.id) + 1;
+                          const number = displayNumbers.get(question.id) ?? 0;
                           const editing =
                             composer?.question?.id === question.id &&
                             composer.sectionId === section.id;

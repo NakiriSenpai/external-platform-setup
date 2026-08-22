@@ -397,6 +397,76 @@ export async function importQuestions(
   return report;
 }
 
+// ------------------------------------------- identity per import operation
+
+/**
+ * Identity soal yang menyertai bundle di-namespace per entity source
+ * (`<slug>::<key>`) supaya bundle file B tidak pernah menyentuh soal milik
+ * file A yang kebetulan memakai key generik (`q1`, `q2`, ...).
+ * Referensi ke Question Bank yang sudah ada tetap memakai key mentah.
+ */
+function namespacedKey(namespace: string, key: string) {
+  return `${namespace}::${key}`;
+}
+
+type ResolvedQuestions = {
+  keyMap: Map<string, string>;
+  imported: number;
+  updated: number;
+  skipped: number;
+  failed: number;
+  failures: { label: string; reason: string }[];
+};
+
+async function resolveOperationQuestions(params: {
+  namespace: string;
+  bundleType: BundleType;
+  questionBundle: QuestionBundle[];
+  refKeys: string[];
+  strategy: ConflictStrategy;
+  importBundledQuestions: boolean;
+  onProgress?: ((done: number, total: number) => void) | undefined;
+}): Promise<ResolvedQuestions> {
+  const out: ResolvedQuestions = {
+    keyMap: new Map(),
+    imported: 0,
+    updated: 0,
+    skipped: 0,
+    failed: 0,
+    failures: [],
+  };
+
+  if (params.importBundledQuestions && params.questionBundle.length > 0) {
+    const namespaced = params.questionBundle.map((q) => ({
+      ...q,
+      key: namespacedKey(params.namespace, q.key),
+    }));
+    const preview = await analyzeQuestions(namespaced, params.bundleType);
+    const result = await importQuestions(preview, {
+      strategy: params.strategy,
+      allowMissingLesson: true,
+      onProgress: params.onProgress,
+    });
+    out.imported += result.imported;
+    out.updated += result.updated;
+    out.skipped += result.skipped;
+    out.failed += result.failed;
+    out.failures.push(...result.failures);
+    const prefix = `${params.namespace}::`;
+    for (const [key, id] of result.keyMap) {
+      out.keyMap.set(key.startsWith(prefix) ? key.slice(prefix.length) : key, id);
+    }
+  }
+
+  // Soal yang belum ter-resolve dari bundle dicari di Question Bank (read-only).
+  const unresolved = Array.from(new Set(params.refKeys)).filter((key) => !out.keyMap.has(key));
+  if (unresolved.length > 0) {
+    const existing = await findExistingQuestions(unresolved);
+    for (const [key, id] of existing) if (!out.keyMap.has(key)) out.keyMap.set(key, id);
+  }
+  return out;
+}
+
 // ------------------------------------------------------------------- EXAM
 
 export type ExamImportPreview = {
@@ -416,9 +486,9 @@ export async function analyzeExamBundle(bundle: ExamFileBundle): Promise<ExamImp
   const previews: ExamImportPreview[] = [];
   for (const exam of bundle.data) {
     const keys = Array.from(new Set(exam.question_refs.map((r) => r.question_key)));
-    const existing = await findExistingQuestions(keys);
-    const missingKeys = keys.filter((key) => !existing.has(key));
     const bundleKeys = new Set(exam.question_bundle.map((q) => q.key));
+    const existing = await findExistingQuestions(keys.filter((key) => !bundleKeys.has(key)));
+    const missingKeys = keys.filter((key) => !existing.has(key) && !bundleKeys.has(key));
     const { data: slugRow } = await supabase
       .from(EXAM_TABLES.exams)
       .select("id")
@@ -430,9 +500,9 @@ export async function analyzeExamBundle(bundle: ExamFileBundle): Promise<ExamImp
       title: exam.title,
       sectionCount: exam.sections.length,
       questionRefCount: exam.question_refs.length,
-      resolvedKeys: keys.filter((key) => existing.has(key)),
+      resolvedKeys: keys.filter((key) => existing.has(key) || bundleKeys.has(key)),
       missingKeys,
-      resolvableFromBundle: missingKeys.filter((key) => bundleKeys.has(key)),
+      resolvableFromBundle: keys.filter((key) => bundleKeys.has(key)),
       slugTaken: Boolean(slugRow),
       questionPreview: exam.question_bundle.length
         ? await analyzeQuestions(exam.question_bundle, "exam")
@@ -450,6 +520,11 @@ async function uniqueSlug(table: string, slug: string): Promise<string> {
     candidate = `${slug}-${attempt + 2}`;
   }
   return `${slug}-${Date.now()}`;
+}
+
+async function findBySlug(table: string, slug: string): Promise<string | null> {
+  const { data } = await supabase.from(table).select("id").eq("slug", slug).maybeSingle();
+  return (data as { id: string } | null)?.id ?? null;
 }
 
 export type ExamImportOptions = {
@@ -470,53 +545,78 @@ export async function importExam(
   if (!exam) throw new Error("Bundle exam kosong.");
 
   const report: ImportResultReport = { imported: 0, updated: 0, skipped: 0, failed: 0, failures: [] };
-  const keyMap = new Map<string, string>();
 
-  if (options.importBundledQuestions && exam.question_bundle.length > 0) {
-    const preview = await analyzeQuestions(exam.question_bundle, "exam");
-    const questionResult = await importQuestions(preview, {
-      strategy: options.strategy,
-      allowMissingLesson: true,
-      onProgress: options.onProgress,
+  // Identity exam = slug bundle. Hanya exam dengan slug yang sama yang dianggap konflik.
+  const existingExamId = await findBySlug(EXAM_TABLES.exams, exam.slug);
+  if (existingExamId && options.strategy === "skip") {
+    report.skipped += 1;
+    report.failures.push({
+      label: exam.title,
+      reason: `Exam dengan slug "${exam.slug}" sudah ada — dilewati.`,
     });
-    report.imported += questionResult.imported;
-    report.updated += questionResult.updated;
-    report.skipped += questionResult.skipped;
-    report.failed += questionResult.failed;
-    report.failures.push(...questionResult.failures);
-    for (const [key, id] of questionResult.keyMap) keyMap.set(key, id);
+    report.createdEntityId = existingExamId;
+    return report;
   }
 
+  const resolved = await resolveOperationQuestions({
+    namespace: exam.slug,
+    bundleType: "exam",
+    questionBundle: exam.question_bundle,
+    refKeys: exam.question_refs.map((r) => r.question_key),
+    strategy: options.strategy,
+    importBundledQuestions: options.importBundledQuestions,
+    onProgress: options.onProgress,
+  });
+  report.imported += resolved.imported;
+  report.updated += resolved.updated;
+  report.skipped += resolved.skipped;
+  report.failed += resolved.failed;
+  report.failures.push(...resolved.failures);
+  const keyMap = resolved.keyMap;
+
   const keys = Array.from(new Set(exam.question_refs.map((r) => r.question_key)));
-  const existing = await findExistingQuestions(keys);
-  for (const [key, id] of existing) keyMap.set(key, id);
   const missing = keys.filter((key) => !keyMap.has(key));
   if (missing.length > 0 && !options.allowMissingQuestions) {
     throw new Error(`${missing.length} soal tidak ditemukan. Import dibatalkan.`);
   }
 
-  const slug = await uniqueSlug(EXAM_TABLES.exams, exam.slug);
   const { data: userData } = await supabase.auth.getUser();
-  const { data: created, error } = await supabase
-    .from(EXAM_TABLES.exams)
-    .insert({
-      title: exam.title,
-      slug,
-      category: exam.category,
-      description: exam.description,
-      icon_url: exam.icon?.url ?? null,
-      difficulty: exam.difficulty,
-      passing_score: exam.passing_score,
-      duration_minutes: exam.duration_minutes,
-      shuffle_questions: exam.shuffle_questions,
-      shuffle_answers: exam.shuffle_answers,
-      status: "draft",
-      created_by: userData.user?.id ?? null,
-    })
-    .select("id")
-    .single();
-  if (error || !created) throw new Error("Gagal membuat exam hasil import.");
-  const examId = (created as { id: string }).id;
+  const userId = userData.user?.id ?? null;
+  const payload = {
+    title: exam.title,
+    category: exam.category,
+    description: exam.description,
+    icon_url: exam.icon?.url ?? null,
+    difficulty: exam.difficulty,
+    passing_score: exam.passing_score,
+    duration_minutes: exam.duration_minutes,
+    shuffle_questions: exam.shuffle_questions,
+    shuffle_answers: exam.shuffle_answers,
+    status: "draft" as const,
+  };
+
+  const updateInPlace = Boolean(existingExamId) && options.strategy === "update";
+  let examId: string;
+
+  if (updateInPlace) {
+    examId = existingExamId!;
+    const { error } = await supabase.from(EXAM_TABLES.exams).update(payload).eq("id", examId);
+    if (error) throw new Error("Gagal memperbarui exam hasil import.");
+    // struktur lama diganti penuh oleh struktur bundle
+    await supabase.from(EXAM_TABLES.questions).delete().eq("exam_id", examId);
+    await supabase.from(EXAM_TABLES.sections).delete().eq("exam_id", examId);
+    report.updated += 1;
+  } else {
+    const slug = await uniqueSlug(EXAM_TABLES.exams, exam.slug);
+    const { data: created, error } = await supabase
+      .from(EXAM_TABLES.exams)
+      .insert({ ...payload, slug, created_by: userId })
+      .select("id")
+      .single();
+    if (error || !created) throw new Error("Gagal membuat exam hasil import.");
+    examId = (created as { id: string }).id;
+    report.imported += 1;
+  }
 
   try {
     const sectionIdByKey = new Map<string, string>();
@@ -558,11 +658,12 @@ export async function importExam(
     report.createdEntityId = examId;
     return report;
   } catch (err) {
-    // rollback exam yang baru dibuat agar tidak meninggalkan data setengah jadi
-    await supabase.from(EXAM_TABLES.exams).delete().eq("id", examId);
+    // rollback hanya untuk exam yang BARU dibuat di operasi ini
+    if (!updateInPlace) await supabase.from(EXAM_TABLES.exams).delete().eq("id", examId);
     throw err;
   }
 }
+
 
 // ----------------------------------------------------------------- LESSON
 

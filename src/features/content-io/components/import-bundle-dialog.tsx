@@ -258,11 +258,13 @@ export function ImportBundleDialog({
             <Label htmlFor="bundle-file">Pilih file bundle (.json)</Label>
             <Input
               id="bundle-file"
+              ref={inputRef}
               type="file"
               accept="application/json,.json"
               className="min-h-11"
-              onChange={(e) => void handleFile(e.target.files?.[0])}
+              onChange={(e) => void handleFileChange(e)}
             />
+
             <p className="text-xs text-muted-foreground">Maksimal 8 MB per file.</p>
           </div>
         ) : null}

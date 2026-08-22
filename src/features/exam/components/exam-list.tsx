@@ -355,8 +355,12 @@ export function ExamList() {
 
       <ExamFormDialog open={formOpen} onOpenChange={setFormOpen} exam={selected} />
       <ImportBundleDialog open={importOpen} onOpenChange={setImportOpen} bundleType="exam"
-        onImported={() => {
-          for (const key of ["exams","exam","exam-sections","exam-questions"]) void queryClient.invalidateQueries({ queryKey: [key] });
+        onImported={async () => {
+          const keys = ["exams", "exam", "exam-sections", "exam-questions", "question-bank"];
+          await Promise.all(
+            keys.map((key) => queryClient.invalidateQueries({ queryKey: [key], refetchType: "all" })),
+          );
+          await queryClient.refetchQueries({ queryKey: ["exams"], type: "active" });
         }}
       />
     </section>

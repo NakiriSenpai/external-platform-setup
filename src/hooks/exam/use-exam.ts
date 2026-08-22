@@ -27,7 +27,7 @@ export function useExams(params: ExamListParams) {
   return useQuery({
     queryKey: ["exams", params],
     queryFn: () => listExams(params),
-    staleTime: 30_000,
+    staleTime: 0,
   });
 }
 

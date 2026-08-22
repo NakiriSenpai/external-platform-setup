@@ -98,6 +98,10 @@ export function ImportBundleDialog({
     setProgress(0);
     setResult(null);
     setFileName("");
+    setStrategy("skip");
+    setAllowMissingLesson(true);
+    setImportBundled(true);
+    setAllowMissingQuestions(false);
     if (inputRef.current) inputRef.current.value = "";
   }, []);
 

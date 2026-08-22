@@ -46,7 +46,10 @@ vi.mock("@/services/content/bundle/bundle-import.service", async () => {
 
 const { ImportBundleDialog } = await import("../import-bundle-dialog");
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  importExam.mockClear();
+});
 
 const bundleFor = (name: string, questions: number) =>
   new File(

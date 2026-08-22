@@ -82,8 +82,12 @@ export function ImportBundleDialog({
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<ImportResultReport | null>(null);
   const [fileName, setFileName] = useState("");
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  /** Naik setiap kali file baru dipilih; hasil analisis lama diabaikan. */
+  const selectionRef = useRef(0);
 
   const reset = () => {
+    selectionRef.current += 1;
     setStep("pick");
     setErrors([]);
     setParsed(null);
@@ -91,6 +95,7 @@ export function ImportBundleDialog({
     setProgress(0);
     setResult(null);
     setFileName("");
+    if (inputRef.current) inputRef.current.value = "";
   };
 
   const close = (value: boolean) => {
@@ -99,11 +104,26 @@ export function ImportBundleDialog({
     onOpenChange(value);
   };
 
-  const handleFile = async (file: File | undefined) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
-    setFileName(file.name);
+
+    // Setiap pemilihan file selalu memulai state baru — tidak ada sisa data import sebelumnya.
+    const selection = selectionRef.current + 1;
+    selectionRef.current = selection;
+    setParsed(null);
+    setPreview(null);
+    setResult(null);
+    setProgress(0);
     setErrors([]);
+    setFileName(file.name);
+
     const read = await readBundleFile(file);
+    // File sudah dibaca sepenuhnya — aman untuk mereset input agar file yang sama
+    // (atau file berikutnya) tetap memicu change event baru.
+    input.value = "";
+    if (selection !== selectionRef.current) return;
     if (!read.ok) {
       setErrors(read.errors);
       return;
@@ -115,19 +135,22 @@ export function ImportBundleDialog({
     }
     const bundle = validation.bundle;
     try {
-      if (bundle.bundle_type === "question_bank") {
-        setPreview({ kind: "question_bank", questions: await analyzeQuestionBundle(bundle) });
-      } else if (bundle.bundle_type === "exam") {
-        setPreview({ kind: "exam", exams: await analyzeExamBundle(bundle) });
-      } else {
-        setPreview({ kind: "lesson", lessons: await analyzeLessonBundle(bundle) });
-      }
+      const nextPreview: PreviewState =
+        bundle.bundle_type === "question_bank"
+          ? { kind: "question_bank", questions: await analyzeQuestionBundle(bundle) }
+          : bundle.bundle_type === "exam"
+            ? { kind: "exam", exams: await analyzeExamBundle(bundle) }
+            : { kind: "lesson", lessons: await analyzeLessonBundle(bundle) };
+      if (selection !== selectionRef.current) return;
+      setPreview(nextPreview);
       setParsed(bundle);
       setStep("preview");
     } catch (err) {
+      if (selection !== selectionRef.current) return;
       setErrors([err instanceof Error ? err.message : "Gagal menganalisis bundle."]);
     }
   };
+
 
   const blocked = useMemo(() => {
     if (!preview) return true;

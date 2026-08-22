@@ -26,10 +26,10 @@ function bundleFor(name: string) {
           category: "umum",
           description: `desc ${name}`,
           sections: [{ key: "s1", title: `Section ${name}`, type: "reading", order: 0 }],
-          question_refs: [{ question_key: "q1", section_key: "s1", order: 0 }],
+          question_refs: [{ question_key: "q01", section_key: "s1", order: 0 }],
           question_bundle: [
             {
-              key: "q1",
+              key: "q01",
               text: `${name}${name}${name}`,
               answers: [
                 { label: "A", text: `${name}-benar`, is_correct: true },

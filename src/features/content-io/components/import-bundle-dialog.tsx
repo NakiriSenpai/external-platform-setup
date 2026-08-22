@@ -146,7 +146,7 @@ export function ImportBundleDialog({
             : { kind: "lesson", lessons: await analyzeLessonBundle(bundle) };
       if (selection !== selectionRef.current) return;
       setPreview(nextPreview);
-      setOperation({ operationId: `${Date.now()}-${selection}`, fileName: file.name, bundle });
+      setOperation({ operationId: crypto.randomUUID(), fileName: file.name, bundle });
       setStep("preview");
     } catch (err) {
       if (selection !== selectionRef.current) return;
@@ -161,10 +161,7 @@ export function ImportBundleDialog({
     if (preview.kind === "exam") {
       const exam = preview.exams[0];
       if (!exam) return true;
-      const unresolved = exam.missingKeys.filter(
-        (key) => !(importBundled && exam.resolvableFromBundle.includes(key)),
-      );
-      return unresolved.length > 0 && !allowMissingQuestions;
+      return exam.missingKeys.length > 0;
     }
     const lesson = preview.lessons[0];
     if (!lesson) return true;
@@ -176,14 +173,12 @@ export function ImportBundleDialog({
 
   const runImport = async () => {
     if (!preview || !operation) return;
-    // Snapshot immutable: satu operasi import memakai bundle + opsi yang dikunci di sini.
-    const op = {
-      ...operation,
-      resolution: strategy,
-      importBundledQuestions: importBundled,
-      continueMissingQuestions: allowMissingQuestions,
-      allowMissingLesson,
-    } as const;
+    // Snapshot immutable baru untuk setiap klik; Exam hanya membaca bundle snapshot ini.
+    const op: ImportOperation = {
+      operationId: crypto.randomUUID(),
+      fileName: operation.fileName,
+      bundle: operation.bundle,
+    };
     setStep("running");
     setProgress(0);
     const onProgress = (done: number, total: number) =>
@@ -193,22 +188,17 @@ export function ImportBundleDialog({
       let report: ImportResultReport;
       if (preview.kind === "question_bank") {
         report = await importQuestions(preview.questions, {
-          strategy: op.resolution,
-          allowMissingLesson: op.allowMissingLesson,
+          strategy,
+          allowMissingLesson,
           onProgress,
         });
       } else if (preview.kind === "exam") {
-        report = await importExam(op.bundle as never, {
-          strategy: op.resolution,
-          importBundledQuestions: op.importBundledQuestions,
-          allowMissingQuestions: op.continueMissingQuestions,
-          onProgress,
-        });
+        report = await importExam(op.bundle as never, { onProgress });
       } else {
         report = await importLesson(op.bundle as never, {
-          strategy: op.resolution,
-          importBundledQuestions: op.importBundledQuestions,
-          allowMissingQuestions: op.continueMissingQuestions,
+          strategy,
+          importBundledQuestions: importBundled,
+          allowMissingQuestions,
           onProgress,
         });
       }
@@ -245,7 +235,7 @@ export function ImportBundleDialog({
             : bundleType === "exam"
               ? "import_exam"
               : "import_lesson",
-        entity: fileName,
+        entity: op.fileName,
         count: 0,
         result: "failed",
         detail: { message },
@@ -309,12 +299,16 @@ export function ImportBundleDialog({
                 slugTaken={preview.exams[0].slugTaken}
                 stats={[
                   ["Section", preview.exams[0].sectionCount],
-                  ["Referensi soal", preview.exams[0].questionRefCount],
-                  ["Soal ditemukan", preview.exams[0].resolvedKeys.length],
-                  ["Soal hilang", preview.exams[0].missingKeys.length],
+                  ["Soal", preview.exams[0].questionRefCount],
                 ]}
                 questionPreview={preview.exams[0].questionPreview}
               />
+            ) : null}
+            {preview.kind === "exam" && preview.exams[0]?.missingKeys.length ? (
+              <p className="flex items-start gap-2 text-xs text-destructive">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                {preview.exams[0].missingKeys.length} soal referensi tidak tersedia di file JSON.
+              </p>
             ) : null}
             {preview.kind === "lesson" && preview.lessons[0] ? (
               <EntityPreviewPanel
@@ -331,7 +325,7 @@ export function ImportBundleDialog({
               />
             ) : null}
 
-            <div className="space-y-3 rounded-lg border p-3">
+            {preview.kind !== "exam" ? <div className="space-y-3 rounded-lg border p-3">
               <div className="space-y-1">
                 <Label>Jika data sudah ada</Label>
                 <Select value={strategy} onValueChange={(v) => setStrategy(v as ConflictStrategy)}>
@@ -371,7 +365,7 @@ export function ImportBundleDialog({
                   />
                 </>
               )}
-            </div>
+            </div> : null}
 
             {bundleType !== "question_bank" ? (
               <p className="text-xs text-muted-foreground">
@@ -421,7 +415,7 @@ export function ImportBundleDialog({
               </Button>
               <Button className="min-h-11" disabled={blocked} onClick={() => void runImport()}>
                 <Upload className="mr-2 h-4 w-4" />
-                Import sekarang
+                {bundleType === "exam" ? "Import Exam" : "Import sekarang"}
               </Button>
             </>
           ) : null}

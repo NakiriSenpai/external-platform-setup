@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen, waitFor, fireEvent } from "@testing-library/react";
 
 vi.mock("@/services/content/bundle/audit.service", () => ({
   recordContentIoAudit: vi.fn(),
@@ -46,6 +46,8 @@ vi.mock("@/services/content/bundle/bundle-import.service", async () => {
 
 const { ImportBundleDialog } = await import("../import-bundle-dialog");
 
+afterEach(cleanup);
+
 const bundleFor = (name: string, questions: number) =>
   new File(
     [
@@ -73,7 +75,7 @@ async function pick(file: File) {
 }
 
 async function importNow() {
-  fireEvent.click(screen.getByText("Import sekarang"));
+  fireEvent.click(screen.getByRole("button", { name: "Import Exam" }));
   await waitFor(() => expect(screen.getByText("Import selesai")).toBeTruthy());
   fireEvent.click(screen.getByText("Import file lain"));
   await waitFor(() => expect(document.getElementById("bundle-file")).toBeTruthy());
@@ -100,5 +102,18 @@ describe("ImportBundleDialog", () => {
 
     // file input direset setelah dibaca sehingga file yang sama tetap memicu change baru
     expect((document.getElementById("bundle-file") as HTMLInputElement).value).toBe("");
+  });
+
+  it("tidak menampilkan opsi conflict atau missing-question untuk Exam", async () => {
+    render(<ImportBundleDialog open onOpenChange={() => {}} bundleType="exam" />);
+    await pick(bundleFor("A", 1));
+
+    expect(screen.queryByText("Jika data sudah ada")).toBeNull();
+    expect(screen.queryByText("Lewati (aman, default)")).toBeNull();
+    expect(screen.queryByText("Perbarui data lama")).toBeNull();
+    expect(screen.queryByText("Buat sebagai soal baru")).toBeNull();
+    expect(screen.queryByText("Import soal yang menyertai bundle")).toBeNull();
+    expect(screen.queryByText("Lanjutkan walau ada soal yang hilang")).toBeNull();
+    expect(screen.getByRole("button", { name: "Import Exam" })).toBeTruthy();
   });
 });

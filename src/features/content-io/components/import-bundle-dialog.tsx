@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, FileJson, Upload, XCircle } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -93,6 +94,7 @@ export function ImportBundleDialog({
   const [importBundled, setImportBundled] = useState(true);
   const [allowMissingQuestions, setAllowMissingQuestions] = useState(false);
   const [progress, setProgress] = useState(0);
+  const navigate = useNavigate();
   const [completedOperation, setCompletedOperation] = useState<CompletedImportOperation | null>(null);
   const [fileName, setFileName] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -459,7 +461,7 @@ export function ImportBundleDialog({
                     const examId = completedOperation.report.createdEntityId!;
                     close(false);
                     void navigate({
-                      to: "/owner_/exam-studio/$examId",
+                      to: "/owner/exam-studio/$examId",
                       params: { examId },
                     });
                   }}

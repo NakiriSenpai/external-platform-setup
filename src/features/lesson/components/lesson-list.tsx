@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Download, Eye, Pencil, Plus, Search, Trash2, Upload } from "lucide-react";
@@ -53,6 +54,7 @@ export function LessonList() {
   const [formOpen, setFormOpen] = useState(false);
   const [selected, setSelected] = useState<LessonDetailRow | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const queryClient = useQueryClient();
   const [exportingId, setExportingId] = useState<string | null>(null);
 
   const handleExport = async (lesson: LessonDetailRow) => {
@@ -324,7 +326,11 @@ export function LessonList() {
       ) : null}
 
       <LessonFormDialog open={formOpen} onOpenChange={setFormOpen} lesson={selected} />
-      <ImportBundleDialog open={importOpen} onOpenChange={setImportOpen} bundleType="lesson" />
+      <ImportBundleDialog open={importOpen} onOpenChange={setImportOpen} bundleType="lesson"
+        onImported={() => {
+          for (const key of ["lessons","lesson","lesson-sections","lesson-blocks"]) void queryClient.invalidateQueries({ queryKey: [key] });
+        }}
+      />
     </section>
   );
 }

@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -53,6 +54,7 @@ export function ExamList() {
   const [formOpen, setFormOpen] = useState(false);
   const [selected, setSelected] = useState<ExamRow | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const queryClient = useQueryClient();
   const [exportingId, setExportingId] = useState<string | null>(null);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   /** Urutan tampilan lokal (kolom urutan exam belum tersedia di database). */
@@ -352,7 +354,11 @@ export function ExamList() {
       ) : null}
 
       <ExamFormDialog open={formOpen} onOpenChange={setFormOpen} exam={selected} />
-      <ImportBundleDialog open={importOpen} onOpenChange={setImportOpen} bundleType="exam" />
+      <ImportBundleDialog open={importOpen} onOpenChange={setImportOpen} bundleType="exam"
+        onImported={() => {
+          for (const key of ["exams","exam","exam-sections","exam-questions"]) void queryClient.invalidateQueries({ queryKey: [key] });
+        }}
+      />
     </section>
   );
 }

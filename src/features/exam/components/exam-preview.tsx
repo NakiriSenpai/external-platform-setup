@@ -29,8 +29,36 @@ export function ExamPreview({ examId }: Props) {
   const sectionsQuery = useExamSections(examId);
   const questionsQuery = useExamQuestions(examId);
 
-  const questions = useMemo(() => questionsQuery.data ?? [], [questionsQuery.data]);
+  const rawQuestions = useMemo(() => questionsQuery.data ?? [], [questionsQuery.data]);
   const sections = useMemo(() => sectionsQuery.data ?? [], [sectionsQuery.data]);
+  const shuffleQuestions = examQuery.data?.shuffle_questions ?? false;
+
+  /**
+   * Section adalah batas mutlak: Reading dulu, lalu Listening.
+   * Shuffle (bila aktif) hanya di dalam masing-masing section.
+   */
+  const questions = useMemo(() => {
+    const shuffle = <T,>(items: T[]): T[] => {
+      const copy = items.slice();
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const a = copy[i]!;
+        copy[i] = copy[j]!;
+        copy[j] = a;
+      }
+      return copy;
+    };
+    const sectionIds = sections.map((s) => s.id);
+    const inSection = sectionIds.flatMap((sectionId) => {
+      const group = rawQuestions
+        .filter((q) => q.section_id === sectionId)
+        .sort((a, b) => a.order_index - b.order_index);
+      return shuffleQuestions ? shuffle(group) : group;
+    });
+    const orphans = rawQuestions.filter((q) => !sectionIds.includes(q.section_id));
+    return [...inSection, ...orphans];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawQuestions, sections, shuffleQuestions]);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [picked, setPicked] = useState<Record<string, string>>({});

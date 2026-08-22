@@ -8,9 +8,10 @@ vi.mock("@/lib/supabase/client", async () => {
 const { db, resetDb } = await import("./fake-supabase");
 const { importExam, analyzeExamBundle } = await import("../bundle-import.service");
 const { parseBundle } = await import("../bundle-schema");
+type ExamFileBundle = Parameters<typeof importExam>[0];
 
 /** Bundle exam dengan key soal generik (q1) — persis kasus nyata user. */
-function bundleFor(name: string) {
+function bundleFor(name: string): ExamFileBundle {
   const lower = name.toLowerCase();
   const result = parseBundle(
     {
@@ -43,7 +44,7 @@ function bundleFor(name: string) {
     "exam",
   );
   if (!result.ok) throw new Error(result.errors.join("; "));
-  return result.bundle;
+  return result.bundle as ExamFileBundle;
 }
 
 const opts = (strategy: "skip" | "update" | "create_new") => ({

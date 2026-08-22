@@ -173,14 +173,12 @@ export function ImportBundleDialog({
 
   const runImport = async () => {
     if (!preview || !operation) return;
-    // Snapshot immutable: satu operasi import memakai bundle + opsi yang dikunci di sini.
-    const op = {
-      ...operation,
-      resolution: strategy,
-      importBundledQuestions: importBundled,
-      continueMissingQuestions: allowMissingQuestions,
-      allowMissingLesson,
-    } as const;
+    // Snapshot immutable baru untuk setiap klik; Exam hanya membaca bundle snapshot ini.
+    const op: ImportOperation = {
+      operationId: crypto.randomUUID(),
+      fileName: operation.fileName,
+      bundle: operation.bundle,
+    };
     setStep("running");
     setProgress(0);
     const onProgress = (done: number, total: number) =>
@@ -190,17 +188,17 @@ export function ImportBundleDialog({
       let report: ImportResultReport;
       if (preview.kind === "question_bank") {
         report = await importQuestions(preview.questions, {
-          strategy: op.resolution,
-          allowMissingLesson: op.allowMissingLesson,
+          strategy,
+          allowMissingLesson,
           onProgress,
         });
       } else if (preview.kind === "exam") {
         report = await importExam(op.bundle as never, { onProgress });
       } else {
         report = await importLesson(op.bundle as never, {
-          strategy: op.resolution,
-          importBundledQuestions: op.importBundledQuestions,
-          allowMissingQuestions: op.continueMissingQuestions,
+          strategy,
+          importBundledQuestions: importBundled,
+          allowMissingQuestions,
           onProgress,
         });
       }
@@ -301,12 +299,16 @@ export function ImportBundleDialog({
                 slugTaken={preview.exams[0].slugTaken}
                 stats={[
                   ["Section", preview.exams[0].sectionCount],
-                  ["Referensi soal", preview.exams[0].questionRefCount],
-                  ["Soal ditemukan", preview.exams[0].resolvedKeys.length],
-                  ["Soal hilang", preview.exams[0].missingKeys.length],
+                  ["Soal", preview.exams[0].questionRefCount],
                 ]}
                 questionPreview={preview.exams[0].questionPreview}
               />
+            ) : null}
+            {preview.kind === "exam" && preview.exams[0]?.missingKeys.length ? (
+              <p className="flex items-start gap-2 text-xs text-destructive">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                {preview.exams[0].missingKeys.length} soal referensi tidak tersedia di file JSON.
+              </p>
             ) : null}
             {preview.kind === "lesson" && preview.lessons[0] ? (
               <EntityPreviewPanel

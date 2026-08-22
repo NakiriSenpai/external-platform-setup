@@ -32,6 +32,7 @@ import type { ExamRow, ExamStatus } from "@/types/exam";
 import { ImportBundleDialog } from "@/features/content-io/components/import-bundle-dialog";
 import { recordContentIoAudit } from "@/services/content/bundle/audit.service";
 import { buildExamBundle, downloadBundle } from "@/services/content/bundle/bundle-export.service";
+import type { ExamImportDiagnostic } from "@/services/content/bundle/bundle-import.service";
 import { duplicateExam } from "@/features/exam/exam-duplicate";
 import { ExamFormDialog } from "./exam-form-dialog";
 import { ExamPublishToggle } from "./exam-publish-toggle";
@@ -54,6 +55,7 @@ export function ExamList() {
   const [formOpen, setFormOpen] = useState(false);
   const [selected, setSelected] = useState<ExamRow | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [importDiagnostics, setImportDiagnostics] = useState<ExamImportDiagnostic[]>([]);
   const queryClient = useQueryClient();
   const [exportingId, setExportingId] = useState<string | null>(null);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
@@ -354,7 +356,20 @@ export function ExamList() {
       ) : null}
 
       <ExamFormDialog open={formOpen} onOpenChange={setFormOpen} exam={selected} />
-      <ImportBundleDialog open={importOpen} onOpenChange={setImportOpen} bundleType="exam"
+      <ImportBundleDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        bundleType="exam"
+        diagnostics={importDiagnostics}
+        onDiagnostic={(diagnostic) => {
+          setImportDiagnostics((current) => [
+            ...current.filter(
+              (item) =>
+                item.operationId !== diagnostic.operationId || item.stage !== diagnostic.stage,
+            ),
+            diagnostic,
+          ]);
+        }}
         onImported={async () => {
           setPage(1);
           const keys = ["exams", "exam", "exam-sections", "exam-questions", "question-bank"];

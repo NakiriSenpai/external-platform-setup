@@ -35,6 +35,7 @@ import {
   readBundleFile,
   validateBundle,
   type ConflictStrategy,
+  type ExamImportDiagnostic,
   type ExamImportPreview,
   type ImportResultReport,
   type LessonImportPreview,
@@ -42,7 +43,13 @@ import {
 } from "@/services/content/bundle/bundle-import.service";
 
 /** Konteks immutable untuk SATU operasi import — tidak pernah dipakai ulang. */
-type ImportOperation = { operationId: string; fileName: string; bundle: unknown };
+type ImportOperation = {
+  operationId: string;
+  fileName: string;
+  fileSize: number;
+  lastModified: number;
+  bundle: unknown;
+};
 
 type Step = "pick" | "preview" | "running" | "done";
 
@@ -68,11 +75,15 @@ export function ImportBundleDialog({
   onOpenChange,
   bundleType,
   onImported,
+  diagnostics = [],
+  onDiagnostic,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   bundleType: BundleType;
   onImported?: () => void | Promise<void>;
+  diagnostics?: ExamImportDiagnostic[];
+  onDiagnostic?: (diagnostic: ExamImportDiagnostic) => void;
 }) {
   const [step, setStep] = useState<Step>("pick");
   const [errors, setErrors] = useState<string[]>([]);
@@ -121,6 +132,19 @@ export function ImportBundleDialog({
     const input = event.currentTarget;
     const file = input.files?.[0];
     if (!file) return;
+    const operationId = crypto.randomUUID();
+    const fileDiagnostic = {
+      operationId,
+      fileName: file.name,
+      fileSize: file.size,
+      lastModified: file.lastModified,
+      payloadTitle: "",
+      payloadSlug: "",
+      questionCount: 0,
+      sectionCount: 0,
+      stage: "FILE_SELECTED" as const,
+    };
+    if (bundleType === "exam") onDiagnostic?.(fileDiagnostic);
 
     // Setiap pemilihan file selalu memulai state baru — tidak ada sisa data import sebelumnya.
     const selection = selectionRef.current + 1;
@@ -147,6 +171,19 @@ export function ImportBundleDialog({
       return;
     }
     const bundle = validation.bundle;
+    if (bundle.bundle_type === "exam") {
+      const parsedExam = bundle.data[0];
+      if (parsedExam) {
+        onDiagnostic?.({
+          ...fileDiagnostic,
+          stage: "PARSED_BUNDLE",
+          payloadTitle: parsedExam.title,
+          payloadSlug: parsedExam.slug,
+          questionCount: parsedExam.question_bundle.length,
+          sectionCount: parsedExam.sections.length,
+        });
+      }
+    }
     try {
       const nextPreview: PreviewState =
         bundle.bundle_type === "question_bank"
@@ -156,7 +193,13 @@ export function ImportBundleDialog({
             : { kind: "lesson", lessons: await analyzeLessonBundle(bundle) };
       if (selection !== selectionRef.current) return;
       setPreview(nextPreview);
-      setOperation({ operationId: crypto.randomUUID(), fileName: file.name, bundle });
+      setOperation({
+        operationId,
+        fileName: file.name,
+        fileSize: file.size,
+        lastModified: file.lastModified,
+        bundle,
+      });
       setStep("preview");
     } catch (err) {
       if (selection !== selectionRef.current) return;
@@ -185,8 +228,10 @@ export function ImportBundleDialog({
     if (!preview || !operation) return;
     // Snapshot immutable baru untuk setiap klik; Exam hanya membaca bundle snapshot ini.
     const op: ImportOperation = {
-      operationId: crypto.randomUUID(),
+      operationId: operation.operationId,
       fileName: operation.fileName,
+      fileSize: operation.fileSize,
+      lastModified: operation.lastModified,
       bundle: operation.bundle,
     };
     setStep("running");
@@ -203,7 +248,16 @@ export function ImportBundleDialog({
           onProgress,
         });
       } else if (preview.kind === "exam") {
-        report = await importExam(op.bundle as never, { onProgress });
+        report = await importExam(op.bundle as never, {
+          onProgress,
+          diagnostic: {
+            operationId: op.operationId,
+            fileName: op.fileName,
+            fileSize: op.fileSize,
+            lastModified: op.lastModified,
+          },
+          onDiagnostic,
+        });
       } else {
         report = await importLesson(op.bundle as never, {
           strategy,
@@ -291,6 +345,10 @@ export function ImportBundleDialog({
             ))}
             {errors.length > 12 ? <li>…dan {errors.length - 12} error lainnya.</li> : null}
           </ul>
+        ) : null}
+
+        {bundleType === "exam" && diagnostics.length > 0 ? (
+          <ImportDiagnosticPanel diagnostics={diagnostics} />
         ) : null}
 
         {step === "preview" && preview ? (
@@ -444,6 +502,46 @@ export function ImportBundleDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function ImportDiagnosticPanel({ diagnostics }: { diagnostics: ExamImportDiagnostic[] }) {
+  const operations = Array.from(
+    diagnostics.reduce((map, diagnostic) => {
+      const previous = map.get(diagnostic.operationId);
+      map.set(diagnostic.operationId, { ...previous, ...diagnostic });
+      return map;
+    }, new Map<string, ExamImportDiagnostic>()),
+  ).map(([, diagnostic]) => diagnostic);
+
+  return (
+    <div className="space-y-2 rounded-lg border border-dashed p-3 text-xs" data-testid="import-debug">
+      <p className="font-semibold">[IMPORT DEBUG]</p>
+      {operations.map((trace) => (
+        <pre key={trace.operationId} className="overflow-x-auto whitespace-pre-wrap break-words font-mono text-muted-foreground">
+{`stage: ${trace.stage}
+operationId: ${trace.operationId}
+fileName: ${trace.fileName}
+fileSize: ${trace.fileSize}
+lastModified: ${trace.lastModified}
+payload.title: ${trace.payloadTitle || "—"}
+payload.slug: ${trace.payloadSlug || "—"}
+payload.questionCount: ${trace.questionCount}
+payload.sectionCount: ${trace.sectionCount}
+BEFORE MUTATION
+mutation.title: ${trace.mutationTitle ?? "—"}
+mutation.slug: ${trace.mutationSlug ?? "—"}
+AFTER MUTATION
+createdExamId: ${trace.createdExamId ?? "—"}
+createdExamTitle: ${trace.createdExamTitle ?? "—"}
+createdExamSlug: ${trace.createdExamSlug ?? "—"}
+THEN QUERY DATABASE
+examId: ${trace.queriedExamId ?? "—"}
+title: ${trace.queriedExamTitle ?? "—"}
+slug: ${trace.queriedExamSlug ?? "—"}`}
+        </pre>
+      ))}
+    </div>
   );
 }
 

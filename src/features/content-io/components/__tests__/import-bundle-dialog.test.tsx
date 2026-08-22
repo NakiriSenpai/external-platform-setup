@@ -73,7 +73,7 @@ async function pick(file: File) {
 }
 
 async function importNow() {
-  fireEvent.click(screen.getByText("Import sekarang"));
+  fireEvent.click(screen.getByText("Import Exam"));
   await waitFor(() => expect(screen.getByText("Import selesai")).toBeTruthy());
   fireEvent.click(screen.getByText("Import file lain"));
   await waitFor(() => expect(document.getElementById("bundle-file")).toBeTruthy());
@@ -100,5 +100,18 @@ describe("ImportBundleDialog", () => {
 
     // file input direset setelah dibaca sehingga file yang sama tetap memicu change baru
     expect((document.getElementById("bundle-file") as HTMLInputElement).value).toBe("");
+  });
+
+  it("tidak menampilkan opsi conflict atau missing-question untuk Exam", async () => {
+    render(<ImportBundleDialog open onOpenChange={() => {}} bundleType="exam" />);
+    await pick(bundleFor("A", 1));
+
+    expect(screen.queryByText("Jika data sudah ada")).toBeNull();
+    expect(screen.queryByText("Lewati (aman, default)")).toBeNull();
+    expect(screen.queryByText("Perbarui data lama")).toBeNull();
+    expect(screen.queryByText("Buat sebagai soal baru")).toBeNull();
+    expect(screen.queryByText("Import soal yang menyertai bundle")).toBeNull();
+    expect(screen.queryByText("Lanjutkan walau ada soal yang hilang")).toBeNull();
+    expect(screen.getByText("Import Exam")).toBeTruthy();
   });
 });

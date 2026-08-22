@@ -41,6 +41,9 @@ import {
   type QuestionImportPreview,
 } from "@/services/content/bundle/bundle-import.service";
 
+/** Konteks immutable untuk SATU operasi import — tidak pernah dipakai ulang. */
+type ImportOperation = { operationId: string; fileName: string; bundle: unknown };
+
 type Step = "pick" | "preview" | "running" | "done";
 
 const TITLES: Record<BundleType, string> = {
@@ -73,7 +76,7 @@ export function ImportBundleDialog({
 }) {
   const [step, setStep] = useState<Step>("pick");
   const [errors, setErrors] = useState<string[]>([]);
-  const [parsed, setParsed] = useState<unknown>(null);
+  const [operation, setOperation] = useState<ImportOperation | null>(null);
   const [preview, setPreview] = useState<PreviewState | null>(null);
   const [strategy, setStrategy] = useState<ConflictStrategy>("skip");
   const [allowMissingLesson, setAllowMissingLesson] = useState(true);
@@ -90,7 +93,7 @@ export function ImportBundleDialog({
     selectionRef.current += 1;
     setStep("pick");
     setErrors([]);
-    setParsed(null);
+    setOperation(null);
     setPreview(null);
     setProgress(0);
     setResult(null);
@@ -112,7 +115,7 @@ export function ImportBundleDialog({
     // Setiap pemilihan file selalu memulai state baru — tidak ada sisa data import sebelumnya.
     const selection = selectionRef.current + 1;
     selectionRef.current = selection;
-    setParsed(null);
+    setOperation(null);
     setPreview(null);
     setResult(null);
     setProgress(0);
@@ -143,7 +146,7 @@ export function ImportBundleDialog({
             : { kind: "lesson", lessons: await analyzeLessonBundle(bundle) };
       if (selection !== selectionRef.current) return;
       setPreview(nextPreview);
-      setParsed(bundle);
+      setOperation({ operationId: `${Date.now()}-${selection}`, fileName: file.name, bundle });
       setStep("preview");
     } catch (err) {
       if (selection !== selectionRef.current) return;
@@ -172,7 +175,15 @@ export function ImportBundleDialog({
   }, [preview, importBundled, allowMissingQuestions]);
 
   const runImport = async () => {
-    if (!preview || !parsed) return;
+    if (!preview || !operation) return;
+    // Snapshot immutable: satu operasi import memakai bundle + opsi yang dikunci di sini.
+    const op = {
+      ...operation,
+      resolution: strategy,
+      importBundledQuestions: importBundled,
+      continueMissingQuestions: allowMissingQuestions,
+      allowMissingLesson,
+    } as const;
     setStep("running");
     setProgress(0);
     const onProgress = (done: number, total: number) =>
@@ -182,22 +193,22 @@ export function ImportBundleDialog({
       let report: ImportResultReport;
       if (preview.kind === "question_bank") {
         report = await importQuestions(preview.questions, {
-          strategy,
-          allowMissingLesson,
+          strategy: op.resolution,
+          allowMissingLesson: op.allowMissingLesson,
           onProgress,
         });
       } else if (preview.kind === "exam") {
-        report = await importExam(parsed as never, {
-          strategy,
-          importBundledQuestions: importBundled,
-          allowMissingQuestions,
+        report = await importExam(op.bundle as never, {
+          strategy: op.resolution,
+          importBundledQuestions: op.importBundledQuestions,
+          allowMissingQuestions: op.continueMissingQuestions,
           onProgress,
         });
       } else {
-        report = await importLesson(parsed as never, {
-          strategy,
-          importBundledQuestions: importBundled,
-          allowMissingQuestions,
+        report = await importLesson(op.bundle as never, {
+          strategy: op.resolution,
+          importBundledQuestions: op.importBundledQuestions,
+          allowMissingQuestions: op.continueMissingQuestions,
           onProgress,
         });
       }
@@ -211,7 +222,7 @@ export function ImportBundleDialog({
             : bundleType === "exam"
               ? "import_exam"
               : "import_lesson",
-        entity: fileName,
+        entity: op.fileName,
         count: report.imported + report.updated,
         result: report.failed > 0 ? "partial" : "success",
         detail: {

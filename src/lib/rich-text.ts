@@ -72,11 +72,12 @@ export function renderRichText(html: string | null | undefined): string {
 /** Versi teks polos — dipakai untuk validasi panjang dan pencarian. */
 export function richTextToPlain(html: string | null | undefined): string {
   if (!html) return "";
-  return html
+  // Markdown inline dikonversi dulu agar penanda ikut hilang bersama tag,
+  // tanpa merusak blank soal seperti "______".
+  return applyInlineMarkdown(html)
     .replace(/<br\s*\/?>(\s*)/gi, " ")
     .replace(/<\/(p|div|li)>/gi, " ")
     .replace(/<[^>]+>/g, "")
-    .replace(/~~|\*\*|__|\*/g, "")
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
     .replace(/&lt;/gi, "<")

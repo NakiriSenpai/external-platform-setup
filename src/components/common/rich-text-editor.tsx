@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Bold, Italic, List, ListOrdered, Strikethrough, Underline } from "lucide-react";
 
-import { sanitizeRichText } from "@/lib/rich-text";
+import { renderRichText, sanitizeRichText } from "@/lib/rich-text";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -42,10 +42,13 @@ export function RichTextEditor({
 
   // Sinkronisasi hanya bila nilai eksternal berbeda dari isi editor,
   // supaya caret tidak melompat saat mengetik.
+  const initialized = useRef(false);
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
-    const next = value ?? "";
+    // Nilai awal (mis. hasil import JSON) langsung dikonversi dari markdown inline.
+    const next = initialized.current ? (value ?? "") : renderRichText(value);
+    initialized.current = true;
     if (node.innerHTML !== next) node.innerHTML = next;
   }, [value]);
 
@@ -132,7 +135,11 @@ export function RichTextEditor({
         onMouseUp={syncActive}
         onFocus={syncActive}
         onBlur={(e) => {
-          onChange(sanitizeRichText(e.currentTarget.innerHTML));
+          // Konversi markdown inline (**bold**, __underline__, *italic*, ~~strike~~)
+          // dilakukan saat blur agar caret tidak melompat ketika mengetik.
+          const html = renderRichText(e.currentTarget.innerHTML);
+          e.currentTarget.innerHTML = html;
+          onChange(html);
           setActive({});
         }}
         onPaste={(e) => {

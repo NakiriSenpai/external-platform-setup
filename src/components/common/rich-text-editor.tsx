@@ -42,10 +42,13 @@ export function RichTextEditor({
 
   // Sinkronisasi hanya bila nilai eksternal berbeda dari isi editor,
   // supaya caret tidak melompat saat mengetik.
+  const initialized = useRef(false);
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
-    const next = value ?? "";
+    // Nilai awal (mis. hasil import JSON) langsung dikonversi dari markdown inline.
+    const next = initialized.current ? (value ?? "") : renderRichText(value);
+    initialized.current = true;
     if (node.innerHTML !== next) node.innerHTML = next;
   }, [value]);
 

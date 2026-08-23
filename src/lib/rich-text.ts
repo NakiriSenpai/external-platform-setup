@@ -75,6 +75,7 @@ export function richTextToPlain(html: string | null | undefined): string {
     .replace(/<br\s*\/?>(\s*)/gi, " ")
     .replace(/<\/(p|div|li)>/gi, " ")
     .replace(/<[^>]+>/g, "")
+    .replace(/~~|\*\*|__|\*/g, "")
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
     .replace(/&lt;/gi, "<")

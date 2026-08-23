@@ -132,7 +132,11 @@ export function RichTextEditor({
         onMouseUp={syncActive}
         onFocus={syncActive}
         onBlur={(e) => {
-          onChange(sanitizeRichText(e.currentTarget.innerHTML));
+          // Konversi markdown inline (**bold**, __underline__, *italic*, ~~strike~~)
+          // dilakukan saat blur agar caret tidak melompat ketika mengetik.
+          const html = renderRichText(e.currentTarget.innerHTML);
+          e.currentTarget.innerHTML = html;
+          onChange(html);
           setActive({});
         }}
         onPaste={(e) => {

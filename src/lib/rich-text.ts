@@ -22,6 +22,29 @@ const ALLOWED_TAGS = new Set([
   "li",
 ]);
 
+/**
+ * Ubah sintaks markdown inline menjadi tag rich text.
+ * Hanya teks di luar tag HTML yang diproses, sehingga aman dipanggil
+ * berulang kali (idempoten untuk HTML yang sudah terformat).
+ *
+ * Didukung: **bold**, __underline__, *italic*, ~~strike~~
+ */
+export function applyInlineMarkdown(html: string | null | undefined): string {
+  if (!html) return "";
+  const convert = (text: string) =>
+    text
+      .replace(/~~(?!\s)([\s\S]+?)(?<!\s)~~/g, "<s>$1</s>")
+      .replace(/\*\*(?!\s)([\s\S]+?)(?<!\s)\*\*/g, "<strong>$1</strong>")
+      .replace(/__(?!\s)([\s\S]+?)(?<!\s)__/g, "<u>$1</u>")
+      .replace(/(^|[^*\w])\*(?!\s)([^*\n]+?)(?<!\s)\*(?!\*)/g, "$1<em>$2</em>");
+
+  // Pisahkan tag dan teks agar markup existing tidak ikut diproses.
+  return html
+    .split(/(<[^>]+>)/g)
+    .map((part) => (part.startsWith("<") && part.endsWith(">") ? part : convert(part)))
+    .join("");
+}
+
 /** Bersihkan HTML rich text ke subset tag aman tanpa atribut apa pun. */
 export function sanitizeRichText(html: string | null | undefined): string {
   if (!html) return "";
@@ -38,6 +61,12 @@ export function sanitizeRichText(html: string | null | undefined): string {
     })
     .trim();
 }
+
+/** Sanitasi + konversi markdown inline — dipakai semua renderer/consumer. */
+export function renderRichText(html: string | null | undefined): string {
+  return applyInlineMarkdown(sanitizeRichText(html));
+}
+
 
 /** Versi teks polos — dipakai untuk validasi panjang dan pencarian. */
 export function richTextToPlain(html: string | null | undefined): string {

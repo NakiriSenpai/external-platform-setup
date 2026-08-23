@@ -8,6 +8,7 @@
  * - Batch processing dengan progress agar UI tidak freeze.
  */
 import { supabase } from "@/lib/supabase/client";
+import { renderRichText } from "@/lib/rich-text";
 import { EXAM_TABLES } from "@/types/exam";
 import { LESSON_TABLES } from "@/types/lesson";
 import { QUESTION_TABLES } from "@/types/question-bank";
@@ -245,7 +246,7 @@ async function writeQuestionRelations(questionId: string, bundle: QuestionBundle
     bundle.answers.map((answer) => ({
       question_id: questionId,
       label: answer.label,
-      text: answer.text,
+      text: renderRichText(answer.text),
       image_url: answer.image?.url ?? null,
       audio_url: answer.audio?.url ?? null,
       is_correct: answer.is_correct,
@@ -269,11 +270,11 @@ async function insertQuestion(
     .from(QUESTION_TABLES.questions)
     .insert({
       external_key: externalKey,
-      text: bundle.text,
-      instruction: bundle.instruction ?? null,
+      text: renderRichText(bundle.text),
+      instruction: bundle.instruction ? renderRichText(bundle.instruction) : null,
       image_url: bundle.image?.url ?? null,
       audio_url: bundle.audio?.url ?? null,
-      explanation: bundle.explanation,
+      explanation: renderRichText(bundle.explanation),
       lesson_id: bundle.lesson_slug ? (ctx.lessonMap.get(bundle.lesson_slug) ?? null) : null,
       source_type: "import",
       origin: "import",
@@ -310,11 +311,11 @@ async function updateQuestionRow(
   const { error } = await supabase
     .from(QUESTION_TABLES.questions)
     .update({
-      text: bundle.text,
-      instruction: bundle.instruction ?? null,
+      text: renderRichText(bundle.text),
+      instruction: bundle.instruction ? renderRichText(bundle.instruction) : null,
       image_url: bundle.image?.url ?? null,
       audio_url: bundle.audio?.url ?? null,
-      explanation: bundle.explanation,
+      explanation: renderRichText(bundle.explanation),
       lesson_id: bundle.lesson_slug ? (ctx.lessonMap.get(bundle.lesson_slug) ?? null) : null,
       version,
       updated_by: userId,
@@ -558,7 +559,7 @@ export async function importExam(
   const payload = {
     title: exam.title,
     category: exam.category,
-    description: exam.description,
+    description: renderRichText(exam.description),
     icon_url: exam.icon?.url ?? null,
     difficulty: exam.difficulty,
     passing_score: exam.passing_score,
@@ -610,7 +611,7 @@ export async function importExam(
           exam_id: examId,
           type: section.type,
           title: section.title,
-          instruction: section.instruction,
+          instruction: renderRichText(section.instruction),
           order_index: section.order,
         })
         .select("id")

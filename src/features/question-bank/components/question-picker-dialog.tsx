@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { RichText } from "@/components/common/rich-text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -155,7 +156,7 @@ export function QuestionPickerDialog({
                       aria-label="Pilih soal"
                     />
                     <div className="min-w-0 flex-1 space-y-1">
-                      <p className="text-sm font-medium">{question.text}</p>
+                      <RichText html={question.text} className="text-sm font-medium" />
                       <div className="flex flex-wrap gap-1">
                         <Badge variant="secondary">{SOURCE_LABELS[question.source_type]}</Badge>
                       </div>

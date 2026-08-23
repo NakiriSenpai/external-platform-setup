@@ -33,9 +33,10 @@ export function applyInlineMarkdown(html: string | null | undefined): string {
   if (!html) return "";
   const convert = (text: string) =>
     text
-      .replace(/~~(?!\s)([\s\S]+?)(?<!\s)~~/g, "<s>$1</s>")
-      .replace(/\*\*(?!\s)([\s\S]+?)(?<!\s)\*\*/g, "<strong>$1</strong>")
-      .replace(/__(?!\s)([\s\S]+?)(?<!\s)__/g, "<u>$1</u>")
+      .replace(/(?<!~)~~(?!\s)([^~\n]+?)(?<!\s)~~(?!~)/g, "<s>$1</s>")
+      .replace(/(?<!\*)\*\*(?!\s)([^*\n]+?)(?<!\s)\*\*(?!\*)/g, "<strong>$1</strong>")
+      // Deretan underscore panjang (mis. blank soal "______") tetap literal.
+      .replace(/(?<!_)__(?!\s|_)([^_\n]+?)(?<!\s)__(?!_)/g, "<u>$1</u>")
       .replace(/(^|[^*\w])\*(?!\s)([^*\n]+?)(?<!\s)\*(?!\*)/g, "$1<em>$2</em>");
 
   // Pisahkan tag dan teks agar markup existing tidak ikut diproses.
@@ -71,11 +72,12 @@ export function renderRichText(html: string | null | undefined): string {
 /** Versi teks polos — dipakai untuk validasi panjang dan pencarian. */
 export function richTextToPlain(html: string | null | undefined): string {
   if (!html) return "";
-  return html
+  // Markdown inline dikonversi dulu agar penanda ikut hilang bersama tag,
+  // tanpa merusak blank soal seperti "______".
+  return applyInlineMarkdown(html)
     .replace(/<br\s*\/?>(\s*)/gi, " ")
     .replace(/<\/(p|div|li)>/gi, " ")
     .replace(/<[^>]+>/g, "")
-    .replace(/~~|\*\*|__|\*/g, "")
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
     .replace(/&lt;/gi, "<")

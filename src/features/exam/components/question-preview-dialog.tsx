@@ -31,7 +31,7 @@ export function QuestionPreviewDialog({ open, onOpenChange, question }: Props) {
             {richTextToPlain(question.instruction) ? (
               <RichText
                 html={question.instruction}
-                className="text-xs font-medium text-muted-foreground"
+                className="rich-text-muted text-xs font-medium"
               />
             ) : null}
 

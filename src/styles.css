@@ -308,6 +308,26 @@
   text-decoration: line-through;
 }
 
+/* Instruction/perintah soal memakai warna muted sebagai base style,
+   tetapi formatting inline harus tetap kontras dan terbaca. */
+.rich-text-muted {
+  color: var(--muted-foreground);
+}
+
+.rich-text-muted strong,
+.rich-text-muted b,
+.rich-text-muted u,
+.rich-text-muted em,
+.rich-text-muted i,
+.rich-text-muted s {
+  color: var(--foreground);
+}
+
+.rich-text-muted strong,
+.rich-text-muted b {
+  font-weight: 700;
+}
+
 .rich-text ul,
 .rich-text ol {
   margin: 0 0 0.5em;

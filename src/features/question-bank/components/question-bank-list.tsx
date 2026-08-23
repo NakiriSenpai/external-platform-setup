@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { RichText } from "@/components/common/rich-text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -226,7 +227,7 @@ export function QuestionBankList() {
                 <span className="text-sm font-semibold text-muted-foreground">
                   {(page - 1) * PAGE_SIZE + index + 1}.
                 </span>
-                <p className="min-w-0 flex-1 text-sm font-medium">{question.text}</p>
+                <RichText html={question.text} className="min-w-0 flex-1 text-sm font-medium" />
               </div>
 
               <div className="flex flex-wrap gap-1.5">

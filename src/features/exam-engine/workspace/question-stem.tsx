@@ -40,10 +40,10 @@ export const QuestionStem = memo(function QuestionStem({
         {right}
       </div>
       {sectionTitle ? (
-        <div className="min-w-0 text-xs leading-relaxed text-muted-foreground">
-          <span className="font-semibold text-foreground/80">{sectionTitle}</span>
+        <div className="min-w-0 text-xs leading-relaxed text-foreground">
+          <span className="font-semibold">{sectionTitle}</span>
           {hasSectionInstruction ? (
-            <RichText html={sectionInstruction} className="rich-text-muted mt-0.5 text-xs" />
+            <RichText html={sectionInstruction} className="mt-0.5 text-xs text-foreground" />
           ) : null}
           <span className="sr-only">
             {" "}
@@ -54,7 +54,7 @@ export const QuestionStem = memo(function QuestionStem({
       {richTextToPlain(instruction) ? (
         <RichText
           html={instruction}
-          className="rich-text-muted min-w-0 text-[13px] font-medium leading-relaxed"
+          className="min-w-0 text-[13px] font-medium leading-relaxed text-foreground"
         />
       ) : null}
       <RichText html={text} className="min-w-0 text-[15px] leading-relaxed text-foreground" />

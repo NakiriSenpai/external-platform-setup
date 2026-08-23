@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { sanitizeRichText } from "@/lib/rich-text";
+import { renderRichText } from "@/lib/rich-text";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -11,10 +11,11 @@ type Props = {
 
 /**
  * Renderer rich text read-only. HTML selalu dibersihkan ke subset tag aman
- * sebelum dirender, sehingga aman dipakai di editor, preview, dan runner ujian.
+ * dan sintaks markdown inline (**bold**, __underline__, *italic*, ~~strike~~)
+ * dikonversi otomatis sebelum dirender.
  */
 export function RichText({ html, className, as: Tag = "div" }: Props) {
-  const clean = useMemo(() => sanitizeRichText(html), [html]);
+  const clean = useMemo(() => renderRichText(html), [html]);
   if (!clean) return null;
   return (
     <Tag

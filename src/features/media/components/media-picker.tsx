@@ -3,8 +3,9 @@ import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { MediaPreview, UploadDropzone, UploadProgress } from "@/components/media";
+import { AudioTrimDialog, MediaPreview, UploadDropzone, UploadProgress } from "@/components/media";
 import { useMediaUpload } from "@/hooks/media";
+import { getMediaType } from "@/lib/media/utils";
 import type { MediaAsset, MediaKind } from "@/types/media";
 
 type Props = {
@@ -30,6 +31,7 @@ export function MediaPicker({
   onChange,
 }: Props) {
   const [selected, setSelected] = useState<MediaAsset | null>(value);
+  const [pendingAudio, setPendingAudio] = useState<File | null>(null);
   const kinds = useMemo(() => allowed, [allowed]);
 
   const uploader = useMediaUpload({
@@ -56,8 +58,27 @@ export function MediaPicker({
     onChange?.(null);
   };
 
+  // Audio baru tidak langsung diunggah: user memilih rentang dulu di Trim Dialog.
+  const handleSelect = (file: File) => {
+    const expected: MediaKind | null = kinds.length === 1 ? (kinds[0] as MediaKind) : null;
+    if (getMediaType(file, expected) === "audio") {
+      setPendingAudio(file);
+      return;
+    }
+    void uploader.upload(file);
+  };
+
   return (
     <div className="space-y-3">
+      <AudioTrimDialog
+        open={pendingAudio !== null}
+        source={pendingAudio}
+        onCancel={() => setPendingAudio(null)}
+        onApply={(file) => {
+          setPendingAudio(null);
+          void uploader.upload(file);
+        }}
+      />
       {selected ? (
         <div className="space-y-2">
           <MediaPreview asset={selected} fileName={uploader.file?.name} />
@@ -71,7 +92,7 @@ export function MediaPicker({
         <UploadDropzone
           allowed={kinds}
           disabled={uploader.isUploading}
-          onSelect={(file) => void uploader.upload(file)}
+          onSelect={handleSelect}
           {...(label ? { label } : {})}
         />
       )}

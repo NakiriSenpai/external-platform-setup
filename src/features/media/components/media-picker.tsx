@@ -31,6 +31,7 @@ export function MediaPicker({
   onChange,
 }: Props) {
   const [selected, setSelected] = useState<MediaAsset | null>(value);
+  const [pendingAudio, setPendingAudio] = useState<File | null>(null);
   const kinds = useMemo(() => allowed, [allowed]);
 
   const uploader = useMediaUpload({

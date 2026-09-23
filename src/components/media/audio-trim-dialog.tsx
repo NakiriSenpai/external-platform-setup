@@ -187,6 +187,12 @@ export function AudioTrimDialog({ open, source, fileName, onApply, onCancel }: P
                 className="block size-5 rounded-full border-2 border-primary bg-background shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </SliderPrimitive.Root>
+            <div className="relative h-1 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="absolute inset-y-0 left-0 bg-foreground/60"
+                style={{ width: `${duration > 0 ? Math.min(100, (current / duration) * 100) : 0}%` }}
+              />
+            </div>
             <div className="flex items-center justify-between text-xs tabular-nums text-muted-foreground">
               <span>Mulai {formatPreciseTime(start)}</span>
               <span>Selesai {formatPreciseTime(end)}</span>

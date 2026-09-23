@@ -3,8 +3,9 @@ import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { MediaPreview, UploadDropzone, UploadProgress } from "@/components/media";
+import { AudioTrimDialog, MediaPreview, UploadDropzone, UploadProgress } from "@/components/media";
 import { useMediaUpload } from "@/hooks/media";
+import { getMediaType } from "@/lib/media/utils";
 import type { MediaAsset, MediaKind } from "@/types/media";
 
 type Props = {

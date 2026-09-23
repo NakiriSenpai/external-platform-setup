@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Slider } from "@/components/ui/slider";
+import * as SliderPrimitive from "@radix-ui/react-slider";
 import {
   AudioTrimError,
   formatPreciseTime,
@@ -162,7 +162,8 @@ export function AudioTrimDialog({ open, source, fileName, onApply, onCancel }: P
           </div>
 
           <div className="space-y-2">
-            <Slider
+            <SliderPrimitive.Root
+              className="relative flex w-full touch-none select-none items-center py-2"
               value={range}
               min={0}
               max={Math.max(duration, 0.1)}
@@ -173,8 +174,19 @@ export function AudioTrimDialog({ open, source, fileName, onApply, onCancel }: P
                 if (next[1] - next[0] < 0.1) return;
                 setRange(next);
               }}
-              aria-label="Rentang potongan audio"
-            />
+            >
+              <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-primary/20">
+                <SliderPrimitive.Range className="absolute h-full bg-primary" />
+              </SliderPrimitive.Track>
+              <SliderPrimitive.Thumb
+                aria-label="Waktu mulai"
+                className="block size-5 rounded-full border-2 border-primary bg-background shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <SliderPrimitive.Thumb
+                aria-label="Waktu selesai"
+                className="block size-5 rounded-full border-2 border-primary bg-background shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </SliderPrimitive.Root>
             <div className="flex items-center justify-between text-xs tabular-nums text-muted-foreground">
               <span>Mulai {formatPreciseTime(start)}</span>
               <span>Selesai {formatPreciseTime(end)}</span>

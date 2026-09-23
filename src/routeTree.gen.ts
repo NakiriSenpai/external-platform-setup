@@ -24,7 +24,6 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TeacherRouteImport } from './routes/teacher'
 import { Route as TenantRouteImport } from './routes/tenant'
-import { Route as TmpTrimCheckRouteImport } from './routes/tmp-trim-check'
 import { Route as UjianRouteImport } from './routes/ujian'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin_.analytics'
 import { Route as AdminUsersRouteImport } from './routes/admin_.users'
@@ -123,11 +122,6 @@ const TeacherRoute = TeacherRouteImport.update({
 const TenantRoute = TenantRouteImport.update({
   id: '/tenant',
   path: '/tenant',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TmpTrimCheckRoute = TmpTrimCheckRouteImport.update({
-  id: '/tmp-trim-check',
-  path: '/tmp-trim-check',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UjianRoute = UjianRouteImport.update({
@@ -271,7 +265,6 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/teacher': typeof TeacherRoute
   '/tenant': typeof TenantRoute
-  '/tmp-trim-check': typeof TmpTrimCheckRoute
   '/ujian': typeof UjianRouteWithChildren
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/users': typeof AdminUsersRoute
@@ -312,7 +305,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/teacher': typeof TeacherRoute
   '/tenant': typeof TenantRoute
-  '/tmp-trim-check': typeof TmpTrimCheckRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/users': typeof AdminUsersRoute
   '/materi/$category': typeof MateriCategoryRoute
@@ -354,7 +346,6 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/teacher': typeof TeacherRoute
   '/tenant': typeof TenantRoute
-  '/tmp-trim-check': typeof TmpTrimCheckRoute
   '/ujian': typeof UjianRouteWithChildren
   '/admin_/analytics': typeof AdminAnalyticsRoute
   '/admin_/users': typeof AdminUsersRoute
@@ -398,7 +389,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/teacher'
     | '/tenant'
-    | '/tmp-trim-check'
     | '/ujian'
     | '/admin/analytics'
     | '/admin/users'
@@ -439,7 +429,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/teacher'
     | '/tenant'
-    | '/tmp-trim-check'
     | '/admin/analytics'
     | '/admin/users'
     | '/materi/$category'
@@ -480,7 +469,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/teacher'
     | '/tenant'
-    | '/tmp-trim-check'
     | '/ujian'
     | '/admin_/analytics'
     | '/admin_/users'
@@ -523,7 +511,6 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   TeacherRoute: typeof TeacherRoute
   TenantRoute: typeof TenantRoute
-  TmpTrimCheckRoute: typeof TmpTrimCheckRoute
   UjianRoute: typeof UjianRouteWithChildren
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminUsersRoute: typeof AdminUsersRoute
@@ -646,13 +633,6 @@ declare module '@tanstack/react-router' {
       path: '/tenant'
       fullPath: '/tenant'
       preLoaderRoute: typeof TenantRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tmp-trim-check': {
-      id: '/tmp-trim-check'
-      path: '/tmp-trim-check'
-      fullPath: '/tmp-trim-check'
-      preLoaderRoute: typeof TmpTrimCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ujian': {
@@ -877,7 +857,6 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   TeacherRoute: TeacherRoute,
   TenantRoute: TenantRoute,
-  TmpTrimCheckRoute: TmpTrimCheckRoute,
   UjianRoute: UjianRouteWithChildren,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminUsersRoute: AdminUsersRoute,

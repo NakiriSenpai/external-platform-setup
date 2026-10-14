@@ -23,6 +23,7 @@ import type { AnswerLabel } from "@/types/exam";
 import { OpenLessonDialog } from "../components/open-lesson-dialog";
 import { AudioButton, AudioManagerProvider } from "./audio-manager";
 import { RichText } from "@/components/common/rich-text";
+import { localizeExplanation } from "@/lib/choice-reference";
 import { CATEGORY_LABELS } from "@/features/exam/exam.constants";
 import { QuestionListDialog, type PaletteGroup, type PaletteItem } from "./question-list-dialog";
 import { AnswerShell, QuestionStem } from "./question-stem";
@@ -143,6 +144,11 @@ function ReviewWorkspaceInner({
   const correct = question.correct_label;
   const status = !selected ? "kosong" : selected === correct ? "benar" : "salah";
   const lessonTitle = question.lesson_id ? lessonTitles?.[question.lesson_id] : undefined;
+  // Referensi pilihan di pembahasan mengikuti urutan tampil attempt ini.
+  // Snapshot tidak diubah; label = identitas pilihan yang stabil.
+  const displayOrder = question.answers.map((a) => a.label);
+  const localize = (html: string | null | undefined) =>
+    localizeExplanation(html, question.answers, displayOrder);
 
   const exitWorkspace = (to: "hasil" | "ujian") => {
     if (to === "hasil") {
@@ -300,7 +306,7 @@ function ReviewWorkspaceInner({
                       </span>
                       {answer.explanation?.trim() ? (
                         <div className="rounded-lg border border-border bg-muted/30 px-2.5 py-2 text-xs">
-                          <RichText html={answer.explanation} className="text-foreground" />
+                          <RichText html={localize(answer.explanation)} className="text-foreground" />
                         </div>
                       ) : null}
                     </AnswerShell>
@@ -316,7 +322,7 @@ function ReviewWorkspaceInner({
               </p>
               <div className="space-y-3 p-4 text-sm">
                 {question.explanation?.trim() ? (
-                  <RichText html={question.explanation} className="text-foreground" />
+                  <RichText html={localize(question.explanation)} className="text-foreground" />
                 ) : (
                   <p className="text-foreground">Belum ada pembahasan.</p>
                 )}

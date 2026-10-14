@@ -10,3 +10,4 @@
 > the editor, so keep the branch in a working state.
 
 <!-- LOVABLE:END -->
+- Discussion, grouped discussion notifications, and exam sort order are written only through SECURITY DEFINER RPCs; client code falls back gracefully when those RPCs/columns are missing (migrations are applied manually on external Supabase).

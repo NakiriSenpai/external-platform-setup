@@ -219,6 +219,7 @@ returns table (
   tenant_id uuid,
   exam_id uuid,
   question_id uuid,
+  question_number integer,
   answer_label text,
   parent_id uuid,
   author_id uuid,
@@ -247,8 +248,15 @@ begin
   end if;
 
   return query
+  with numbered as (
+    select eq.question_id as qid,
+           row_number() over (order by s.order_index, eq.order_index, eq.id)::int as n
+    from public.exam_questions eq
+    join public.exam_sections s on s.id = eq.section_id
+    where eq.exam_id = p_exam_id
+  )
   select
-    c.id, c.tenant_id, c.exam_id, c.question_id, c.answer_label, c.parent_id, c.author_id,
+    c.id, c.tenant_id, c.exam_id, c.question_id, nb.n, c.answer_label, c.parent_id, c.author_id,
     coalesce(nullif(p.full_name, ''), nullif(p.username, ''), 'Pengguna')::text,
     p.avatar_url::text,
     p.role,
@@ -260,6 +268,7 @@ begin
     (c.deleted_at is null and (c.author_id = v_me or v_owner))
   from public.exam_question_comments c
   left join public.profiles p on p.id = c.author_id
+  left join numbered nb on nb.qid = c.question_id
   where c.exam_id = p_exam_id
     and c.tenant_id = v_tenant
     and (p_question_id is null or c.question_id = p_question_id)

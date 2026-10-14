@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ChevronDown,
@@ -32,6 +32,7 @@ import type { ExamRow, ExamStatus } from "@/types/exam";
 import { ImportBundleDialog } from "@/features/content-io/components/import-bundle-dialog";
 import { recordContentIoAudit } from "@/services/content/bundle/audit.service";
 import { buildExamBundle, downloadBundle } from "@/services/content/bundle/bundle-export.service";
+import { swapExamOrder } from "@/services/exam";
 import { duplicateExam } from "@/features/exam/exam-duplicate";
 import { ExamFormDialog } from "./exam-form-dialog";
 import { ExamPublishToggle } from "./exam-publish-toggle";
@@ -57,8 +58,7 @@ export function ExamList() {
   const queryClient = useQueryClient();
   const [exportingId, setExportingId] = useState<string | null>(null);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
-  /** Urutan tampilan lokal (kolom urutan exam belum tersedia di database). */
-  const [order, setOrder] = useState<string[]>([]);
+  const [moving, setMoving] = useState(false);
 
   const params = useMemo(
     () => ({ search, status, category, page, pageSize: PAGE_SIZE }),
@@ -73,28 +73,26 @@ export function ExamList() {
 
   const rows = useMemo(() => data?.rows ?? [], [data?.rows]);
 
-  useEffect(() => {
-    setOrder(rows.map((exam) => exam.id));
-  }, [rows]);
+  // Urutan berasal dari database (sort_order). UI hanya berubah setelah server konfirmasi.
+  const orderedRows = rows;
 
-  const orderedRows = useMemo(() => {
-    if (order.length === 0) return rows;
-    const map = new Map(rows.map((exam) => [exam.id, exam]));
-    const sorted = order.map((id) => map.get(id)).filter(Boolean) as ExamRow[];
-    const missing = rows.filter((exam) => !order.includes(exam.id));
-    return [...sorted, ...missing];
-  }, [rows, order]);
-
-  const move = (index: number, direction: -1 | 1) => {
+  const move = async (index: number, direction: -1 | 1) => {
     const target = index + direction;
-    if (target < 0 || target >= orderedRows.length) return;
-    const ids = orderedRows.map((exam) => exam.id);
-    const a = ids[index];
-    const b = ids[target];
+    if (moving || target < 0 || target >= orderedRows.length) return;
+    const a = orderedRows[index]?.id;
+    const b = orderedRows[target]?.id;
     if (!a || !b) return;
-    ids[index] = b;
-    ids[target] = a;
-    setOrder(ids);
+    setMoving(true);
+    try {
+      await swapExamOrder(a, b);
+      await queryClient.invalidateQueries({ queryKey: ["exams"] });
+      void queryClient.invalidateQueries({ queryKey: ["available-exams"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menyimpan urutan exam.");
+      await queryClient.invalidateQueries({ queryKey: ["exams"] });
+    } finally {
+      setMoving(false);
+    }
   };
 
   const handleExport = async (exam: ExamRow) => {
@@ -302,7 +300,8 @@ export function ExamList() {
                     size="icon"
                     variant="ghost"
                     aria-label="Naikkan urutan"
-                    onClick={() => move(index, -1)}
+                    disabled={moving || index === 0}
+                    onClick={() => void move(index, -1)}
                   >
                     <ChevronUp className="size-4" />
                   </Button>
@@ -310,7 +309,8 @@ export function ExamList() {
                     size="icon"
                     variant="ghost"
                     aria-label="Turunkan urutan"
-                    onClick={() => move(index, 1)}
+                    disabled={moving || index === orderedRows.length - 1}
+                    onClick={() => void move(index, 1)}
                   >
                     <ChevronDown className="size-4" />
                   </Button>

@@ -63,6 +63,12 @@ const CONTENT: ShortcutItem[] = [
     description: "Library soal untuk Exam dan Lesson.",
     icon: Library,
   },
+  {
+    to: "/owner/explanation-migration",
+    label: "Migrasi Pembahasan",
+    description: "Ubah nomor pilihan lama agar ikut urutan acak.",
+    icon: Library,
+  },
 ];
 
 const TOOLS: ShortcutItem[] = [

@@ -4,10 +4,11 @@
 --
 -- Aman dijalankan ulang (idempoten). Tidak menghapus data, tidak mengubah
 -- snapshot/attempt, tidak mengubah RLS selain policy SELECT notifications.
+-- Tidak menyentuh questions/question_answers/pembahasan sama sekali.
+-- Bergantung hanya pada: notifications, profiles, is_owner() (Sprint 3),
+-- notif_current_role()/notif_current_tenant() (Sprint 20). Tidak bergantung Sprint 29.
 --
 -- PEMULIHAN:
---   * Pembahasan: select public.restore_explanation_migration('<run_id>');
---     (hanya memulihkan field yang isinya masih sama dengan hasil migrasi).
 --   * Notifikasi terhapus: update public.notifications
 --       set deleted_at = null, deleted_by = null where id = '<id>';
 --   * Membatalkan seluruh skema: lihat blok ROLLBACK di akhir file.
@@ -61,7 +62,7 @@ as $$
           and (x.tenant_id is null or x.tenant_id = public.notif_current_tenant())
         )
       )
-    order by coalesce(x.metadata ->> 'batch_id', x.id::text), x.created_at desc
+    order by coalesce(x.metadata ->> 'batch_id', x.id::text), x.created_at desc, x.id
   ) n
   order by n.created_at desc
   limit greatest(1, least(coalesce(p_limit, 50), 200));
@@ -71,7 +72,7 @@ revoke all on function public.list_my_notifications(integer) from public;
 grant execute on function public.list_my_notifications(integer) to authenticated;
 
 -- Hapus notifikasi (soft delete) + salinan per-role satu batch.
---   Owner : notifikasi tenant sendiri + global.
+--   Owner : notifikasi tenant sendiri (semua role/target). Global: ditolak.
 --   Admin : hanya notifikasi tenant-nya sendiri (tenant_id tidak null).
 --   Guru/siswa: ditolak.
 -- Data sumber (exam/lesson/pengumuman) tidak disentuh. Idempoten.
@@ -93,8 +94,13 @@ begin
   select * into v_row from public.notifications where id = p_notification_id;
   if not found then return; end if;
 
+  -- Notifikasi global (tenant_id null) dibagikan ke semua tenant, sehingga
+  -- tidak boleh dihapus dari dalam satu tenant (termasuk oleh Owner).
+  if v_row.tenant_id is null then
+    raise exception 'Notifikasi global tidak dapat dihapus dari tenant.';
+  end if;
   if public.is_owner() then
-    if v_row.tenant_id is not null and v_row.tenant_id is distinct from v_tenant then
+    if v_tenant is null or v_row.tenant_id is distinct from v_tenant then
       raise exception 'Notifikasi ini bukan milik tenant Anda.';
     end if;
   else

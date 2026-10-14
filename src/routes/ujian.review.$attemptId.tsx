@@ -17,10 +17,13 @@ export const Route = createFileRoute("/ujian/review/$attemptId")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>): { q?: string } =>
+    typeof search.q === "string" ? { q: search.q } : {},
   component: ReviewUjianPage,
 });
 
 function ReviewUjianPage() {
   const { attemptId } = Route.useParams();
-  return <ReviewWorkspace attemptId={attemptId} />;
+  const { q } = Route.useSearch();
+  return <ReviewWorkspace attemptId={attemptId} focusQuestionId={q} />;
 }

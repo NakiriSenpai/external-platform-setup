@@ -346,7 +346,7 @@ function ReviewWorkspaceInner({
             </section>
           }
         />
-        <div className="mx-auto w-full max-w-5xl px-3 pb-4 sm:px-4">
+        <div className="mt-3">
           <DiscussionPanel
             key={question.question_id}
             examId={data.attempt.exam_id}

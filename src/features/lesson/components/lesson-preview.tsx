@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { CHOICE_LABELS, resolveChoiceTokens } from "@/lib/choice-reference";
 import { ArrowLeft } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -178,7 +179,7 @@ export function LessonPreview({
                       </ul>
                       {question.explanation ? (
                         <p className="text-xs text-muted-foreground">
-                          Pembahasan: {question.explanation}
+                          Pembahasan: {resolveChoiceTokens(question.explanation, CHOICE_LABELS)}
                         </p>
                       ) : null}
                     </div>

@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { ExamMediaField } from "./media-field";
 import { RichTextEditor } from "@/components/common/rich-text-editor";
-import { isRichTextEmpty } from "@/lib/rich-text";
+import { isRichTextEmpty, richTextToPlain } from "@/lib/rich-text";
 import { Switch } from "@/components/ui/switch";
 import { useCreateQuestion, useUpdateQuestion } from "@/hooks/exam";
 import { useAutosave } from "@/hooks/use-autosave";
@@ -97,6 +97,11 @@ export function QuestionForm({
   const [lessonId, setLessonId] = useState<string>(NO_LESSON);
   const [explanation, setExplanation] = useState("");
   const [answers, setAnswers] = useState<AnswerState[]>(emptyAnswers());
+  const choiceRefs = answers.map((a, i) => ({
+    label: a.label,
+    number: i + 1,
+    preview: richTextToPlain(a.text).slice(0, 40),
+  }));
   const [answerMedia, setAnswerMedia] = useState<Record<string, MediaSlot | null>>({});
   const [correct, setCorrect] = useState<AnswerLabel>("A");
   const [error, setError] = useState<string | null>(null);
@@ -449,6 +454,7 @@ export function QuestionForm({
                     onChange={(html) => setAnswer(answer.label, { explanation: html })}
                     minRows={1}
                     ariaLabel={`Pembahasan pilihan ${answerIndex + 1}`}
+                    choiceRefs={choiceRefs}
                     placeholder="Mengapa pilihan ini benar / salah"
                   />
                 </div>
@@ -490,6 +496,7 @@ export function QuestionForm({
           onChange={setExplanation}
           minRows={3}
           ariaLabel="Pembahasan"
+          choiceRefs={choiceRefs}
           placeholder="Jelaskan alasan jawaban benar."
         />
       </div>

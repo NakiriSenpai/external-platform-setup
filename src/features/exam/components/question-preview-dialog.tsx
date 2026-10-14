@@ -1,3 +1,4 @@
+import { CHOICE_LABELS, resolveChoiceTokens } from "@/lib/choice-reference";
 import {
   Dialog,
   DialogContent,
@@ -82,7 +83,7 @@ export function QuestionPreviewDialog({ open, onOpenChange, question }: Props) {
             {richTextToPlain(question.explanation) ? (
               <div className="min-w-0 rounded-xl border border-dashed border-border p-3 text-xs text-muted-foreground">
                 <span className="font-medium text-foreground">Pembahasan: </span>
-                <RichText html={question.explanation} className="mt-1" />
+                <RichText html={resolveChoiceTokens(question.explanation, CHOICE_LABELS)} className="mt-1" />
               </div>
             ) : null}
           </div>

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useAuth } from "@/hooks/auth";
 import {
+  deleteNotification,
   listMyNotifications,
   markAllNotificationsRead,
   markNotificationRead,
@@ -33,6 +34,14 @@ export function useMarkAllNotificationsRead() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (ids: readonly string[]) => markAllNotificationsRead(ids),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+  });
+}
+
+export function useDeleteNotification() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteNotification(id),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["notifications"] }),
   });
 }

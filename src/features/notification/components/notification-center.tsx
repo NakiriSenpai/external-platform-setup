@@ -7,6 +7,7 @@ import {
   Megaphone,
   ClipboardList,
   Send,
+  Trash2,
   Wrench,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -26,6 +27,7 @@ import { useDiscussionGroups } from "@/hooks/discussion/use-discussion";
 import { NotificationComposer } from "@/features/notification/components/notification-composer";
 import { useAuth } from "@/hooks/auth";
 import {
+  useDeleteNotification,
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
   useNotifications,
@@ -62,20 +64,33 @@ function relativeTime(iso: string): string {
 function NotificationRowItem({
   item,
   onRead,
+  canDelete,
 }: {
   item: NotificationItem;
   onRead: (item: NotificationItem) => void;
+  canDelete: boolean;
 }) {
+  const remove = useDeleteNotification();
+  const handleDelete = () => {
+    if (remove.isPending) return;
+    if (!window.confirm(`Hapus notifikasi "${item.title}" untuk semua penerima? Data sumbernya tidak ikut terhapus.`)) {
+      return;
+    }
+    remove.mutate(item.id, {
+      onSuccess: () => toast.success("Notifikasi dihapus."),
+      onError: (err) => toast.error(err instanceof Error ? err.message : "Gagal menghapus."),
+    });
+  };
   const Icon = TYPE_ICON[item.type] ?? BellRing;
   const unread = !item.readAt;
 
   return (
-    <li>
+    <li className="flex items-start gap-1">
       <button
         type="button"
         onClick={() => onRead(item)}
         className={cn(
-          "flex w-full gap-3 rounded-xl border p-3 text-left transition-colors",
+          "flex min-w-0 flex-1 gap-3 rounded-xl border p-3 text-left transition-colors",
           unread
             ? "border-primary/35 bg-primary/[0.07] hover:bg-primary/10"
             : "border-border bg-card hover:bg-muted/40",
@@ -104,6 +119,18 @@ function NotificationRowItem({
           </span>
         </span>
       </button>
+      {canDelete ? (
+        <Button
+          size="icon"
+          variant="ghost"
+          className="size-8 shrink-0"
+          aria-label="Hapus notifikasi"
+          disabled={remove.isPending}
+          onClick={handleDelete}
+        >
+          <Trash2 className="size-4 text-destructive" />
+        </Button>
+      ) : null}
     </li>
   );
 }
@@ -234,7 +261,12 @@ export function NotificationCenter({
             ) : (
               <ul className="space-y-2">
                 {items.map((item) => (
-                  <NotificationRowItem key={item.id} item={item} onRead={handleOpenItem} />
+                  <NotificationRowItem
+                    key={item.id}
+                    item={item}
+                    onRead={handleOpenItem}
+                    canDelete={role === "owner" || role === "admin"}
+                  />
                 ))}
               </ul>
             )}

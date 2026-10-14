@@ -11,3 +11,4 @@
 
 <!-- LOVABLE:END -->
 - Discussion, grouped discussion notifications, and exam sort order are written only through SECURITY DEFINER RPCs; client code falls back gracefully when those RPCs/columns are missing (migrations are applied manually on external Supabase).
+- Choice references in explanations are stored as `[[pilihan:X]]` tokens bound to the answer label (answer row IDs are regenerated on every save); renderers resolve them against the displayed order (`src/lib/choice-reference.ts`).

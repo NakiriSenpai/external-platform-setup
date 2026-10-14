@@ -306,3 +306,77 @@ function translate(message: string, fallback: string) {
   }
   return fallback;
 }
+
+/** Seluruh ID exam (urutan sama persis dengan listExams, tanpa pagination). */
+export async function listExamOrderIds({
+  search = "",
+  status = "semua",
+  category = "semua",
+}: Omit<ExamListParams, "page" | "pageSize"> = {}): Promise<string[]> {
+  let query = supabase
+    .from(EXAM_TABLES.exams)
+    .select("id")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: true })
+    .limit(2000);
+  const term = search.trim().replace(/[%,()]/g, "");
+  if (term) query = query.or(`title.ilike.%${term}%,slug.ilike.%${term}%`);
+  if (status !== "semua") query = query.eq("status", status);
+  if (category !== "semua") query = query.eq("category", category);
+  const { data, error } = await query;
+  if (error) throw new Error("Gagal memuat urutan exam.");
+  return ((data as { id: string }[] | null) ?? []).map((row) => row.id);
+}
+
+/**
+ * Pindahkan exam ke posisi global (1-based) memakai RPC swap_exam_order yang
+ * sudah ada (tanpa migration baru). Bila satu langkah gagal, langkah yang sudah
+ * berhasil dibatalkan dalam urutan terbalik agar urutan kembali seperti semula.
+ */
+export async function moveExamToPosition(
+  orderedIds: readonly string[],
+  examId: string,
+  targetPosition: number,
+): Promise<void> {
+  const steps = planMoveSwaps(orderedIds, examId, targetPosition);
+  const done: [string, string][] = [];
+  try {
+    for (const [a, b] of steps) {
+      await swapExamOrder(a, b);
+      done.push([a, b]);
+    }
+  } catch (err) {
+    for (const [a, b] of done.reverse()) {
+      try {
+        await swapExamOrder(a, b);
+      } catch {
+        throw new Error(
+          "Gagal menyimpan urutan dan pemulihan tidak tuntas. Muat ulang halaman untuk melihat urutan tersimpan.",
+        );
+      }
+    }
+    throw err instanceof Error ? err : new Error("Gagal menyimpan urutan exam.");
+  }
+}
+
+/** Rencana pertukaran berurutan (pasangan bertetangga) untuk memindahkan exam. */
+export function planMoveSwaps(
+  orderedIds: readonly string[],
+  examId: string,
+  targetPosition: number,
+): [string, string][] {
+  const ids = [...orderedIds];
+  const from = ids.indexOf(examId);
+  if (from < 0) throw new Error("Exam tidak ditemukan dalam daftar.");
+  const to = Math.min(Math.max(Math.round(targetPosition) - 1, 0), ids.length - 1);
+  const steps: [string, string][] = [];
+  let i = from;
+  while (i !== to) {
+    const j = i < to ? i + 1 : i - 1;
+    steps.push([ids[i]!, ids[j]!]);
+    [ids[i], ids[j]] = [ids[j]!, ids[i]!];
+    i = j;
+  }
+  return steps;
+}

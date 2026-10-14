@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
 import { pointsPerQuestion } from "@/features/exam/exam.constants";
-import { getExam, listQuestions, listSections } from "@/services/exam";
+import { getExam, isMissingSortOrder, listQuestions, listSections } from "@/services/exam";
 import {
   ATTEMPT_TABLES,
   FULLSCREEN_VIOLATION_LIMIT,
@@ -64,6 +64,7 @@ async function buildSnapshot(exam: ExamRow) {
         text: a.text,
         image_url: a.image_url,
         audio_url: a.audio_url,
+        ...(a.explanation?.trim() ? { explanation: a.explanation } : {}),
       })),
     };
   });
@@ -101,7 +102,11 @@ async function buildSnapshot(exam: ExamRow) {
   const payload: ExamSnapshot = { ...base, questions: full };
   const studentPayload: ExamSnapshot = {
     ...base,
-    questions: full.map(({ explanation: _e, correct_label: _c, ...rest }) => rest),
+    questions: full.map(({ explanation: _e, correct_label: _c, answers, ...rest }) => ({
+      ...rest,
+      // Pembahasan per pilihan tidak pernah dikirim ke siswa saat ujian.
+      answers: answers.map(({ explanation: _ae, ...answer }) => answer),
+    })),
   };
 
   return { payload, studentPayload };
@@ -388,11 +393,14 @@ export async function getAttemptReview(attemptId: string): Promise<AttemptReview
 
 /** Daftar ujian published yang dapat dikerjakan siswa. */
 export async function listAvailableExams(): Promise<ExamRow[]> {
-  const { data, error } = await supabase
-    .from("exams")
-    .select("*")
-    .eq("status", "published")
-    .order("created_at", { ascending: false });
+  // Urutan bersama dari Exam Studio (sort_order); fallback bila migration belum ada.
+  const build = (ordered: boolean) => {
+    let q = supabase.from("exams").select("*").eq("status", "published");
+    if (ordered) q = q.order("sort_order", { ascending: true });
+    return q.order("created_at", { ascending: false }).order("id", { ascending: true });
+  };
+  let { data, error } = await build(true);
+  if (error && isMissingSortOrder(error)) ({ data, error } = await build(false));
   if (error) throw new Error("Gagal memuat daftar ujian.");
   return (data as ExamRow[] | null) ?? [];
 }

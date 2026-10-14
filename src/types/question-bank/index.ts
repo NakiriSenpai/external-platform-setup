@@ -18,6 +18,8 @@ export type QuestionAnswerRow = {
   image_url: string | null;
   audio_url: string | null;
   is_correct: boolean;
+  /** Pembahasan per pilihan (Sprint 29). Null bila kolom/isi belum ada. */
+  explanation?: string | null;
 };
 
 export type QuestionBankRow = {
@@ -56,6 +58,7 @@ export type QuestionAnswerInput = {
   image_url: string | null;
   audio_url: string | null;
   is_correct: boolean;
+  explanation?: string | null;
 };
 
 export type QuestionBankInput = {

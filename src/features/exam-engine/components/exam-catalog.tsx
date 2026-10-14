@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import {
   BarChart3,
   BookOpen,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
@@ -30,6 +31,7 @@ import { useAvailableExams, useMyResults, useMyAttempts, useStartAttempt } from 
 import { useExamCategories } from "@/hooks/exam/use-exam-category";
 import { cn } from "@/lib/utils";
 import type { ExamRow } from "@/types/exam";
+import { finishedExamIdsFrom } from "@/features/exam-engine/exam-status";
 import motivationArt from "@/assets/exam-motivation.png";
 import progressArt from "@/assets/exam-progress.png";
 import { ContinueExamDialog } from "./exam-dialogs";
@@ -134,6 +136,13 @@ export function ExamCatalog() {
           )
           .map((a) => [a.exam_id, a]),
       ),
+    [attempts],
+  );
+
+  // Selesai = attempt tersimpan di DB dengan status submitted/expired.
+  // in_progress & cancelled (termasuk Color Test yang dibatalkan) TIDAK dihitung.
+  const finishedExamIds = useMemo(
+    () => new Set(finishedExamIdsFrom(attempts ?? [])),
     [attempts],
   );
 
@@ -368,6 +377,7 @@ export function ExamCatalog() {
         <div className="space-y-3">
           {visible.map((exam) => {
             const active = activeByExam.get(exam.id);
+            const finished = finishedExamIds.has(exam.id);
             return (
               <article
                 key={exam.id}
@@ -376,6 +386,11 @@ export function ExamCatalog() {
                 <div className="flex min-w-0 items-start gap-3">
                   <ExamIcon exam={exam} />
                   <div className="min-w-0 flex-1 space-y-1">
+                    {finished ? (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                        <CheckCircle2 className="size-3.5" aria-hidden /> Sudah Dikerjakan
+                      </span>
+                    ) : null}
                     <h2 className="line-clamp-2 text-base font-semibold leading-snug text-foreground">
                       {exam.title}
                     </h2>
@@ -416,7 +431,7 @@ export function ExamCatalog() {
                     disabled={start.isPending}
                     onClick={() => (active ? setContinueTarget(active.id) : setStartTarget(exam))}
                   >
-                    {active ? "Lanjutkan Ujian" : "Mulai Ujian"}
+                    {active ? "Lanjutkan Ujian" : finished ? "Ulangi Ujian" : "Mulai Ujian"}
                   </Button>
                   <Button
                     variant="outline"

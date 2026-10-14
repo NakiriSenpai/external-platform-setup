@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   List,
   Loader2,
+  MessageCircle,
   XCircle,
 } from "lucide-react";
 
@@ -28,17 +29,35 @@ import { AnswerShell, QuestionStem } from "./question-stem";
 import { useAntiCopy } from "./use-anti-copy";
 import { WorkspacePagination } from "./workspace-pagination";
 import { WorkspaceBody, WorkspaceShell } from "./workspace-shell";
+import {
+  DiscussionPanel,
+  type AnswerTarget,
+} from "@/features/discussion/components/discussion-panel";
+
+const ORIGINAL_NUMBER: Record<string, number> = { A: 1, B: 2, C: 3, D: 4 };
 
 /** Review memakai Workspace yang sama dengan Exam, ditambah pembahasan. */
-export function ReviewWorkspace({ attemptId }: { attemptId: string }) {
+export function ReviewWorkspace({
+  attemptId,
+  focusQuestionId,
+}: {
+  attemptId: string;
+  focusQuestionId?: string | undefined;
+}) {
   return (
     <AudioManagerProvider attemptId={attemptId} lockAfterPlay={false}>
-      <ReviewWorkspaceInner attemptId={attemptId} />
+      <ReviewWorkspaceInner attemptId={attemptId} focusQuestionId={focusQuestionId} />
     </AudioManagerProvider>
   );
 }
 
-function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
+function ReviewWorkspaceInner({
+  attemptId,
+  focusQuestionId,
+}: {
+  attemptId: string;
+  focusQuestionId?: string | undefined;
+}) {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useAttemptReview(attemptId);
   useAntiCopy();
@@ -47,6 +66,16 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
   const [lessonDialog, setLessonDialog] = useState<{ id: string; title: string } | null>(null);
 
   const questions = useMemo(() => data?.snapshot.questions ?? [], [data]);
+  const [answerTarget, setAnswerTarget] = useState<AnswerTarget | null>(null);
+
+  // Buka langsung soal dari notifikasi diskusi (berdasarkan question_id stabil).
+  useEffect(() => {
+    if (!focusQuestionId || questions.length === 0) return;
+    const index = questions.findIndex((q) => q.question_id === focusQuestionId);
+    if (index >= 0) setActiveIndex(index);
+  }, [focusQuestionId, questions]);
+
+  useEffect(() => setAnswerTarget(null), [activeIndex]);
   const lessonIds = questions.map((q) => q.lesson_id).filter((id): id is string => Boolean(id));
   const { data: lessonTitles } = useQuery({
     queryKey: ["lesson-titles", lessonIds.slice().sort().join(",")],
@@ -249,10 +278,31 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
                           label={`Putar audio pilihan ${answerIndex + 1}`}
                         />
                       ) : null}
-                      <span className="flex flex-wrap gap-2 text-xs">
+                      <span className="flex flex-wrap items-center gap-2 text-xs">
                         {isChosen ? <Badge variant="outline">Jawaban Anda</Badge> : null}
                         {isCorrect ? <Badge variant="outline">Jawaban Benar</Badge> : null}
+                        {snapshot.exam.shuffle_answers ? (
+                          // Nomor asli dari Exam Studio: membantu membaca pembahasan lama
+                          // tanpa menulis ulang teksnya.
+                          <span className="text-[11px] text-muted-foreground">
+                            No. asli {ORIGINAL_NUMBER[answer.label] ?? answer.label}
+                          </span>
+                        ) : null}
+                        <button
+                          type="button"
+                          className="ml-auto inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-primary hover:bg-primary/10"
+                          onClick={() =>
+                            setAnswerTarget({ label: answer.label, number: answerIndex + 1 })
+                          }
+                        >
+                          <MessageCircle className="size-3.5" /> Komentari pilihan ini
+                        </button>
                       </span>
+                      {answer.explanation?.trim() ? (
+                        <div className="rounded-lg border border-border bg-muted/30 px-2.5 py-2 text-xs">
+                          <RichText html={answer.explanation} className="text-foreground" />
+                        </div>
+                      ) : null}
                     </AnswerShell>
                   );
                 })}
@@ -296,6 +346,17 @@ function ReviewWorkspaceInner({ attemptId }: { attemptId: string }) {
             </section>
           }
         />
+        <div className="mt-3">
+          <DiscussionPanel
+            key={question.question_id}
+            examId={data.attempt.exam_id}
+            questionId={question.question_id}
+            tenantId={data.attempt.tenant_id}
+            answers={question.answers}
+            answerTarget={answerTarget}
+            onClearAnswerTarget={() => setAnswerTarget(null)}
+          />
+        </div>
       </WorkspaceShell>
 
       <QuestionListDialog

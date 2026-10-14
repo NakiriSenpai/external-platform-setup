@@ -21,6 +21,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DiscussionNotificationGroups } from "@/features/notification/components/discussion-notification-groups";
+import { useDiscussionGroups } from "@/hooks/discussion/use-discussion";
 import { NotificationComposer } from "@/features/notification/components/notification-composer";
 import { useAuth } from "@/hooks/auth";
 import {
@@ -114,6 +116,9 @@ export function NotificationCenter({
   onOpenChange: (open: boolean) => void;
 }) {
   const { data, isLoading } = useNotifications();
+  const { data: discussionGroups } = useDiscussionGroups();
+  const groups = discussionGroups ?? [];
+  const discussionUnread = groups.filter((g) => g.unread_count > 0).length;
   const { role } = useAuth();
   const markRead = useMarkNotificationRead();
   const markAll = useMarkAllNotificationsRead();
@@ -155,7 +160,9 @@ export function NotificationCenter({
             <div>
               <SheetTitle className="text-base">Notifikasi</SheetTitle>
               <SheetDescription className="text-xs">
-                {unread.length > 0 ? `${unread.length} belum dibaca` : "Semua sudah dibaca"}
+                {unread.length + discussionUnread > 0
+                  ? `${unread.length + discussionUnread} belum dibaca`
+                  : "Semua sudah dibaca"}
               </SheetDescription>
             </div>
             <div className="flex items-center gap-1">
@@ -208,13 +215,15 @@ export function NotificationCenter({
               </div>
             ) : null}
 
+            <DiscussionNotificationGroups groups={groups} onNavigate={() => onOpenChange(false)} />
+
             {isLoading ? (
               <div className="space-y-2">
                 {[0, 1, 2].map((i) => (
                   <Skeleton key={i} className="h-20 w-full rounded-xl" />
                 ))}
               </div>
-            ) : items.length === 0 ? (
+            ) : items.length === 0 && groups.length === 0 ? (
               <div className="rounded-xl border border-dashed border-border p-8 text-center">
                 <BellRing className="mx-auto size-6 text-muted-foreground" />
                 <p className="mt-2 text-sm font-medium">Belum ada notifikasi</p>

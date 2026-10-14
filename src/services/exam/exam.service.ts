@@ -43,18 +43,22 @@ export async function listExams({
   pageSize = 10,
 }: ExamListParams = {}): Promise<ExamListResult> {
   const from = (page - 1) * pageSize;
-  let query = supabase
-    .from(EXAM_TABLES.exams)
-    .select("*", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .range(from, from + pageSize - 1);
+  const build = (ordered: boolean) => {
+    let query = supabase.from(EXAM_TABLES.exams).select("*", { count: "exact" });
+    if (ordered) query = query.order("sort_order", { ascending: true });
+    query = query
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: true })
+      .range(from, from + pageSize - 1);
+    const term = search.trim().replace(/[%,()]/g, "");
+    if (term) query = query.or(`title.ilike.%${term}%,slug.ilike.%${term}%`);
+    if (status !== "semua") query = query.eq("status", status);
+    if (category !== "semua") query = query.eq("category", category);
+    return query;
+  };
 
-  const term = search.trim().replace(/[%,()]/g, "");
-  if (term) query = query.or(`title.ilike.%${term}%,slug.ilike.%${term}%`);
-  if (status !== "semua") query = query.eq("status", status);
-  if (category !== "semua") query = query.eq("category", category);
-
-  const { data, error, count } = await query;
+  let { data, error, count } = await build(true);
+  if (error && isMissingSortOrder(error)) ({ data, error, count } = await build(false));
   if (error) throw new Error("Gagal memuat daftar exam.");
 
   const total = count ?? 0;
@@ -65,6 +69,22 @@ export async function listExams({
     pageSize,
     totalPages: Math.max(1, Math.ceil(total / pageSize)),
   };
+}
+
+/** Kolom `sort_order` belum ada (migration Sprint 29 belum diterapkan). */
+export function isMissingSortOrder(error: { code?: string; message?: string }): boolean {
+  return error.code === "42703" || /sort_order/.test(error.message ?? "");
+}
+
+/** Tukar urutan dua exam secara atomik di database (Owner only, divalidasi RPC). */
+export async function swapExamOrder(examA: string, examB: string): Promise<void> {
+  const { error } = await supabase.rpc("swap_exam_order", { p_exam_a: examA, p_exam_b: examB });
+  if (error) {
+    if (/could not find the function/i.test(error.message) || error.code === "PGRST202") {
+      throw new Error("Penyimpanan urutan belum aktif di server.");
+    }
+    throw new Error(error.message || "Gagal menyimpan urutan exam.");
+  }
 }
 
 export async function getExam(examId: string): Promise<ExamRow> {

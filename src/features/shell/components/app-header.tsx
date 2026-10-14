@@ -4,6 +4,7 @@ import { Bell } from "lucide-react";
 import { NotificationCenter } from "@/features/notification/components/notification-center";
 import { useAppConfig } from "@/hooks/config";
 import { useNotifications } from "@/hooks/notification";
+import { useDiscussionGroups } from "@/hooks/discussion/use-discussion";
 import { useCurrentTenant } from "@/hooks/tenant";
 
 /**
@@ -19,7 +20,11 @@ export function AppHeader() {
   const name = tenant?.name ?? config.appName;
   const tagline = tenant?.tagline ?? config.tagline;
   const logoUrl = tenant?.logo_url ?? config.logoUrl;
-  const unread = (notifications ?? []).filter((item) => !item.readAt).length;
+  const { data: discussionGroups } = useDiscussionGroups();
+  // Kelompok diskusi terhapus sudah dikecualikan oleh database.
+  const unread =
+    (notifications ?? []).filter((item) => !item.readAt).length +
+    (discussionGroups ?? []).filter((g) => g.unread_count > 0).length;
 
   return (
     <header className="sticky top-0 z-40 bg-background/80 px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur">

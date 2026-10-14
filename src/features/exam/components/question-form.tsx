@@ -61,10 +61,12 @@ type AnswerState = {
   text: string;
   image_url: string | null;
   audio_url: string | null;
+  /** Pembahasan khusus pilihan ini (ikut berpindah bersama isi pilihan). */
+  explanation: string;
 };
 
 const emptyAnswers = (): AnswerState[] =>
-  ANSWER_LABELS.map((label) => ({ label, text: "", image_url: null, audio_url: null }));
+  ANSWER_LABELS.map((label) => ({ label, text: "", image_url: null, audio_url: null, explanation: "" }));
 
 const NO_LESSON = "none";
 
@@ -126,6 +128,7 @@ export function QuestionForm({
           text: found?.text ?? "",
           image_url: found?.image_url ?? null,
           audio_url: found?.audio_url ?? null,
+          explanation: found?.explanation ?? "",
         };
       });
       setAnswers(next);
@@ -173,7 +176,7 @@ export function QuestionForm({
   };
 
   const clearAnswer = (label: AnswerLabel) => {
-    setAnswer(label, { text: "", image_url: null, audio_url: null });
+    setAnswer(label, { text: "", image_url: null, audio_url: null, explanation: "" });
     setAnswerMedia((prev) => ({ ...prev, [label]: null }));
   };
 
@@ -201,6 +204,7 @@ export function QuestionForm({
       text: clean(a.text),
       image_url: a.image_url,
       audio_url: a.audio_url,
+      explanation: clean(a.explanation) || null,
       is_correct: a.label === correct,
     })),
   });
@@ -435,6 +439,19 @@ export function QuestionForm({
                     />
                   </div>
                 ) : null}
+
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-muted-foreground">
+                    Pembahasan pilihan ini (opsional)
+                  </Label>
+                  <RichTextEditor
+                    value={answer.explanation}
+                    onChange={(html) => setAnswer(answer.label, { explanation: html })}
+                    minRows={1}
+                    ariaLabel={`Pembahasan pilihan ${answerIndex + 1}`}
+                    placeholder="Mengapa pilihan ini benar / salah"
+                  />
+                </div>
 
                 <div className="flex items-center gap-2">
                   <RadioGroupItem value={answer.label} id={`correct-${answer.label}`} />

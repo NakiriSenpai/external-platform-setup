@@ -18,7 +18,7 @@ export const Route = createFileRoute("/ujian/review/$attemptId")({
     ],
   }),
   validateSearch: (search: Record<string, unknown>): { q?: string } =>
-    typeof search.q === "string" ? { q: search.q } : {},
+    typeof search['q'] === "string" ? { q: search['q'] } : {},
   component: ReviewUjianPage,
 });
 

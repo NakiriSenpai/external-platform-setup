@@ -4,8 +4,8 @@ import { ExamDiscussionPage } from "@/features/discussion/components/exam-discus
 
 export const Route = createFileRoute("/ujian/diskusi/$examId")({
   validateSearch: (search: Record<string, unknown>): { q?: string; t?: string } => ({
-    ...(typeof search.q === "string" ? { q: search.q } : {}),
-    ...(typeof search.t === "string" ? { t: search.t } : {}),
+    ...(typeof search['q'] === "string" ? { q: search['q'] } : {}),
+    ...(typeof search['t'] === "string" ? { t: search['t'] } : {}),
   }),
   head: () => ({
     meta: [

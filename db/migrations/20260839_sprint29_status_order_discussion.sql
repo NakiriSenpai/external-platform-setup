@@ -238,6 +238,7 @@ stable
 security definer
 set search_path = public
 as $$
+#variable_conflict use_column
 declare
   v_tenant uuid := public.discussion_resolve_tenant(p_exam_id, p_tenant_id);
   v_me uuid := auth.uid();
@@ -572,6 +573,7 @@ stable
 security definer
 set search_path = public
 as $$
+#variable_conflict use_column
 declare
   v_group public.discussion_notification_groups%rowtype;
   v_read timestamptz;

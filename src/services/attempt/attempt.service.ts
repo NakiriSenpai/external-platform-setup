@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
 import { pointsPerQuestion } from "@/features/exam/exam.constants";
-import { getExam, listQuestions, listSections } from "@/services/exam";
+import { getExam, isMissingSortOrder, listQuestions, listSections } from "@/services/exam";
 import {
   ATTEMPT_TABLES,
   FULLSCREEN_VIOLATION_LIMIT,
@@ -393,11 +393,14 @@ export async function getAttemptReview(attemptId: string): Promise<AttemptReview
 
 /** Daftar ujian published yang dapat dikerjakan siswa. */
 export async function listAvailableExams(): Promise<ExamRow[]> {
-  const { data, error } = await supabase
-    .from("exams")
-    .select("*")
-    .eq("status", "published")
-    .order("created_at", { ascending: false });
+  // Urutan bersama dari Exam Studio (sort_order); fallback bila migration belum ada.
+  const build = (ordered: boolean) => {
+    let q = supabase.from("exams").select("*").eq("status", "published");
+    if (ordered) q = q.order("sort_order", { ascending: true });
+    return q.order("created_at", { ascending: false }).order("id", { ascending: true });
+  };
+  let { data, error } = await build(true);
+  if (error && isMissingSortOrder(error)) ({ data, error } = await build(false));
   if (error) throw new Error("Gagal memuat daftar ujian.");
   return (data as ExamRow[] | null) ?? [];
 }

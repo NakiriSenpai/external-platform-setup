@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CHOICE_LABELS, resolveChoiceTokens } from "@/lib/choice-reference";
 import { Check, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -75,7 +76,7 @@ function PracticeItem({
 
       {answered && question.explanation ? (
         <p className="rounded-lg bg-muted/60 p-2.5 text-xs leading-relaxed text-muted-foreground">
-          Pembahasan: {question.explanation}
+          Pembahasan: {resolveChoiceTokens(question.explanation, CHOICE_LABELS)}
         </p>
       ) : null}
     </li>

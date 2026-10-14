@@ -18,8 +18,8 @@ function translate(error: { message?: string; code?: string } | null, fallback: 
 
 export async function listExamDiscussion(input: {
   examId: string;
-  questionId?: string | null;
-  tenantId?: string | null;
+  questionId?: string | null | undefined;
+  tenantId?: string | null | undefined;
 }): Promise<DiscussionComment[]> {
   const { data, error } = await supabase.rpc("list_exam_discussion", {
     p_exam_id: input.examId,
@@ -35,9 +35,9 @@ export async function postExamComment(input: {
   questionId: string;
   body: string;
   clientRequestId: string;
-  parentId?: string | null;
-  answerLabel?: string | null;
-  tenantId?: string | null;
+  parentId?: string | null | undefined;
+  answerLabel?: string | null | undefined;
+  tenantId?: string | null | undefined;
 }): Promise<string> {
   const body = input.body.trim();
   if (!body) throw new Error("Komentar tidak boleh kosong.");

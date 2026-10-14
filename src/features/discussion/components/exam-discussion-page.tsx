@@ -18,8 +18,8 @@ export function ExamDiscussionPage({
   tenantId,
 }: {
   examId: string;
-  focusQuestionId?: string;
-  tenantId?: string;
+  focusQuestionId?: string | undefined;
+  tenantId?: string | undefined;
 }) {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useExamDiscussion({ examId, tenantId });

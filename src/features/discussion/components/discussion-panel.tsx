@@ -41,9 +41,9 @@ type Props = {
   /** Urutan pilihan yang dilihat user (snapshot attempt) — untuk nomor tampilan. */
   answers?: readonly { label: string }[];
   /** Komentar khusus pilihan (dipilih dari "Komentari pilihan ini"). */
-  answerTarget?: AnswerTarget | null;
-  onClearAnswerTarget?: () => void;
-  tenantId?: string | null;
+  answerTarget?: AnswerTarget | null | undefined;
+  onClearAnswerTarget?: (() => void) | undefined;
+  tenantId?: string | null | undefined;
 };
 
 /** Diskusi Soal: thread per tenant + exam + question_id (bukan nomor tampil). */
@@ -130,7 +130,7 @@ function CommentItem({
   examId: string;
   questionId: string;
   answers: readonly { label: string }[];
-  tenantId?: string | null;
+  tenantId?: string | null | undefined;
 }) {
   const [replying, setReplying] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -305,11 +305,11 @@ function Composer({
 }: {
   examId: string;
   questionId: string;
-  tenantId?: string | null;
+  tenantId?: string | null | undefined;
   parentId?: string;
   replyTo?: string;
-  answerTarget?: AnswerTarget | null;
-  onClearAnswerTarget?: () => void;
+  answerTarget?: AnswerTarget | null | undefined;
+  onClearAnswerTarget?: (() => void) | undefined;
   onDone?: () => void;
 }) {
   const [body, setBody] = useState("");

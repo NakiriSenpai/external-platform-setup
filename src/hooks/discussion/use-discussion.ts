@@ -17,8 +17,8 @@ const discussionKey = (examId: string, questionId: string | null, tenantId: stri
 
 export function useExamDiscussion(input: {
   examId: string;
-  questionId?: string | null;
-  tenantId?: string | null;
+  questionId?: string | null | undefined;
+  tenantId?: string | null | undefined;
   enabled?: boolean;
 }) {
   return useQuery({

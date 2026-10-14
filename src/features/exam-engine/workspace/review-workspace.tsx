@@ -42,7 +42,7 @@ export function ReviewWorkspace({
   focusQuestionId,
 }: {
   attemptId: string;
-  focusQuestionId?: string;
+  focusQuestionId?: string | undefined;
 }) {
   return (
     <AudioManagerProvider attemptId={attemptId} lockAfterPlay={false}>
@@ -56,7 +56,7 @@ function ReviewWorkspaceInner({
   focusQuestionId,
 }: {
   attemptId: string;
-  focusQuestionId?: string;
+  focusQuestionId?: string | undefined;
 }) {
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useAttemptReview(attemptId);

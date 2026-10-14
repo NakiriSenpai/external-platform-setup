@@ -32,7 +32,7 @@ import type { ExamRow, ExamStatus } from "@/types/exam";
 import { ImportBundleDialog } from "@/features/content-io/components/import-bundle-dialog";
 import { recordContentIoAudit } from "@/services/content/bundle/audit.service";
 import { buildExamBundle, downloadBundle } from "@/services/content/bundle/bundle-export.service";
-import { swapExamOrder } from "@/services/exam";
+import { listExamOrderIds, moveExamToPosition, swapExamOrder } from "@/services/exam";
 import { duplicateExam } from "@/features/exam/exam-duplicate";
 import { ExamFormDialog } from "./exam-form-dialog";
 import { ExamPublishToggle } from "./exam-publish-toggle";
@@ -91,6 +91,35 @@ export function ExamList() {
       toast.error(err instanceof Error ? err.message : "Gagal menyimpan urutan exam.");
       await queryClient.invalidateQueries({ queryKey: ["exams"] });
     } finally {
+      setMoving(false);
+    }
+  };
+
+  const total = data?.total ?? 0;
+  const moveTo = async (exam: ExamRow, currentPos: number) => {
+    if (moving) return;
+    const raw = window.prompt(
+      `Pindahkan "${exam.title}" (posisi ${currentPos}) ke posisi berapa? (1–${total})`,
+      "1",
+    );
+    if (raw === null) return;
+    const target = Number(raw);
+    if (!Number.isInteger(target) || target < 1 || target > total) {
+      toast.error(`Masukkan angka 1 sampai ${total}.`);
+      return;
+    }
+    if (target === currentPos) return;
+    setMoving(true);
+    try {
+      const ids = await listExamOrderIds({ search, status, category });
+      await moveExamToPosition(ids, exam.id, target);
+      toast.success(`Dipindahkan ke posisi ${target}.`);
+      setPage(Math.ceil(target / PAGE_SIZE));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menyimpan urutan exam.");
+    } finally {
+      await queryClient.invalidateQueries({ queryKey: ["exams"] });
+      void queryClient.invalidateQueries({ queryKey: ["available-exams"] });
       setMoving(false);
     }
   };
@@ -251,7 +280,12 @@ export function ExamList() {
             >
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
                 <div className="min-w-0 space-y-1">
-                  <p className="truncate text-sm font-semibold">{exam.title}</p>
+                  <p className="truncate text-sm font-semibold">
+                    <span className="mr-1.5 text-muted-foreground">
+                      #{(page - 1) * PAGE_SIZE + index + 1}
+                    </span>
+                    {exam.title}
+                  </p>
                   <p className="truncate text-xs text-muted-foreground">/{exam.slug}</p>
                 </div>
                 <Badge variant={statusVariant[exam.status]} className="shrink-0">
@@ -313,6 +347,16 @@ export function ExamList() {
                     onClick={() => void move(index, 1)}
                   >
                     <ChevronDown className="size-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 px-2 text-xs"
+                    aria-label="Pindah ke posisi"
+                    disabled={moving || total < 2}
+                    onClick={() => void moveTo(exam, (page - 1) * PAGE_SIZE + index + 1)}
+                  >
+                    Posisi
                   </Button>
                   <Button
                     size="icon"

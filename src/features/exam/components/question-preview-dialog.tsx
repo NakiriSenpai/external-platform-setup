@@ -1,5 +1,5 @@
-import {
 import { CHOICE_LABELS, resolveChoiceTokens } from "@/lib/choice-reference";
+import {
   Dialog,
   DialogContent,
   DialogDescription,

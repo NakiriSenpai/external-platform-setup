@@ -13,6 +13,11 @@ type Props = {
   id?: string;
   ariaLabel?: string;
   className?: string;
+  /**
+   * Pilihan yang dapat disisipkan sebagai referensi terstruktur
+   * (token `[[pilihan:X]]`, terikat ke label — bukan nomor tampilan).
+   */
+  choiceRefs?: { label: string; number: number; preview: string }[];
 };
 
 const COMMANDS = [
@@ -36,6 +41,7 @@ export function RichTextEditor({
   id,
   ariaLabel,
   className,
+  choiceRefs,
 }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [active, setActive] = useState<Record<string, boolean>>({});
@@ -86,6 +92,12 @@ export function RichTextEditor({
     syncActive();
   };
 
+  const insertChoiceRef = (label: string) => {
+    ref.current?.focus();
+    document.execCommand("insertText", false, `[[pilihan:${label}]]`);
+    if (ref.current) onChange(sanitizeRichText(ref.current.innerHTML));
+  };
+
   return (
     <div
       className={cn(
@@ -117,6 +129,24 @@ export function RichTextEditor({
             </button>
           );
         })}
+        {choiceRefs && choiceRefs.length > 0 ? (
+          <span className="ml-auto flex items-center gap-0.5" aria-label="Sisipkan referensi pilihan">
+            <span className="px-1 text-[10px] text-muted-foreground">Ref. pilihan</span>
+            {choiceRefs.map((choice) => (
+              <button
+                key={choice.label}
+                type="button"
+                title={`Sisipkan referensi pilihan: ${choice.preview || choice.label}`}
+                aria-label={`Sisipkan referensi pilihan ${choice.number}`}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => insertChoiceRef(choice.label)}
+                className="grid h-7 min-w-7 place-items-center rounded px-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                {choice.number}
+              </button>
+            ))}
+          </span>
+        ) : null}
       </div>
       <div
         id={id}

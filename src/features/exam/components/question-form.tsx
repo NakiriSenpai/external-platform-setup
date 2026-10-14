@@ -449,6 +449,7 @@ export function QuestionForm({
                     onChange={(html) => setAnswer(answer.label, { explanation: html })}
                     minRows={1}
                     ariaLabel={`Pembahasan pilihan ${answerIndex + 1}`}
+                    choiceRefs={choiceRefs}
                     placeholder="Mengapa pilihan ini benar / salah"
                   />
                 </div>
@@ -490,6 +491,7 @@ export function QuestionForm({
           onChange={setExplanation}
           minRows={3}
           ariaLabel="Pembahasan"
+          choiceRefs={choiceRefs}
           placeholder="Jelaskan alasan jawaban benar."
         />
       </div>

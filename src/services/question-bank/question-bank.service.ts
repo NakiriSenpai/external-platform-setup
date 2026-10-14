@@ -107,7 +107,16 @@ async function syncRelations(questionId: string, input: QuestionBankInput) {
   await supabase.from(QUESTION_TABLES.answers).delete().eq("question_id", questionId);
   const { error: answerError } = await supabase
     .from(QUESTION_TABLES.answers)
-    .insert(input.answers.map((a) => ({ ...a, text: a.text || null, question_id: questionId })));
+    .insert(
+      input.answers.map(({ explanation, ...a }) => ({
+        ...a,
+        text: a.text || null,
+        question_id: questionId,
+        // Kolom `explanation` (Sprint 29) hanya dikirim bila diisi, sehingga
+        // penyimpanan tetap berjalan sebelum migration diterapkan.
+        ...(explanation?.trim() ? { explanation: explanation.trim() } : {}),
+      })),
+    );
   if (answerError) throw new Error("Gagal menyimpan pilihan jawaban.");
 }
 

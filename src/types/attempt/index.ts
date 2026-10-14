@@ -60,6 +60,11 @@ export type SnapshotAnswer = {
   text: string | null;
   image_url: string | null;
   audio_url: string | null;
+  /**
+   * Pembahasan per pilihan — HANYA pada payload internal/review.
+   * Terikat pada `label` asli (identitas stabil), bukan posisi tampilan.
+   */
+  explanation?: string | null;
 };
 
 /** Soal beku di dalam snapshot. */

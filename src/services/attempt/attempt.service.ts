@@ -64,6 +64,7 @@ async function buildSnapshot(exam: ExamRow) {
         text: a.text,
         image_url: a.image_url,
         audio_url: a.audio_url,
+        ...(a.explanation?.trim() ? { explanation: a.explanation } : {}),
       })),
     };
   });
@@ -101,7 +102,11 @@ async function buildSnapshot(exam: ExamRow) {
   const payload: ExamSnapshot = { ...base, questions: full };
   const studentPayload: ExamSnapshot = {
     ...base,
-    questions: full.map(({ explanation: _e, correct_label: _c, ...rest }) => rest),
+    questions: full.map(({ explanation: _e, correct_label: _c, answers, ...rest }) => ({
+      ...rest,
+      // Pembahasan per pilihan tidak pernah dikirim ke siswa saat ujian.
+      answers: answers.map(({ explanation: _ae, ...answer }) => answer),
+    })),
   };
 
   return { payload, studentPayload };

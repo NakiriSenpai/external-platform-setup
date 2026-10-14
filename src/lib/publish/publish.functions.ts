@@ -82,6 +82,9 @@ export const publishContent = createServerFn({ method: "POST" })
     // Owner yang mempublish tidak menerima notifikasi: audience dibatasi
     // ke admin/guru/siswa (scoped untuk event ini saja).
     let notifications = 0;
+    // Satu batch_id untuk semua salinan per-role: Owner melihat satu baris dan
+    // penghapusan menghapus seluruh salinan aktivitas ini.
+    const batchId = crypto.randomUUID();
     for (const role of AUDIENCE) {
       try {
         await insertNotificationAndPush(admin, {
@@ -93,6 +96,7 @@ export const publishContent = createServerFn({ method: "POST" })
           targetRole: role,
           targetUserId: null,
           createdBy: caller.id,
+          metadata: { batch_id: batchId, source_kind: data.kind, source_id: data.id },
         });
         notifications += 1;
       } catch (notifyError) {

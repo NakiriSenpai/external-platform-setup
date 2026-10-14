@@ -26,6 +26,8 @@ export type NotificationInput = {
   targetRole?: "owner" | "admin" | "guru" | "siswa" | null;
   targetUserId?: string | null;
   createdBy: string;
+  /** Metadata tambahan, mis. batch_id untuk salinan per-role satu aktivitas. */
+  metadata?: Record<string, unknown>;
 };
 
 export async function insertNotificationAndPush(
@@ -43,6 +45,7 @@ export async function insertNotificationAndPush(
       target_role: input.targetRole ?? null,
       target_user_id: input.targetUserId ?? null,
       created_by: input.createdBy,
+      ...(input.metadata ? { metadata: input.metadata } : {}),
     })
     .select("id, tenant_id, type, title, message, action_url, target_role, target_user_id")
     .single();

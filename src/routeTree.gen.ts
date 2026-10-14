@@ -30,6 +30,7 @@ import { Route as AdminUsersRouteImport } from './routes/admin_.users'
 import { Route as MateriIndexRouteImport } from './routes/materi.index'
 import { Route as MateriCategoryRouteImport } from './routes/materi.$category'
 import { Route as OwnerColorTestRouteImport } from './routes/owner_.color-test'
+import { Route as OwnerExplanationMigrationRouteImport } from './routes/owner_.explanation-migration'
 import { Route as OwnerQuestionBankRouteImport } from './routes/owner_.question-bank'
 import { Route as OwnerSettingsRouteImport } from './routes/owner_.settings'
 import { Route as OwnerTenantsRouteImport } from './routes/owner_.tenants'
@@ -155,6 +156,12 @@ const OwnerColorTestRoute = OwnerColorTestRouteImport.update({
   path: '/owner/color-test',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OwnerExplanationMigrationRoute =
+  OwnerExplanationMigrationRouteImport.update({
+    id: '/owner_/explanation-migration',
+    path: '/owner/explanation-migration',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const OwnerQuestionBankRoute = OwnerQuestionBankRouteImport.update({
   id: '/owner_/question-bank',
   path: '/owner/question-bank',
@@ -276,6 +283,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminUsersRoute
   '/materi/$category': typeof MateriCategoryRoute
   '/owner/color-test': typeof OwnerColorTestRoute
+  '/owner/explanation-migration': typeof OwnerExplanationMigrationRoute
   '/owner/question-bank': typeof OwnerQuestionBankRoute
   '/owner/settings': typeof OwnerSettingsRoute
   '/owner/tenants': typeof OwnerTenantsRoute
@@ -316,6 +324,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersRoute
   '/materi/$category': typeof MateriCategoryRoute
   '/owner/color-test': typeof OwnerColorTestRoute
+  '/owner/explanation-migration': typeof OwnerExplanationMigrationRoute
   '/owner/question-bank': typeof OwnerQuestionBankRoute
   '/owner/settings': typeof OwnerSettingsRoute
   '/owner/tenants': typeof OwnerTenantsRoute
@@ -359,6 +368,7 @@ export interface FileRoutesById {
   '/admin_/users': typeof AdminUsersRoute
   '/materi/$category': typeof MateriCategoryRoute
   '/owner_/color-test': typeof OwnerColorTestRoute
+  '/owner_/explanation-migration': typeof OwnerExplanationMigrationRoute
   '/owner_/question-bank': typeof OwnerQuestionBankRoute
   '/owner_/settings': typeof OwnerSettingsRoute
   '/owner_/tenants': typeof OwnerTenantsRoute
@@ -403,6 +413,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/materi/$category'
     | '/owner/color-test'
+    | '/owner/explanation-migration'
     | '/owner/question-bank'
     | '/owner/settings'
     | '/owner/tenants'
@@ -443,6 +454,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/materi/$category'
     | '/owner/color-test'
+    | '/owner/explanation-migration'
     | '/owner/question-bank'
     | '/owner/settings'
     | '/owner/tenants'
@@ -485,6 +497,7 @@ export interface FileRouteTypes {
     | '/admin_/users'
     | '/materi/$category'
     | '/owner_/color-test'
+    | '/owner_/explanation-migration'
     | '/owner_/question-bank'
     | '/owner_/settings'
     | '/owner_/tenants'
@@ -527,6 +540,7 @@ export interface RootRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   OwnerColorTestRoute: typeof OwnerColorTestRoute
+  OwnerExplanationMigrationRoute: typeof OwnerExplanationMigrationRoute
   OwnerQuestionBankRoute: typeof OwnerQuestionBankRoute
   OwnerSettingsRoute: typeof OwnerSettingsRoute
   OwnerTenantsRoute: typeof OwnerTenantsRoute
@@ -687,6 +701,13 @@ declare module '@tanstack/react-router' {
       path: '/owner/color-test'
       fullPath: '/owner/color-test'
       preLoaderRoute: typeof OwnerColorTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner_/explanation-migration': {
+      id: '/owner_/explanation-migration'
+      path: '/owner/explanation-migration'
+      fullPath: '/owner/explanation-migration'
+      preLoaderRoute: typeof OwnerExplanationMigrationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/owner_/question-bank': {
@@ -882,6 +903,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminUsersRoute: AdminUsersRoute,
   OwnerColorTestRoute: OwnerColorTestRoute,
+  OwnerExplanationMigrationRoute: OwnerExplanationMigrationRoute,
   OwnerQuestionBankRoute: OwnerQuestionBankRoute,
   OwnerSettingsRoute: OwnerSettingsRoute,
   OwnerTenantsRoute: OwnerTenantsRoute,

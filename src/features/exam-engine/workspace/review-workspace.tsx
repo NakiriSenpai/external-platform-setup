@@ -35,8 +35,6 @@ import {
   type AnswerTarget,
 } from "@/features/discussion/components/discussion-panel";
 
-const ORIGINAL_NUMBER: Record<string, number> = { A: 1, B: 2, C: 3, D: 4 };
-
 /** Review memakai Workspace yang sama dengan Exam, ditambah pembahasan. */
 export function ReviewWorkspace({
   attemptId,
@@ -287,13 +285,6 @@ function ReviewWorkspaceInner({
                       <span className="flex flex-wrap items-center gap-2 text-xs">
                         {isChosen ? <Badge variant="outline">Jawaban Anda</Badge> : null}
                         {isCorrect ? <Badge variant="outline">Jawaban Benar</Badge> : null}
-                        {snapshot.exam.shuffle_answers ? (
-                          // Nomor asli dari Exam Studio: membantu membaca pembahasan lama
-                          // tanpa menulis ulang teksnya.
-                          <span className="text-[11px] text-muted-foreground">
-                            No. asli {ORIGINAL_NUMBER[answer.label] ?? answer.label}
-                          </span>
-                        ) : null}
                         <button
                           type="button"
                           className="ml-auto inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-primary hover:bg-primary/10"

@@ -48,6 +48,31 @@ export function CategoryTile({
   );
 }
 
+/** Icon materi pada daftar kartu: pakai icon_url bila tersedia, fallback ke CategoryTile. */
+export function LessonTile({
+  meta,
+  iconUrl,
+  title,
+  size = "md",
+}: {
+  meta: CategoryMeta;
+  iconUrl?: string | null;
+  title?: string;
+  size?: "sm" | "md" | "lg";
+}) {
+  if (!iconUrl) return <CategoryTile meta={meta} size={size} />;
+  const box =
+    size === "lg" ? "size-14 rounded-2xl" : size === "sm" ? "size-9 rounded-xl" : "size-11 rounded-2xl";
+  return (
+    <img
+      src={iconUrl}
+      alt={title ? `Icon ${title}` : meta.label}
+      loading="lazy"
+      className={cn("shrink-0 object-cover shadow-sm", box)}
+    />
+  );
+}
+
 /** Tombol bookmark materi. */
 export function BookmarkButton({
   active,

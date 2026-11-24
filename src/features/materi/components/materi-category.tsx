@@ -10,6 +10,7 @@ import { EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import {
   BookmarkButton,
   CategoryTile,
+  LessonTile,
   DIFFICULTY_TONE,
   FilterChip,
   ToneBar,
@@ -228,7 +229,7 @@ export function MateriCategory({
                   )}
                 >
                   <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3">
-                    <CategoryTile meta={lessonMeta} size="sm" />
+                    <LessonTile meta={lessonMeta} iconUrl={lesson.icon_url} title={lesson.title} size="sm" />
                     <div className="min-w-0 space-y-1">
                       <p className="truncate text-sm font-semibold text-foreground">
                         {lesson.title}

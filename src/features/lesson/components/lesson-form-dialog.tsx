@@ -56,6 +56,7 @@ export function LessonFormDialog({ open, onOpenChange, lesson = null }: Props) {
   const [difficulty, setDifficulty] = useState<ExamDifficulty>("sedang");
   const [status, setStatus] = useState<LessonStatus>("draft");
   const [thumbnail, setThumbnail] = useState<string | null>(null);
+  const [iconUrl, setIconUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const createLesson = useCreateLesson();
@@ -73,6 +74,7 @@ export function LessonFormDialog({ open, onOpenChange, lesson = null }: Props) {
     setDifficulty(lesson?.difficulty ?? "sedang");
     setStatus(lesson?.status ?? "draft");
     setThumbnail(lesson?.thumbnail_url ?? null);
+    setIconUrl(lesson?.icon_url ?? null);
   }, [open, lesson]);
 
   const handleSubmit = async (event: FormEvent) => {
@@ -89,6 +91,7 @@ export function LessonFormDialog({ open, onOpenChange, lesson = null }: Props) {
       category,
       description,
       thumbnail_url: thumbnail,
+      icon_url: iconUrl,
       difficulty,
       status,
     };
@@ -205,7 +208,37 @@ export function LessonFormDialog({ open, onOpenChange, lesson = null }: Props) {
           </div>
 
           <div className="space-y-2">
-            <Label>Thumbnail</Label>
+            <Label>Icon Materi (Daftar Kartu)</Label>
+            {iconUrl ? (
+              <div className="flex items-center gap-2 rounded-lg border p-2 text-xs">
+                <img
+                  src={iconUrl}
+                  alt="Icon lesson"
+                  className="size-12 rounded-xl object-cover"
+                  loading="lazy"
+                />
+                <span className="min-w-0 flex-1 truncate">{iconUrl}</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIconUrl(null)}
+                >
+                  Hapus
+                </Button>
+              </div>
+            ) : (
+              <MediaPicker
+                allowed={["image"]}
+                folder="lesson"
+                label="Unggah icon persegi"
+                onChange={(asset) => setIconUrl(asset?.url ?? null)}
+              />
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label>Thumbnail Banner (Halaman Isi Materi)</Label>
             {thumbnail ? (
               <div className="flex items-center gap-2 rounded-lg border p-2 text-xs">
                 <img

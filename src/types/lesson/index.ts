@@ -37,6 +37,7 @@ export type LessonDetailRow = {
   description: string | null;
   category: string;
   thumbnail_url: string | null;
+  icon_url?: string | null;
   difficulty: ExamDifficulty;
   status: LessonStatus;
   sort_order?: number | null;
@@ -104,6 +105,7 @@ export type LessonInput = {
   category: string;
   description: string;
   thumbnail_url: string | null;
+  icon_url?: string | null;
   difficulty: ExamDifficulty;
   status: LessonStatus;
 };

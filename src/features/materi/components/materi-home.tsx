@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { useLessonsWithProgress } from "@/hooks/lesson";
 import { BOOKMARK_META, CATEGORY_ORDER, categoryMeta } from "@/features/materi/materi.constants";
-import { CategoryRow, CategoryTile, ToneBar } from "@/features/materi/components/materi-primitives";
+import { CategoryRow, CategoryTile, LessonTile, ToneBar } from "@/features/materi/components/materi-primitives";
 import { cn } from "@/lib/utils";
 import type { LessonWithProgress } from "@/types/lesson";
 
@@ -198,7 +198,7 @@ export function MateriHome() {
               resumeMeta.tone.ring,
             )}
           >
-            <CategoryTile meta={resumeMeta} />
+            <LessonTile meta={resumeMeta} iconUrl={resume.icon_url} title={resume.title} />
             <span className="min-w-0 space-y-1">
               <span
                 className={cn("block truncate text-[11px] font-semibold", resumeMeta.tone.text)}
@@ -261,7 +261,7 @@ export function MateriHome() {
                       onClick={() => openLesson(lesson.id)}
                       className="grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border border-border bg-card p-3 text-left transition-colors hover:border-primary/50"
                     >
-                      <CategoryTile meta={meta} size="sm" />
+                      <LessonTile meta={meta} iconUrl={lesson.icon_url} title={lesson.title} size="sm" />
                       <span className="min-w-0">
                         <span className="block truncate text-sm font-medium text-foreground">
                           {lesson.title}

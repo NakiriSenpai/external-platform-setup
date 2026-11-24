@@ -773,6 +773,7 @@ export async function importLesson(
     category: lesson.category,
     description: lesson.description,
     thumbnail_url: lesson.thumbnail?.url ?? null,
+    icon_url: lesson.icon?.url ?? null,
     difficulty: lesson.difficulty,
     status: "draft" as const,
     updated_by: userId,

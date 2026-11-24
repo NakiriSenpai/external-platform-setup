@@ -132,6 +132,7 @@ export const lessonBundleSchema = z.object({
   category: z.string().min(1).max(80).default("umum"),
   difficulty: difficulty.default("sedang"),
   thumbnail: mediaRefSchema.default(null),
+  icon: mediaRefSchema.default(null),
   sections: z.array(lessonSectionBundleSchema).default([]),
   question_bundle: z.array(questionBundleSchema).default([]),
 });

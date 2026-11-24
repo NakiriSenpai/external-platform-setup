@@ -282,10 +282,10 @@ export function LessonList() {
             return (
               <li key={lesson.id} className="rounded-xl border p-4">
                 <div className="flex items-start gap-3">
-                  {lesson.thumbnail_url ? (
+                  {lesson.icon_url || lesson.thumbnail_url ? (
                     <img
-                      src={lesson.thumbnail_url}
-                      alt={`Thumbnail ${lesson.title}`}
+                      src={lesson.icon_url || lesson.thumbnail_url || ""}
+                      alt={`Icon ${lesson.title}`}
                       loading="lazy"
                       className="size-14 shrink-0 rounded-lg object-cover"
                     />

@@ -39,6 +39,7 @@ export type LessonDetailRow = {
   thumbnail_url: string | null;
   difficulty: ExamDifficulty;
   status: LessonStatus;
+  sort_order?: number | null;
   created_by: string | null;
   updated_by: string | null;
   created_at: string;

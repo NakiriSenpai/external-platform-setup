@@ -33,6 +33,34 @@ function translate(message: string, fallback: string) {
 
 // ---------- LESSON ----------
 
+/** Kolom `sort_order` belum ada (migration Sprint 31 belum diterapkan). */
+export function isMissingLessonSortOrder(error: { code?: string; message?: string }): boolean {
+  return error.code === "42703" || /sort_order/.test(error.message ?? "");
+}
+
+/** Rencana langkah swap berurutan untuk memindahkan item ke posisi 1-based. */
+function planLessonMoveSwaps(
+  orderedIds: readonly string[],
+  lessonId: string,
+  targetPosition: number,
+): [string, string][] {
+  const fromIndex = orderedIds.indexOf(lessonId);
+  if (fromIndex === -1) throw new Error("Lesson tidak ditemukan dalam urutan.");
+  const toIndex = Math.max(0, Math.min(orderedIds.length - 1, targetPosition - 1));
+  if (fromIndex === toIndex) return [];
+  const steps: [string, string][] = [];
+  if (toIndex < fromIndex) {
+    for (let i = fromIndex; i > toIndex; i -= 1) {
+      steps.push([lessonId, orderedIds[i - 1]!]);
+    }
+  } else {
+    for (let i = fromIndex; i < toIndex; i += 1) {
+      steps.push([lessonId, orderedIds[i + 1]!]);
+    }
+  }
+  return steps;
+}
+
 /** Daftar lesson dengan pencarian, filter, pagination, dan jumlah section/soal. */
 export async function listLessonsAdmin({
   search = "",
@@ -43,19 +71,24 @@ export async function listLessonsAdmin({
   pageSize = 10,
 }: LessonListParams = {}): Promise<LessonListResult> {
   const from = (page - 1) * pageSize;
-  let query = supabase
-    .from(LESSON_TABLES.lessons)
-    .select("*", { count: "exact" })
-    .order("updated_at", { ascending: false })
-    .range(from, from + pageSize - 1);
-
   const term = search.trim().replace(/[%,()]/g, "");
-  if (term) query = query.or(`title.ilike.%${term}%,slug.ilike.%${term}%`);
-  if (category !== "semua") query = query.eq("category", category);
-  if (status !== "semua") query = query.eq("status", status);
-  if (difficulty !== "semua") query = query.eq("difficulty", difficulty);
 
-  const { data, error, count } = await query;
+  const build = (ordered: boolean) => {
+    let query = supabase.from(LESSON_TABLES.lessons).select("*", { count: "exact" });
+    if (ordered) query = query.order("sort_order", { ascending: true });
+    query = query
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, from + pageSize - 1);
+    if (term) query = query.or(`title.ilike.%${term}%,slug.ilike.%${term}%`);
+    if (category !== "semua") query = query.eq("category", category);
+    if (status !== "semua") query = query.eq("status", status);
+    if (difficulty !== "semua") query = query.eq("difficulty", difficulty);
+    return query;
+  };
+
+  let { data, error, count } = await build(true);
+  if (error && isMissingLessonSortOrder(error)) ({ data, error, count } = await build(false));
   if (error) throw new Error("Gagal memuat daftar lesson.");
 
   const lessons = (data as LessonDetailRow[] | null) ?? [];
@@ -95,13 +128,81 @@ export async function listLessonsAdmin({
 
 /** Materi untuk siswa: hanya lesson berstatus Published (tenant discope oleh RLS). */
 export async function listPublishedLessons(): Promise<LessonDetailRow[]> {
-  const { data, error } = await supabase
-    .from(LESSON_TABLES.lessons)
-    .select("*")
-    .eq("status", "published")
-    .order("updated_at", { ascending: false });
+  const build = (ordered: boolean) => {
+    let query = supabase.from(LESSON_TABLES.lessons).select("*").eq("status", "published");
+    if (ordered) query = query.order("sort_order", { ascending: true });
+    return query.order("created_at", { ascending: true }).order("id", { ascending: true });
+  };
+
+  let { data, error } = await build(true);
+  if (error && isMissingLessonSortOrder(error)) ({ data, error } = await build(false));
   if (error) throw new Error("Gagal memuat materi.");
   return (data as LessonDetailRow[] | null) ?? [];
+}
+
+/** Tukar urutan dua lesson secara atomik di database (Owner only, divalidasi RPC). */
+export async function swapLessonOrder(lessonA: string, lessonB: string): Promise<void> {
+  const { error } = await supabase.rpc("swap_lesson_order", {
+    p_lesson_a: lessonA,
+    p_lesson_b: lessonB,
+  });
+  if (error) {
+    if (/could not find the function/i.test(error.message) || error.code === "PGRST202") {
+      throw new Error("Penyimpanan urutan lesson belum aktif di server. Jalankan migrasi Sprint 31 terlebih dahulu.");
+    }
+    throw new Error(error.message || "Gagal menyimpan urutan lesson.");
+  }
+}
+
+/** Seluruh ID lesson sesuai urutan aktif (tanpa pagination) untuk lompat posisi. */
+export async function listLessonOrderIds({
+  search = "",
+  category = "semua",
+  status = "semua",
+  difficulty = "semua",
+}: Omit<LessonListParams, "page" | "pageSize"> = {}): Promise<string[]> {
+  let query = supabase
+    .from(LESSON_TABLES.lessons)
+    .select("id")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true })
+    .limit(2000);
+  const term = search.trim().replace(/[%,()]/g, "");
+  if (term) query = query.or(`title.ilike.%${term}%,slug.ilike.%${term}%`);
+  if (category !== "semua") query = query.eq("category", category);
+  if (status !== "semua") query = query.eq("status", status);
+  if (difficulty !== "semua") query = query.eq("difficulty", difficulty);
+  const { data, error } = await query;
+  if (error) throw new Error("Gagal memuat urutan lesson.");
+  return ((data as { id: string }[] | null) ?? []).map((row) => row.id);
+}
+
+/** Pindahkan lesson ke posisi global (1-based) memakai RPC swap_lesson_order dengan rollback aman. */
+export async function moveLessonToPosition(
+  orderedIds: readonly string[],
+  lessonId: string,
+  targetPosition: number,
+): Promise<void> {
+  const steps = planLessonMoveSwaps(orderedIds, lessonId, targetPosition);
+  const done: [string, string][] = [];
+  try {
+    for (const [a, b] of steps) {
+      await swapLessonOrder(a, b);
+      done.push([a, b]);
+    }
+  } catch (err) {
+    for (const [a, b] of done.reverse()) {
+      try {
+        await swapLessonOrder(a, b);
+      } catch {
+        throw new Error(
+          "Gagal menyimpan urutan lesson dan pemulihan tidak tuntas. Muat ulang halaman untuk melihat urutan tersimpan.",
+        );
+      }
+    }
+    throw err;
+  }
 }
 
 /** Judul lesson berdasarkan daftar id (dipakai Review untuk Materi Terkait). */

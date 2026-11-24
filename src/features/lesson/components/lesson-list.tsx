@@ -1,7 +1,17 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Download, Eye, Pencil, Plus, Search, Trash2, Upload } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Download,
+  Eye,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -15,18 +25,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EXAM_DIFFICULTY_LABELS } from "@/features/exam/exam.constants";
 import {
-  CATEGORY_LABELS,
-  EXAM_CATEGORIES,
-  EXAM_DIFFICULTY_LABELS,
-} from "@/features/exam/exam.constants";
-import { LESSON_STATUS_LABELS } from "@/features/lesson/lesson.constants";
+  LESSON_CATEGORIES,
+  LESSON_CATEGORY_LABELS,
+  LESSON_STATUS_LABELS,
+  lessonCategoryLabel,
+} from "@/features/lesson/lesson.constants";
 import { useDeleteLesson, useLessons } from "@/hooks/lesson";
 import type { ExamDifficulty } from "@/types/exam";
 import type { LessonDetailRow, LessonStatus } from "@/types/lesson";
 import { ImportBundleDialog } from "@/features/content-io/components/import-bundle-dialog";
 import { recordContentIoAudit } from "@/services/content/bundle/audit.service";
 import { buildLessonBundle, downloadBundle } from "@/services/content/bundle/bundle-export.service";
+import {
+  listLessonOrderIds,
+  moveLessonToPosition,
+  swapLessonOrder,
+} from "@/services/lesson";
 import { LessonFormDialog } from "./lesson-form-dialog";
 
 const PAGE_SIZE = 10;
@@ -54,8 +70,15 @@ export function LessonList() {
   const [formOpen, setFormOpen] = useState(false);
   const [selected, setSelected] = useState<LessonDetailRow | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [moving, setMoving] = useState(false);
   const queryClient = useQueryClient();
   const [exportingId, setExportingId] = useState<string | null>(null);
+
+  const invalidateOrderQueries = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["lessons-admin"] });
+    void queryClient.invalidateQueries({ queryKey: ["lessons"] });
+    void queryClient.invalidateQueries({ queryKey: ["lessons-with-progress"] });
+  };
 
   const handleExport = async (lesson: LessonDetailRow) => {
     setExportingId(lesson.id);
@@ -82,6 +105,55 @@ export function LessonList() {
   );
   const { data, isLoading, isError } = useLessons(params);
   const deleteLesson = useDeleteLesson();
+
+  const orderedRows = useMemo(() => data?.rows ?? [], [data?.rows]);
+  const total = data?.total ?? 0;
+
+  const move = async (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (moving || target < 0 || target >= orderedRows.length) return;
+    const a = orderedRows[index]?.id;
+    const b = orderedRows[target]?.id;
+    if (!a || !b) return;
+    setMoving(true);
+    try {
+      await swapLessonOrder(a, b);
+      await invalidateOrderQueries();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menyimpan urutan lesson.");
+      await invalidateOrderQueries();
+    } finally {
+      setMoving(false);
+    }
+  };
+
+  const moveTo = async (lesson: LessonDetailRow, currentPos: number) => {
+    if (moving) return;
+    const raw = window.prompt(
+      `Pindahkan "${lesson.title}" (posisi ${currentPos}) ke posisi berapa? (1–${total})`,
+      "1",
+    );
+    if (raw === null) return;
+    const target = Number(raw);
+    if (!Number.isInteger(target) || target < 1 || target > total) {
+      toast.error(`Masukkan angka 1 sampai ${total}.`);
+      return;
+    }
+    if (target === currentPos) return;
+    setMoving(true);
+    try {
+      const ids = await listLessonOrderIds({ search, category, status, difficulty });
+      await moveLessonToPosition(ids, lesson.id, target);
+      await invalidateOrderQueries();
+      toast.success(`Dipindahkan ke posisi ${target}.`);
+      setPage(Math.ceil(target / PAGE_SIZE));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menyimpan urutan lesson.");
+      await invalidateOrderQueries();
+    } finally {
+      setMoving(false);
+    }
+  };
 
   const handleDelete = async (lesson: LessonDetailRow) => {
     if (!window.confirm(`Hapus lesson "${lesson.title}" beserta section dan kontennya?`)) return;
@@ -143,9 +215,9 @@ export function LessonList() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="semua">Semua kategori</SelectItem>
-              {EXAM_CATEGORIES.map((item) => (
+              {LESSON_CATEGORIES.map((item) => (
                 <SelectItem key={item} value={item}>
-                  {CATEGORY_LABELS[item] ?? item}
+                  {LESSON_CATEGORY_LABELS[item] ?? item}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -199,105 +271,140 @@ export function LessonList() {
         </div>
       ) : isError ? (
         <p className="text-sm text-destructive">Gagal memuat daftar lesson.</p>
-      ) : (data?.rows.length ?? 0) === 0 ? (
+      ) : orderedRows.length === 0 ? (
         <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
           Belum ada lesson. Tekan “Tambah Lesson” untuk membuat yang pertama.
         </p>
       ) : (
         <ul className="space-y-3">
-          {data?.rows.map((lesson) => (
-            <li key={lesson.id} className="rounded-xl border p-4">
-              <div className="flex items-start gap-3">
-                {lesson.thumbnail_url ? (
-                  <img
-                    src={lesson.thumbnail_url}
-                    alt={`Thumbnail ${lesson.title}`}
-                    loading="lazy"
-                    className="size-14 shrink-0 rounded-lg object-cover"
-                  />
-                ) : (
-                  <div className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
-                    Materi
+          {orderedRows.map((lesson, index) => {
+            const globalPosition = (page - 1) * PAGE_SIZE + index + 1;
+            return (
+              <li key={lesson.id} className="rounded-xl border p-4">
+                <div className="flex items-start gap-3">
+                  {lesson.thumbnail_url ? (
+                    <img
+                      src={lesson.thumbnail_url}
+                      alt={`Thumbnail ${lesson.title}`}
+                      loading="lazy"
+                      className="size-14 shrink-0 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
+                      #{globalPosition}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <p className="truncate font-medium">{lesson.title}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      #{globalPosition} · /{lesson.slug}
+                    </p>
                   </div>
-                )}
-                <div className="min-w-0 flex-1 space-y-1">
-                  <p className="truncate font-medium">{lesson.title}</p>
-                  <p className="truncate text-xs text-muted-foreground">/{lesson.slug}</p>
+                  <Badge variant={statusVariant[lesson.status]}>
+                    {LESSON_STATUS_LABELS[lesson.status]}
+                  </Badge>
                 </div>
-                <Badge variant={statusVariant[lesson.status]}>
-                  {LESSON_STATUS_LABELS[lesson.status]}
-                </Badge>
-              </div>
 
-              <dl className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                <div>
-                  <dt className="font-medium text-foreground">Kategori</dt>
-                  <dd>{CATEGORY_LABELS[lesson.category] ?? lesson.category}</dd>
-                </div>
-                <div>
-                  <dt className="font-medium text-foreground">Kesulitan</dt>
-                  <dd>{EXAM_DIFFICULTY_LABELS[lesson.difficulty]}</dd>
-                </div>
-                <div>
-                  <dt className="font-medium text-foreground">Section</dt>
-                  <dd>{lesson.section_count}</dd>
-                </div>
-                <div>
-                  <dt className="font-medium text-foreground">Soal latihan</dt>
-                  <dd>{lesson.question_count}</dd>
-                </div>
-                <div className="col-span-2">
-                  <dt className="font-medium text-foreground">Terakhir diubah</dt>
-                  <dd>{formatDate(lesson.updated_at)}</dd>
-                </div>
-              </dl>
+                <dl className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                  <div>
+                    <dt className="font-medium text-foreground">Kategori</dt>
+                    <dd>{lessonCategoryLabel(lesson.category)}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-foreground">Kesulitan</dt>
+                    <dd>{EXAM_DIFFICULTY_LABELS[lesson.difficulty]}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-foreground">Section</dt>
+                    <dd>{lesson.section_count}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-foreground">Soal latihan</dt>
+                    <dd>{lesson.question_count}</dd>
+                  </div>
+                  <div className="col-span-2">
+                    <dt className="font-medium text-foreground">Terakhir diubah</dt>
+                    <dd>{formatDate(lesson.updated_at)}</dd>
+                  </div>
+                </dl>
 
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Button asChild size="sm" className="min-h-11">
-                  <Link to="/owner/lesson-studio/$lessonId" params={{ lessonId: lesson.id }}>
-                    Kelola Materi
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="secondary" className="min-h-11">
-                  <Link
-                    to="/owner/lesson-studio/$lessonId/preview"
-                    params={{ lessonId: lesson.id }}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <Button asChild size="sm" className="min-h-11">
+                    <Link to="/owner/lesson-studio/$lessonId" params={{ lessonId: lesson.id }}>
+                      Kelola Materi
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" variant="secondary" className="min-h-11">
+                    <Link
+                      to="/owner/lesson-studio/$lessonId/preview"
+                      params={{ lessonId: lesson.id }}
+                    >
+                      <Eye className="mr-1 size-4" /> Preview
+                    </Link>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="min-h-11"
+                    onClick={() => {
+                      setSelected(lesson);
+                      setFormOpen(true);
+                    }}
                   >
-                    <Eye className="mr-1 size-4" /> Preview
-                  </Link>
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="min-h-11"
-                  onClick={() => {
-                    setSelected(lesson);
-                    setFormOpen(true);
-                  }}
-                >
-                  <Pencil className="mr-1 size-4" /> Ubah
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="min-h-11"
-                  disabled={exportingId === lesson.id}
-                  onClick={() => void handleExport(lesson)}
-                >
-                  <Download className="mr-1 size-4" />
-                  {exportingId === lesson.id ? "Menyiapkan…" : "Export"}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="min-h-11"
-                  onClick={() => void handleDelete(lesson)}
-                >
-                  <Trash2 className="mr-1 size-4" /> Hapus
-                </Button>
-              </div>
-            </li>
-          ))}
+                    <Pencil className="mr-1 size-4" /> Ubah
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="min-h-11"
+                    disabled={exportingId === lesson.id}
+                    onClick={() => void handleExport(lesson)}
+                  >
+                    <Download className="mr-1 size-4" />
+                    {exportingId === lesson.id ? "Menyiapkan…" : "Export"}
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="min-h-11 min-w-11"
+                    aria-label="Naikkan urutan lesson"
+                    disabled={moving || index === 0}
+                    onClick={() => void move(index, -1)}
+                  >
+                    <ChevronUp className="size-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="min-h-11 min-w-11"
+                    aria-label="Turunkan urutan lesson"
+                    disabled={moving || index === orderedRows.length - 1}
+                    onClick={() => void move(index, 1)}
+                  >
+                    <ChevronDown className="size-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="min-h-11 px-2 text-xs"
+                    aria-label="Pindah lesson ke posisi tertentu"
+                    disabled={moving || total < 2}
+                    onClick={() => void moveTo(lesson, globalPosition)}
+                  >
+                    Posisi
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="min-h-11"
+                    onClick={() => void handleDelete(lesson)}
+                  >
+                    <Trash2 className="mr-1 size-4" /> Hapus
+                  </Button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
 
@@ -326,9 +433,21 @@ export function LessonList() {
       ) : null}
 
       <LessonFormDialog open={formOpen} onOpenChange={setFormOpen} lesson={selected} />
-      <ImportBundleDialog open={importOpen} onOpenChange={setImportOpen} bundleType="lesson"
+      <ImportBundleDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        bundleType="lesson"
         onImported={() => {
-          for (const key of ["lessons","lesson","lesson-sections","lesson-blocks"]) void queryClient.invalidateQueries({ queryKey: [key] });
+          for (const key of [
+            "lessons-admin",
+            "lessons",
+            "lessons-with-progress",
+            "lesson",
+            "lesson-sections",
+            "lesson-blocks",
+          ]) {
+            void queryClient.invalidateQueries({ queryKey: [key] });
+          }
         }}
       />
     </section>

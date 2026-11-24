@@ -566,7 +566,7 @@ export async function importExam(
     duration_minutes: exam.duration_minutes,
     shuffle_questions: exam.shuffle_questions,
     shuffle_answers: exam.shuffle_answers,
-    status: (options.publishAfterImport ? "published" : (lesson.status ?? "draft")) as "draft" | "published" | "archived",
+    status: "draft" as const,
   };
 
   const slug = await uniqueSlug(EXAM_TABLES.exams, exam.slug);
@@ -776,7 +776,7 @@ export async function importLesson(
     thumbnail_url: lesson.thumbnail?.url ?? null,
     icon_url: lesson.icon?.url ?? null,
     difficulty: lesson.difficulty,
-    status: "draft" as const,
+    status: (options.publishAfterImport ? "published" : (lesson.status ?? "draft")) as "draft" | "published" | "archived",
     updated_by: userId,
   };
 

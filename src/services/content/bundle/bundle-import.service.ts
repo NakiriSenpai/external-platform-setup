@@ -566,7 +566,7 @@ export async function importExam(
     duration_minutes: exam.duration_minutes,
     shuffle_questions: exam.shuffle_questions,
     shuffle_answers: exam.shuffle_answers,
-    status: "draft" as const,
+    status: (options.publishAfterImport ? "published" : (lesson.status ?? "draft")) as "draft" | "published" | "archived",
   };
 
   const slug = await uniqueSlug(EXAM_TABLES.exams, exam.slug);
@@ -708,6 +708,7 @@ export type LessonImportOptions = {
   importBundledQuestions: boolean;
   strategy: ConflictStrategy;
   allowMissingQuestions: boolean;
+  publishAfterImport?: boolean | undefined;
   onProgress?: ((done: number, total: number) => void) | undefined;
 };
 

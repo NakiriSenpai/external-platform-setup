@@ -93,6 +93,7 @@ export function ImportBundleDialog({
   const [allowMissingLesson, setAllowMissingLesson] = useState(true);
   const [importBundled, setImportBundled] = useState(true);
   const [allowMissingQuestions, setAllowMissingQuestions] = useState(false);
+  const [publishLesson, setPublishLesson] = useState(false);
   const [progress, setProgress] = useState(0);
   const navigate = useNavigate();
   const [completedOperation, setCompletedOperation] = useState<CompletedImportOperation | null>(null);
@@ -112,6 +113,7 @@ export function ImportBundleDialog({
     setFileName("");
     setStrategy("skip");
     setAllowMissingLesson(true);
+    setPublishLesson(false);
     setImportBundled(true);
     setAllowMissingQuestions(false);
     if (inputRef.current) inputRef.current.value = "";
@@ -231,6 +233,7 @@ export function ImportBundleDialog({
           strategy,
           importBundledQuestions: importBundled,
           allowMissingQuestions,
+          publishAfterImport: publishLesson,
           onProgress,
         });
       }
@@ -396,13 +399,21 @@ export function ImportBundleDialog({
                     checked={allowMissingQuestions}
                     onChange={setAllowMissingQuestions}
                   />
+                  {preview.kind === "lesson" ? (
+                    <ToggleRow
+                      label="Langsung publish setelah import"
+                      hint="Jika nonaktif, mengikuti status pada JSON (default draft)."
+                      checked={publishLesson}
+                      onChange={setPublishLesson}
+                    />
+                  ) : null}
                 </>
               )}
             </div> : null}
 
-            {bundleType !== "question_bank" ? (
+            {bundleType === "exam" ? (
               <p className="text-xs text-muted-foreground">
-                Hasil import selalu berstatus <strong>draft</strong> dan tidak langsung terlihat
+                Hasil import exam selalu berstatus <strong>draft</strong> dan tidak langsung terlihat
                 oleh siswa.
               </p>
             ) : null}

@@ -85,6 +85,7 @@ export const examBundleSchema = z.object({
   description: z.string().max(4000).nullable().default(null),
   icon: mediaRefSchema.default(null),
   difficulty: difficulty.default("sedang"),
+  status: z.enum(["draft", "published", "archived"]).optional(),
   passing_score: z.number().int().min(0).max(100).default(70),
   duration_minutes: z.number().int().min(1).max(600).default(60),
   shuffle_questions: z.boolean().default(false),
